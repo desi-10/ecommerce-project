@@ -46,7 +46,7 @@ export default function ShopToolbar({
                         size="icon"
                         className={[
                             "h-9 w-9 rounded-sm",
-                            view === "grid" ? "border-yellow-500 text-yellow-600" : "",
+                            view === "grid" ? "border-primary text-primary" : "",
                         ].join(" ")}
                         onClick={() => onViewChange("grid")}
                         aria-label="Grid view"
@@ -59,7 +59,7 @@ export default function ShopToolbar({
                         size="icon"
                         className={[
                             "h-9 w-9 rounded-sm",
-                            view === "list" ? "border-yellow-500 text-yellow-600" : "",
+                            view === "list" ? "border-primary text-primary" : "",
                         ].join(" ")}
                         onClick={() => onViewChange("list")}
                         aria-label="List view"

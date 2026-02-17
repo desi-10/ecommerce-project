@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function PromoBanners() {
     return (
@@ -8,11 +9,13 @@ export default function PromoBanners() {
                 <div className="p-5">
                     <div className="text-sm font-semibold">iQOS 2.4 Holder</div>
                     <div className="text-xs text-muted-foreground mt-1">Just $159.99</div>
-                    <Button size="sm" className="mt-4 bg-blue-600 hover:bg-blue-700">
-                        Shop Now
-                    </Button>
+                    <Link href="/product">
+                        <Button size="sm" className="mt-4 bg-blue-600 hover:bg-blue-700">
+                            Shop Now
+                        </Button>
+                    </Link>
                 </div>
-                <div className="relative ml-auto h-28 w-44">
+                <div className="relative ml-auto h-64 w-44">
                     <Image src="/martfury/banner1.png" alt="banner" fill className="object-contain" />
                 </div>
             </div>
@@ -21,11 +24,13 @@ export default function PromoBanners() {
                 <div className="p-5">
                     <div className="text-sm font-semibold">iPhone X 128GB</div>
                     <div className="text-xs text-muted-foreground mt-1">Discount 25% Off</div>
-                    <Button size="sm" className="mt-4 bg-blue-600 hover:bg-blue-700">
-                        Shop Now
-                    </Button>
+                    <Link href="/product">
+                        <Button size="sm" className="mt-4 bg-blue-600 hover:bg-blue-700">
+                            Shop Now
+                        </Button>
+                    </Link>
                 </div>
-                <div className="relative ml-auto h-28 w-44">
+                <div className="relative ml-auto h-64 w-44">
                     <Image src="/martfury/banner2.png" alt="banner" fill className="object-contain" />
                 </div>
             </div>

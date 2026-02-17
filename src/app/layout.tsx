@@ -6,6 +6,7 @@ import Header from "@/components/header";
 import BlueNav from "@/components/bluenav";
 import MobileBottomNav from "@/components/mobilebottomnav";
 import Footer from "@/components/footer";
+import Navbar from "@/components/navbar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

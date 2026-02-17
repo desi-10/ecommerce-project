@@ -14,10 +14,10 @@ export default function FeatureRow() {
             <Wrapper>
                 <div className="bg-white grid grid-cols-1 md:grid-cols-4 gap-4 rounded-sm border divide-y lg:divide-x lg:divide-y-0">
                     {items.map((i) => (
-                        <div key={i.title} className="flex items-start justify-center gap-3 px-4 py-6">
-                            <i.icon className="h-5 w-5 text-blue-600 mt-0.5" />
+                        <div key={i.title} className="flex items-center justify-center gap-3 px-4 py-6">
+                            <i.icon className="h-7 w-7 text-blue-600 mt-0.5" />
                             <div>
-                                <div className="text-sm font-semibold">{i.title}</div>
+                                <div className="text-lg lg:text-xl font-semibold">{i.title}</div>
                                 <div className="text-xs text-muted-foreground">{i.desc}</div>
                             </div>
                         </div>

@@ -16,7 +16,7 @@ export default function PaginationBar({
     const pages = Array.from({ length: totalPages }).map((_, i) => i + 1);
 
     return (
-        <div className="mt-8 flex items-center justify-center gap-2">
+        <div className="mt-8 flex items-center justify-center gap-2 bg-white rounded-lg w-fit p-4 mx-auto border">
             <Button
                 variant="outline"
                 className="rounded-sm"
@@ -32,7 +32,7 @@ export default function PaginationBar({
                     onClick={() => onChange(p)}
                     className={[
                         "h-9 w-9 border rounded-sm text-sm",
-                        p === page ? "border-yellow-500 text-yellow-600" : "border-neutral-200",
+                        p === page ? "border-primary text-primary" : "border-neutral-200",
                     ].join(" ")}
                 >
                     {p}

@@ -8,7 +8,7 @@ export default function Hero() {
             <Wrapper>
                 <div className="py-8 md:py-10">
                     <div className="rounded-sm overflow-hidden">
-                        <div className="grid md:grid-cols-2 items-center gap-6 py-6 md:py-10">
+                        <div className="grid md:grid-cols-2 items-center gap-6 py-10 md:py-20">
                             <div>
                                 <p className="text-xs text-blue-600 font-semibold">Weekend Promotions</p>
                                 <h1 className="mt-2 text-3xl md:text-4xl font-bold leading-tight">

@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 export default function ProductGridCard({
     p,
@@ -21,9 +22,9 @@ export default function ProductGridCard({
 
             <div className="mt-2 text-[11px] text-muted-foreground">{p.brand}</div>
 
-            <div className="mt-1 text-xs font-medium text-blue-600 line-clamp-2 hover:underline cursor-pointer">
+            <Link href="/product/1" className="mt-1 text-xs font-medium text-blue-600 line-clamp-2 hover:underline cursor-pointer">
                 {p.name}
-            </div>
+            </Link>
 
             <div className="mt-1 text-xs text-yellow-500">
                 {"★★★★☆"} <span className="text-muted-foreground">({p.reviews})</span>

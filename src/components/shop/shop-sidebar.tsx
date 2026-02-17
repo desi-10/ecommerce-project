@@ -16,13 +16,13 @@ const categories = [
     "Jewelry & Watches",
 ];
 
-const brands = ["Unilever", "YoungShop", "LG Electronics", "Canon", "Asus", "Sony"];
+const brands = ["Unilever", "LG Electronics", "Canon", "Asus", "Sony"];
 
 export default function ShopSidebar() {
     const [price, setPrice] = useState<[number, number]>([0, 2000]);
 
     return (
-        <div className="space-y-6 sticky top-36">
+        <div className="space-y-6 sticky top-36 bg-white p-4">
             <div>
                 <div className="text-xs font-semibold tracking-wide text-muted-foreground">CATEGORIES</div>
                 <Separator className="my-3" />

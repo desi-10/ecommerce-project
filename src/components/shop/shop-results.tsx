@@ -14,7 +14,7 @@ type SortMode = "latest" | "price_low" | "price_high";
 
 const ALL_PRODUCTS = Array.from({ length: 18 }).map((_, i) => ({
     id: i + 1,
-    brand: "YOUNG SHOP",
+    brand: "",
     name: [
         "NYX Beauty Couton Palette Makeup 12",
         "WarGold 100% Juice Milk 360ml",

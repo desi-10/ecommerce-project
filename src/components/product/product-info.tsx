@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Heart, BarChart3 } from "lucide-react";
+import { Input } from "../ui/input";
 
 function Stars({ value = 4 }: { value?: number }) {
     const full = Math.max(0, Math.min(5, Math.floor(value)));
@@ -25,9 +26,15 @@ export default function ProductInfo() {
 
     return (
         <div className="min-w-0">
-            <h1 className="text-xl md:text-2xl font-semibold leading-snug">
-                Sound Intone I65 Earphone White Version
-            </h1>
+            <div className="flex items-center">
+                <h1 className="text-xl md:text-2xl font-semibold leading-snug">
+                    Sound Intone I65 Earphone White Version
+                </h1>
+
+                <Button variant="outline" className="h-10 w-10  grid place-items-center border border-neutral-200 hover:bg-neutral-50">
+                    <Heart className="h-4 w-4 text-red-500" />
+                </Button>
+            </div>
 
             <div className="mt-2 flex flex-wrap items-center gap-3 text-xs">
                 <div className="text-muted-foreground">
@@ -57,40 +64,38 @@ export default function ProductInfo() {
                 <div className="flex flex-wrap items-center gap-3">
                     {/* qty stepper */}
                     <div className="inline-flex items-center border border-neutral-200 bg-white h-10">
-                        <button
-                            className="w-10 h-10 grid place-items-center text-neutral-600 hover:bg-neutral-50"
+                        <Button
+                            variant="ghost"
+                            className="rounded-none grid place-items-center text-neutral-600 hover:bg-neutral-50"
                             onClick={() => setQty((v) => Math.max(1, v - 1))}
                             aria-label="Decrease quantity"
                         >
                             –
-                        </button>
-                        <input
-                            className="w-14 h-10 text-center text-sm outline-none"
+                        </Button>
+                        <Input
+                            className="border-none w-14 h-10 text-center text-sm outline-none rounded-none"
                             value={safeQty}
                             onChange={(e) => setQty(Number(e.target.value || 1))}
+                            type="number"
                             inputMode="numeric"
                         />
-                        <button
-                            className="w-10 h-10 grid place-items-center text-neutral-600 hover:bg-neutral-50"
+                        <Button
+                            variant="ghost"
+                            className="rounded-none grid place-items-center text-neutral-600 hover:bg-neutral-50"
                             onClick={() => setQty((v) => Math.min(99, v + 1))}
                             aria-label="Increase quantity"
                         >
                             +
-                        </button>
+                        </Button>
                     </div>
 
                     {/* buttons like screenshot */}
-                    <Button className="h-10 rounded-sm bg-black hover:bg-black/90">Add to cart</Button>
-                    <Button className="h-10 rounded-sm bg-yellow-500 text-black hover:bg-yellow-400">
+                    <Button>Add to cart</Button>
+                    <Button variant="outline" className="">
                         Buy Now
                     </Button>
 
-                    <button className="h-10 w-10 grid place-items-center border border-neutral-200 hover:bg-neutral-50">
-                        <Heart className="h-4 w-4" />
-                    </button>
-                    <button className="h-10 w-10 grid place-items-center border border-neutral-200 hover:bg-neutral-50">
-                        <BarChart3 className="h-4 w-4" />
-                    </button>
+
                 </div>
             </div>
 

@@ -1,24 +1,22 @@
-import BlueNav from "@/components/bluenav";
 import CategoryMonth from "@/components/categoryofthemonth";
 import DealOfDay from "@/components/deal";
 import FeatureRow from "@/components/feature";
-import Footer from "@/components/footer";
-import Header from "@/components/header";
 import Hero from "@/components/hero";
-import MobileBottomNav from "@/components/mobilebottomnav";
+import { HeroWithCategories } from "@/components/hero-a";
+import { HeroBannerPlusPromos } from "@/components/hero-b";
 import ProductSection from "@/components/product";
 import PromoBanners from "@/components/promo";
-import TopMiniBar from "@/components/topminibar";
 import Wrapper from "@/components/wrapper";
 
 
 export default function Page() {
   return (
-    <div className="min-h-screen bg-[#f3f4f6]">
-
+    <div className="min-h-screen bg-gray-100">
 
       <main className="pb-20 md:pb-0">
-        <Hero />
+        {/* <Hero /> */}
+        {/* <HeroBannerPlusPromos /> */}
+        <HeroWithCategories />
         <FeatureRow />
 
         <Wrapper>

@@ -1,11 +1,11 @@
+import Link from "next/link";
+
 export default function Breadcrumbs() {
     return (
         <nav className="text-xs text-muted-foreground">
-            <span className="hover:text-foreground cursor-pointer">Home</span>
+            <Link href="/" className="hover:text-foreground cursor-pointer">Home</Link>
             <span className="mx-2">/</span>
-            <span className="hover:text-foreground cursor-pointer">Shop</span>
-            <span className="mx-2">/</span>
-            <span className="hover:text-foreground cursor-pointer">Sound</span>
+            <Link href="/product" className="hover:text-foreground cursor-pointer">Shop</Link>
             <span className="mx-2">/</span>
             <span className="text-foreground">Sound Intone I65 Earphone White Version</span>
         </nav>

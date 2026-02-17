@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function ProductListRow({
     p,
@@ -23,9 +24,9 @@ export default function ProductListRow({
 
                 <div className="min-w-0">
                     <div className="text-[11px] text-muted-foreground">{p.brand}</div>
-                    <div className="mt-1 text-sm font-medium text-blue-600 hover:underline cursor-pointer line-clamp-2">
+                    <Link href="/product/1" className="mt-1 text-sm font-medium text-blue-600 hover:underline cursor-pointer line-clamp-2">
                         {p.name}
-                    </div>
+                    </Link>
 
                     <div className="mt-2 text-xs text-yellow-500">
                         {"★★★★☆"} <span className="text-muted-foreground">({p.reviews})</span>
