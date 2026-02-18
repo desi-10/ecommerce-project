@@ -15,26 +15,26 @@ export default function AccountLayout({ children }: { children: ReactNode }) {
                             {/* Sidebar */}
                             <aside className="border-r border-neutral-200 space-y-2">
                                 <div className="text-sm font-semibold mb-3 p-4 border-b">My Account</div>
-                                <div className="divide-y *:pb-2">
+                                <div className="divide-y">
                                     <Link
                                         href="/account/profile"
-                                        className="block text-sm px-3 py-2 hover:bg-neutral-50"
+                                        className="block text-sm hover:bg-neutral-50"
                                     >
-                                        Profile
+                                        <p className="px-3 py-2">Profile</p>
                                     </Link>
 
                                     <Link
                                         href="/account/orders"
-                                        className="block text-sm px-3 py-2 rounded-sm hover:bg-neutral-50"
+                                        className="block text-sm hover:bg-neutral-50"
                                     >
-                                        Orders
+                                        <p className="px-3 py-2">Orders</p>
                                     </Link>
 
                                     <Link
                                         href="/account/security"
-                                        className="block text-sm px-3 py-2 rounded-sm hover:bg-neutral-50"
+                                        className="block text-sm hover:bg-neutral-50"
                                     >
-                                        Security
+                                        <p className="px-3 py-2"> Security</p>
                                     </Link>
 
                                     {/* <button className="block w-full text-sm px-3 py-2 rounded-sm hover:bg-neutral-50 text-red-600">
