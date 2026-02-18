@@ -7,6 +7,7 @@ import BlueNav from "@/components/bluenav";
 import MobileBottomNav from "@/components/mobilebottomnav";
 import Footer from "@/components/footer";
 import Navbar from "@/components/navbar";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,9 +37,9 @@ export default function RootLayout({
         <TopMiniBar />
         <Header />
         {/* <BlueNav /> */}
-        {children}
-        <Footer />
-        <MobileBottomNav />
+        <TooltipProvider>{children}</TooltipProvider>
+        {/* <Footer />
+        <MobileBottomNav /> */}
       </body>
     </html>
   );

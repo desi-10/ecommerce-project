@@ -1,3 +1,5 @@
+"use client"
+
 import CategoryMonth from "@/components/categoryofthemonth";
 import DealOfDay from "@/components/deal";
 import FeatureRow from "@/components/feature";
@@ -6,11 +8,26 @@ import { HeroWithCategories } from "@/components/hero-a";
 import { HeroBannerPlusPromos } from "@/components/hero-b";
 import ProductSection from "@/components/product";
 import PromoBanners from "@/components/promo";
+import ProductGridCard from "@/components/shop/product-grid";
+import ProductListRow from "@/components/shop/product-list";
+import { ALL_PRODUCTS } from "@/components/shop/shop-results";
 import Wrapper from "@/components/wrapper";
 import Image from "next/image";
+import { useMemo, useState } from "react";
 
 
 export default function Page() {
+  const sorted = useMemo(() => {
+    const items = [...ALL_PRODUCTS];
+    return items;
+  }, []);
+
+
+  const paged = useMemo(() => {
+    return sorted.slice(0, 3);
+  }, []);
+
+
   return (
     <div className="min-h-screen bg-gray-100">
 
@@ -64,38 +81,13 @@ export default function Page() {
                 </div>
 
                 {/* RIGHT — Product List */}
-                <div className="lg:col-span-2 space-y-4 border bg-white divide-y">
-
-                  {[1, 2, 3, 4].map((item) => (
-                    <div
-                      key={item}
-                      className="flex items-center gap-4 p-4"
-                    >
-                      <Image
-                        src="https://images.unsplash.com/photo-1511707171634-5f897ff02aa9"
-                        alt="Product"
-                        className="w-20 h-20 object-cover rounded-md"
-                        width={1000}
-                        height={1000}
-                      />
-
-                      <div className="flex-1">
-                        <h3 className="font-medium">Product Name</h3>
-                        <p className="text-sm text-muted-foreground">
-                          Short product description goes here.
-                        </p>
-                      </div>
-
-                      <div className="text-right">
-                        <p className="font-semibold">$49.99</p>
-                        <button className="mt-2 text-sm bg-black text-white px-3 py-1 rounded-md hover:bg-neutral-800">
-                          Add
-                        </button>
-                      </div>
-                    </div>
+                <div className="lg:col-span-2 space-y-4 w-full">
+                  {paged.map((p) => (
+                    <ProductListRow key={p.id} p={p} />
                   ))}
-
                 </div>
+
+
               </div>
             </section>
 

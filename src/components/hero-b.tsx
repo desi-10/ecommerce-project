@@ -4,7 +4,7 @@ import Wrapper from "./wrapper";
 
 export function HeroBannerPlusPromos() {
     return (
-        <section className="border-b">
+        <section className="">
             <Wrapper>
                 <div className="py-6 md:py-8 grid gap-4 md:grid-cols-[1fr_320px]">
 

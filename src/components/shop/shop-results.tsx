@@ -12,7 +12,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "../u
 type ViewMode = "grid" | "list";
 type SortMode = "latest" | "price_low" | "price_high";
 
-const ALL_PRODUCTS = Array.from({ length: 18 }).map((_, i) => ({
+export const ALL_PRODUCTS = Array.from({ length: 18 }).map((_, i) => ({
     id: i + 1,
     brand: "",
     name: [
