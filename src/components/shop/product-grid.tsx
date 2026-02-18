@@ -22,7 +22,7 @@ export default function ProductGridCard({
 
             <div className="mt-2 text-[11px] text-muted-foreground">{p.brand}</div>
 
-            <Link href="/product/1" className="mt-1 text-xs font-medium text-blue-600 line-clamp-2 hover:underline cursor-pointer">
+            <Link href="/shop/1" className="mt-1 text-xs font-medium text-blue-600 line-clamp-2 hover:underline cursor-pointer">
                 {p.name}
             </Link>
 

@@ -7,13 +7,56 @@ import Link from "next/link";
 import { Button } from "./ui/button";
 
 const products = [
-    { id: 1, name: "Xbox One Wireless Controller Black Color", price: "$59.99" },
-    { id: 2, name: "Sound Intone I65 Earphone White Version", price: "$21.99" },
-    { id: 3, name: "Asus Chromebook Flip – 10.2 inch", price: "$70.99" },
-    { id: 4, name: "Apple Macbook Air Retina 13-inch", price: "$81.99" },
-    { id: 5, name: "Samsung Galaxy A10 4GB RAM", price: "$86.99" },
-    { id: 6, name: "Another Deal Product", price: "$33.99" },
+    {
+        id: 1,
+        category: "Gaming",
+        name: "Xbox Wireless Controller – Carbon Black",
+        price: "$59.99",
+        image:
+            "https://images.unsplash.com/photo-1606813907291-d86efa9b94db?auto=format&fit=crop&w=600&q=80",
+    },
+    {
+        id: 2,
+        category: "Audio",
+        name: "Wireless Bluetooth Over-Ear Headphones",
+        price: "$89.99",
+        image:
+            "https://images.unsplash.com/photo-1580894894513-541e068a3e2b?auto=format&fit=crop&w=600&q=80",
+    },
+    {
+        id: 3,
+        category: "Laptops",
+        name: "Ultra-Slim Chromebook 13-inch",
+        price: "$299.99",
+        image:
+            "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=600&q=80",
+    },
+    {
+        id: 4,
+        category: "Computers",
+        name: "Apple MacBook Air M2 – 13-inch",
+        price: "$1099.99",
+        image:
+            "https://images.unsplash.com/photo-1512499617640-c2f999098c01?auto=format&fit=crop&w=600&q=80",
+    },
+    {
+        id: 5,
+        category: "Mobile Phones",
+        name: "Samsung Galaxy Smartphone – 128GB",
+        price: "$499.99",
+        image:
+            "https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&w=600&q=80",
+    },
+    {
+        id: 6,
+        category: "Smart Home",
+        name: "Smart LED Light Starter Kit",
+        price: "$39.99",
+        image:
+            "https://images.unsplash.com/photo-1558002038-1055907df827?auto=format&fit=crop&w=600&q=80",
+    },
 ];
+
 
 export default function DealOfDay() {
     return (
@@ -41,10 +84,11 @@ export default function DealOfDay() {
                                 <div className="border rounded-sm p-3 hover:shadow-sm transition bg-white">
                                     <div className="relative h-48">
                                         <Image
-                                            src="/martfury/product.png"
+                                            src={p.image}
                                             alt={p.name}
-                                            fill
-                                            className="object-contain"
+                                            width={1000}
+                                            height={1000}
+                                            className="object-contain h-full w-full"
                                         />
                                     </div>
                                     <Link href="/product/1" className="mt-1 text-xs font-medium line-clamp-2">

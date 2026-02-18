@@ -24,7 +24,7 @@ export default function ProductListRow({
 
                 <div className="min-w-0">
                     <div className="text-[11px] text-muted-foreground">{p.brand}</div>
-                    <Link href="/product/1" className="mt-1 text-sm font-medium text-blue-600 hover:underline cursor-pointer line-clamp-2">
+                    <Link href="/shop/1" className="mt-1 text-sm font-medium text-blue-600 hover:underline cursor-pointer line-clamp-2">
                         {p.name}
                     </Link>
 
@@ -46,7 +46,7 @@ export default function ProductListRow({
                             ${p.oldPrice.toFixed(2)}
                         </div>
                     )}
-                    <Button className="mt-3 rounded-sm bg-yellow-500 text-black hover:bg-yellow-400">
+                    <Button className="">
                         Add to cart
                     </Button>
                 </div>

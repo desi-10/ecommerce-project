@@ -1,43 +1,38 @@
 
 "use client"
 
-import {
-    Home,
-    ShoppingBag,
-    Info,
-    Newspaper,
-    Phone,
-} from "lucide-react";
 import Wrapper from "./wrapper";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 
 const links = [
-    { label: "Home", href: "/", icon: Home },
-    { label: "Shop", href: "/shop", icon: ShoppingBag },
-    { label: "About Us", href: "/about", icon: Info },
-    { label: "Blog", href: "/blog", icon: Newspaper },
-    { label: "Contact", href: "/contact", icon: Phone },
+    { label: "Home", href: "/", url: "https://img.icons8.com/ios/50/home--v1.png", alt: "home--v1" },
+    { label: "Shop", href: "/shop", url: "https://img.icons8.com/dotty/80/shop.png", alt: "shop" },
+    { label: "About Us", href: "/about", url: "https://img.icons8.com/ios/50/info--v1.png", alt: "info--v1" },
+    { label: "Blog", href: "/blog", url: "https://img.icons8.com/ink/48/newspaper-.png", alt: "newspaper-" },
+    { label: "Contact", href: "/contact", url: "https://img.icons8.com/ios/50/phone--v1.png", alt: "phone--v1" },
 ];
+
+{/* <a target="_blank" href="https://icons8.com/icon/77/info">Info</a> icon by < a target = "_blank" href = "https://icons8.com" > Icons8</ > */ }
 
 export default function Navbar() {
 
     const pathname = usePathname()
 
     return (
-        <div className="hidden md:block bg-white text-primary border-b sticky top-0">
+        <div className="hidden md:block bg-primary text-white border-b sticky top-0">
             <Wrapper>
-                <nav className="flex items-center justify-center gap-8 py-4 font-semibold">
+                <nav className="flex items-center justify-center gap-8 font-semibold">
                     {links.map((l) => (
                         <div key={l.label}>
                             <Link
                                 href={l.href}
-                                className="flex items-center gap-2 hover:opacity-90 transition"
+                                className="flex items-center justify-center gap-2 hover:opacity-90 transition p-4"
                             >
-                                <l.icon className="h-4 w-4" />
+                                <img src={l.url} alt={l.alt} className="h-5 w-5 brightness-150 invert" />
                                 {l.label}
                             </Link>
-                            {l.href === pathname && <div className="h-px w-full bg-primary" />}
+                            {l.href === pathname && <div className="h-1 w-full bg-primary" />}
                         </div>
                     ))}
                 </nav>

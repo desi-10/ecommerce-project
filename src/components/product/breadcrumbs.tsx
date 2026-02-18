@@ -5,7 +5,7 @@ export default function Breadcrumbs() {
         <nav className="text-xs text-muted-foreground">
             <Link href="/" className="hover:text-foreground cursor-pointer">Home</Link>
             <span className="mx-2">/</span>
-            <Link href="/product" className="hover:text-foreground cursor-pointer">Shop</Link>
+            <Link href="/shop" className="hover:text-foreground cursor-pointer">Shop</Link>
             <span className="mx-2">/</span>
             <span className="text-foreground">Sound Intone I65 Earphone White Version</span>
         </nav>

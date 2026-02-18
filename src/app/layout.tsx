@@ -35,7 +35,7 @@ export default function RootLayout({
       >
         <TopMiniBar />
         <Header />
-        <BlueNav />
+        {/* <BlueNav /> */}
         {children}
         <Footer />
         <MobileBottomNav />
