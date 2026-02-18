@@ -27,7 +27,7 @@ export default function ShopToolbar({
             <div className="flex items-center gap-3">
                 <div className="text-sm text-muted-foreground">Sort by:</div>
 
-                <Select value={sort} onValueChange={(v) => onSortChange(v as any)}>
+                <Select value={sort} onValueChange={(v) => onSortChange(v as "latest" | "price_low" | "price_high")}>
                     <SelectTrigger className="h-9 w-[180px] rounded-sm">
                         <SelectValue placeholder="Sort by latest" />
                     </SelectTrigger>
