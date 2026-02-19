@@ -23,7 +23,7 @@ export default function PromoBanners() {
                     <div className="text-lg font-semibold">iQOS 2.4 Holder</div>
                     <div className="text-sm mt-1 opacity-90">Just $159.99</div>
 
-                    <Link href="/product">
+                    <Link href="/shop">
                         <Button
                             size="sm"
                             className="mt-4 bg-blue-600 hover:bg-blue-700 text-white w-fit"

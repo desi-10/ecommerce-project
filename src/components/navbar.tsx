@@ -4,6 +4,7 @@
 import Wrapper from "./wrapper";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 
 const links = [
     { label: "Home", href: "/", url: "https://img.icons8.com/ios/50/home--v1.png", alt: "home--v1" },
@@ -11,7 +12,9 @@ const links = [
     { label: "About Us", href: "/about", url: "https://img.icons8.com/ios/50/info--v1.png", alt: "info--v1" },
     { label: "Blog", href: "/blog", url: "https://img.icons8.com/ink/48/newspaper-.png", alt: "newspaper-" },
     { label: "Contact", href: "/contact", url: "https://img.icons8.com/ios/50/phone--v1.png", alt: "phone--v1" },
+    { label: "Dashboard", href: "/dashboard", url: "https://img.icons8.com/laces/64/web-design.png", alt: "web-design" },
 ];
+
 
 {/* <a target="_blank" href="https://icons8.com/icon/77/info">Info</a> icon by < a target = "_blank" href = "https://icons8.com" > Icons8</ > */ }
 
@@ -29,10 +32,10 @@ export default function Navbar() {
                                 href={l.href}
                                 className="flex items-center justify-center gap-2 hover:opacity-90 transition p-4"
                             >
-                                <img src={l.url} alt={l.alt} className="h-5 w-5 brightness-150 invert" />
+                                <Image src={l.url} alt={l.alt} width={100} height={100} className="h-5 w-5 brightness-150 invert" />
                                 {l.label}
                             </Link>
-                            {l.href === pathname && <div className="h-1 w-full bg-primary" />}
+                            {l.href === pathname && <div className="h-1 w-full bg-white" />}
                         </div>
                     ))}
                 </nav>

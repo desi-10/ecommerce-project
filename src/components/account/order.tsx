@@ -1,57 +1,55 @@
-export default function OrdersSection() {
-    const orders = [
-        {
-            id: "#1024",
-            date: "Feb 10, 2026",
-            total: 129.99,
-            status: "Delivered",
-        },
-        {
-            id: "#1023",
-            date: "Feb 02, 2026",
-            total: 89.99,
-            status: "Processing",
-        },
-    ];
+// app/account/orders/page.tsx
+import Link from "next/link";
 
+const orders = [
+    { id: "1001", date: "2026-02-18", total: 199.9, status: "Paid" },
+    { id: "1002", date: "2026-02-10", total: 59.5, status: "Processing" },
+];
+
+export default function OrdersPage() {
     return (
-        <div>
-            <h1 className="text-xl font-semibold">My Orders</h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-                View your recent purchases.
-            </p>
+        <main className="min-h-screen bg-white">
+            <div className="mx-auto max-w-4xl px-4 py-10">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-2xl font-semibold text-neutral-900">Orders</h1>
+                        <p className="text-sm text-neutral-600">View your order history.</p>
+                    </div>
 
-            <div className="mt-6 border border-neutral-200">
-                <div className="grid grid-cols-4 text-xs font-semibold border-b p-3 bg-neutral-50">
-                    <div>Order</div>
-                    <div>Date</div>
-                    <div>Total</div>
-                    <div>Status</div>
+                    <Link
+                        href="/account/profile"
+                        className="text-sm text-blue-600 hover:underline"
+                    >
+                        Profile →
+                    </Link>
                 </div>
 
-                {orders.map((order) => (
-                    <div
-                        key={order.id}
-                        className="grid grid-cols-4 text-sm p-3 border-b last:border-b-0"
-                    >
-                        <div className="text-blue-600 cursor-pointer">
-                            {order.id}
-                        </div>
-                        <div>{order.date}</div>
-                        <div>${order.total.toFixed(2)}</div>
-                        <div>
-                            <span
-                                className={`px-2 py-1 text-xs rounded ${order.status === "Delivered"
-                                    ? "bg-green-100 text-green-600"
-                                    : "bg-yellow-100 text-yellow-600"
-                                    }`}
-                            >
-                                {order.status}
-                            </span>
-                        </div>
+                <div className="mt-6 overflow-hidden rounded-lg border border-neutral-200">
+                    <div className="grid grid-cols-4 gap-2 bg-neutral-50 px-4 py-3 text-xs font-semibold text-neutral-600">
+                        <div>Order</div>
+                        <div>Date</div>
+                        <div>Status</div>
+                        <div className="text-right">Total</div>
                     </div>
-                ))}
+
+                    <div className="divide-y divide-neutral-200">
+                        {orders.map((o) => (
+                            <Link
+                                key={o.id}
+                                href={`/account/orders/${o.id}`}
+                                className="grid grid-cols-4 gap-2 px-4 py-4 text-sm hover:bg-neutral-50"
+                            >
+                                <div className="font-semibold text-neutral-900">#{o.id}</div>
+                                <div className="text-neutral-700">{o.date}</div>
+                                <div className="text-neutral-700">{o.status}</div>
+                                <div className="text-right font-semibold text-neutral-900">
+                                    ${o.total.toFixed(2)}
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
+                </div>
             </div>
-        </div>
+        </main>
     );
 }

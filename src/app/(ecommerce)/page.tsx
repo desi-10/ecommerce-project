@@ -3,8 +3,8 @@
 import CategoryMonth from "@/components/categoryofthemonth";
 import DealOfDay from "@/components/deal";
 import FeatureRow from "@/components/feature";
-import Hero from "@/components/hero";
-import { HeroWithCategories } from "@/components/hero-a";
+// import Hero from "@/components/hero";
+// import { HeroWithCategories } from "@/components/hero-a";
 import { HeroBannerPlusPromos } from "@/components/hero-b";
 import ProductSection from "@/components/product";
 import PromoBanners from "@/components/promo";
@@ -13,7 +13,7 @@ import ProductListRow from "@/components/shop/product-list";
 import { ALL_PRODUCTS } from "@/components/shop/shop-results";
 import Wrapper from "@/components/wrapper";
 import Image from "next/image";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
 
 export default function Page() {
@@ -24,8 +24,8 @@ export default function Page() {
 
 
   const paged = useMemo(() => {
-    return sorted.slice(0, 3);
-  }, []);
+    return sorted.slice(0, 4);
+  }, [sorted]);
 
 
   return (
@@ -81,12 +81,17 @@ export default function Page() {
                 </div>
 
                 {/* RIGHT — Product List */}
-                <div className="lg:col-span-2 space-y-4 w-full">
+                <div className="hidden lg:block lg:col-span-2 space-y-4 w-full">
                   {paged.map((p) => (
                     <ProductListRow key={p.id} p={p} />
                   ))}
                 </div>
 
+                <div className="lg:hidden mt-4 grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 lg:grid-cols-4">
+                  {paged.map((p) => (
+                    <ProductGridCard key={p.id} p={p} />
+                  ))}
+                </div>
 
               </div>
             </section>

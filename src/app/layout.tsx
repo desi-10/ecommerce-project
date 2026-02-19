@@ -1,12 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import TopMiniBar from "@/components/topminibar";
-import Header from "@/components/header";
-import BlueNav from "@/components/bluenav";
-import MobileBottomNav from "@/components/mobilebottomnav";
-import Footer from "@/components/footer";
-import Navbar from "@/components/navbar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 const geistSans = Geist({
@@ -34,12 +28,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <TopMiniBar />
-        <Header />
-        {/* <BlueNav /> */}
         <TooltipProvider>{children}</TooltipProvider>
-        {/* <Footer />
-        <MobileBottomNav /> */}
       </body>
     </html>
   );

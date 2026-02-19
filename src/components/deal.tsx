@@ -91,7 +91,7 @@ export default function DealOfDay() {
                                             className="object-contain h-full w-full"
                                         />
                                     </div>
-                                    <Link href="/product/1" className="mt-1 text-xs font-medium line-clamp-2">
+                                    <Link href={`/shop/${p.id}`} className="mt-1 text-xs font-medium line-clamp-2">
                                         <Button variant="link" className="p-0 text-gray-800 hover:text-primary">
                                             {p.name}
                                         </Button>
