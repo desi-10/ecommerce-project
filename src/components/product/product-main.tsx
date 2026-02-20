@@ -13,7 +13,7 @@ export default function ProductMain() {
                 <div>
                     <div className="grid grid-cols-1 gap-8 lg:grid-cols-[420px_1fr]">
                         <ProductGallery />
-                        <ProductInfo />
+                        {/* <ProductInfo /> */}
                     </div>
                     <div className="mt-8 pb-16 md:pb-10 w-full">
                         <ProductTabs />

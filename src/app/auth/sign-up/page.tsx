@@ -43,6 +43,7 @@ export default function SignUpSection() {
       password: data.password,
       name: data.name, // keep if your provider accepts it
       callbackURL: "/",
+
     });
 
     console.log(result, "result");

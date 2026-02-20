@@ -2,106 +2,46 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import React, { useMemo, useState } from "react";
 import { X, Minus, Plus } from "lucide-react";
-import { Sheet, SheetContent, SheetFooter } from "../ui/sheet";
+import { Sheet, SheetContent } from "../ui/sheet";
 import { Button } from "../ui/button";
 import { Separator } from "../ui/separator";
+import { useCartStore } from "@/stores/cart.store";
 
 type Props = {
     open: boolean;
     setOpen: (open: boolean) => void;
 };
 
-type CartItem = {
-    id: string;
-    name: string;
-    price: number;
-    image?: string;
-    qty: number;
-};
-
 export default function CartSheet({ open, setOpen }: Props) {
-    // ✅ Demo cart state (replace with your store later)
-    const [items, setItems] = useState<CartItem[]>([
-        {
-            id: "1",
-            name: "Sound Intone I65 Earphone White Version",
-            price: 21.99,
-            image: "/martfury/product.png",
-            qty: 1,
-        },
-        {
-            id: "2sdellf",
-            name: "Apple Macbook Air Retina 13-inch",
-            price: 81.99,
-            image: "/martfury/product.png",
-            qty: 2,
-        },
-        {
-            id: "dvfvqqss2df",
-            name: "Apple Macbook Air Retina 13-inch",
-            price: 81.99,
-            image: "/martfury/product.png",
-            qty: 2,
-        },
-        {
-            id: "2df",
-            name: "Apple Macbook Air Retina 13-inch",
-            price: 81.99,
-            image: "/martfury/product.png",
-            qty: 2,
-        },
-        {
-            id: "2sdfsdfdsz",
-            name: "Apple Macbook Air Retina 13-inch",
-            price: 81.99,
-            image: "/martfury/product.png",
-            qty: 2,
-        },
-        {
-            id: "2sdsdffx",
-            name: "Asdpple Macbook Air Retina 13-inch",
-            price: 81.99,
-            image: "/martfury/product.png",
-            qty: 2,
-        },
-        {
-            id: "2sdsdf",
-            name: "Apple Macbook Air Retina 13-inch",
-            price: 81.99,
-            image: "/martfury/product.png",
-            qty: 2,
-        },
-    ]);
+    const items = useCartStore((s) => s.items);
+    const increaseQty = useCartStore((s) => s.increaseQty);
+    const decreaseQty = useCartStore((s) => s.decreaseQty);
+    const removeItem = useCartStore((s) => s.removeItem);
+    const getTotal = useCartStore((s) => s.getTotal);
 
-    const subtotal = useMemo(
-        () => items.reduce((acc, item) => acc + item.price * item.qty, 0),
-        [items]
-    );
-
-    // If you want shipping/tax later, compute total differently
+    const subtotal = getTotal();
     const total = subtotal;
 
-    const inc = (id: string) => {
-        setItems((prev) =>
-            prev.map((i) => (i.id === id ? { ...i, qty: Math.min(99, i.qty + 1) } : i))
-        );
-    };
+    const inc = (id: string) => increaseQty(id);
 
+    // Keep your UX: prevent going below 1 (instead of removing at 0)
     const dec = (id: string) => {
-        setItems((prev) =>
-            prev.map((i) => (i.id === id ? { ...i, qty: Math.max(1, i.qty - 1) } : i))
-        );
+        const current = items.find((i) => i.id === id);
+        if (!current) return;
+        if (current.qty <= 1) return; // stop at 1
+        decreaseQty(id);
     };
 
-    const remove = (id: string) => {
-        setItems((prev) => prev.filter((i) => i.id !== id));
-    };
+    const remove = (id: string) => removeItem(id);
 
     return (
         <Sheet open={open} onOpenChange={setOpen}>
-            <SheetContent side="right" showCloseButton={false} className="w-full h-full sm:max-w-md p-0">
+            <SheetContent
+                side="right"
+                showCloseButton={false}
+                className="w-full h-full sm:max-w-md p-0"
+            >
                 {/* Header */}
                 <div className="px-4 py-4 border-b flex items-center justify-between">
                     <div>
@@ -125,16 +65,18 @@ export default function CartSheet({ open, setOpen }: Props) {
                     {items.length === 0 ? (
                         <div className="py-20 text-center">
                             <div className="mx-auto w-36">
-                                <Image width={100} height={100} src="https://img.icons8.com/carbon-copy/100/shopping-cart.png" alt="shopping-cart" />
+                                <Image
+                                    width={100}
+                                    height={100}
+                                    src="https://img.icons8.com/carbon-copy/100/shopping-cart.png"
+                                    alt="shopping-cart"
+                                />
                             </div>
                             <div className="text-sm font-semibold">Your cart is empty</div>
                             <p className="mt-2 text-sm text-muted-foreground">
                                 Add items to your cart to see them here.
                             </p>
-                            <Button
-                                className="mt-4 rounded-sm bg-blue-600 hover:bg-blue-700"
-                                onClick={() => setOpen(false)}
-                            >
+                            <Button className="mt-4" onClick={() => setOpen(false)}>
                                 Continue shopping
                             </Button>
                         </div>
@@ -143,10 +85,7 @@ export default function CartSheet({ open, setOpen }: Props) {
                             const itemSubtotal = item.price * item.qty;
 
                             return (
-                                <div
-                                    key={item.id}
-                                    className="border rounded-sm p-3 bg-white"
-                                >
+                                <div key={item.id} className="border rounded-sm p-3 bg-white">
                                     <div className="flex gap-3">
                                         <div className="relative h-16 w-16 border bg-white rounded-sm overflow-hidden">
                                             <Image
@@ -160,9 +99,13 @@ export default function CartSheet({ open, setOpen }: Props) {
                                         <div className="min-w-0 flex-1">
                                             <div className="flex items-start justify-between gap-2">
                                                 <div className="min-w-0">
-                                                    <div className="text-sm font-medium line-clamp-2">
+                                                    <Link
+                                                        href={`/shop/${item.id}`}
+                                                        onClick={() => setOpen(false)}
+                                                        className="text-sm font-medium line-clamp-2 hover:text-blue-600"
+                                                    >
                                                         {item.name}
-                                                    </div>
+                                                    </Link>
                                                     <div className="mt-1 text-xs text-muted-foreground">
                                                         ${item.price.toFixed(2)} each
                                                     </div>
@@ -213,7 +156,7 @@ export default function CartSheet({ open, setOpen }: Props) {
 
                 {/* Footer totals + actions */}
                 {items.length > 0 && (
-                    <div className="border-t px-4 py-4 bg-white align-bottom">
+                    <div className="border-t px-4 py-4 bg-white">
                         <div className="space-y-2 text-sm">
                             <div className="flex items-center justify-between text-muted-foreground">
                                 <span>Subtotal</span>
@@ -236,19 +179,13 @@ export default function CartSheet({ open, setOpen }: Props) {
                         </div>
 
                         <div className="mt-4 grid gap-2">
-                            <Button
-                                asChild
-                            >
+                            <Button asChild>
                                 <Link href="/checkout" onClick={() => setOpen(false)}>
                                     Proceed to checkout
                                 </Link>
                             </Button>
 
-                            <Button
-                                variant="outline"
-                                className="rounded-sm"
-                                onClick={() => setOpen(false)}
-                            >
+                            <Button variant="outline" className="rounded-sm" onClick={() => setOpen(false)}>
                                 Continue shopping
                             </Button>
                         </div>

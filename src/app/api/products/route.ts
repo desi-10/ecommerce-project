@@ -9,12 +9,10 @@ import {
 } from "@/server/products/products.validators";
 import { validateOrThrow } from "@/lib/validator";
 import { handleApiError } from "@/lib/api-handler";
-import { requireRequestSession } from "@/lib/auth-guards";
+import { requireAdminServerSession } from "@/lib/auth-guards";
 
 export const GET = async (req: Request) => {
   try {
-    await requireRequestSession(req);
-
     const url = new URL(req.url);
 
     const rawQuery = Object.fromEntries(url.searchParams.entries());
@@ -29,7 +27,7 @@ export const GET = async (req: Request) => {
 
 export const POST = async (req: Request) => {
   try {
-    await requireRequestSession(req);
+    await requireAdminServerSession();
 
     const body = await req.json();
     const valid = validateOrThrow(createProductSchema, body);

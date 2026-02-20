@@ -13,7 +13,7 @@ type ViewMode = "grid" | "list";
 type SortMode = "latest" | "price_low" | "price_high";
 
 export const ALL_PRODUCTS = Array.from({ length: 18 }).map((_, i) => ({
-    id: i + 1,
+    id: `${i + 1} `,
     brand: "",
     name: [
         "NYX Beauty Couton Palette Makeup 12",

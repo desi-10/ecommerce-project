@@ -14,7 +14,9 @@ import {
 export const GET = async (req: Request) => {
   try {
     const session = await requireRequestSession(req);
-    const rawQuery = Object.fromEntries(new URL(req.url).searchParams.entries());
+    const rawQuery = Object.fromEntries(
+      new URL(req.url).searchParams.entries(),
+    );
     const query = validateOrThrow(listPaymentsSchema, rawQuery);
 
     const result = await listPaymentsService(query, session.user.id);

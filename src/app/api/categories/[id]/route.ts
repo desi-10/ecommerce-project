@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { validateOrThrow } from "@/lib/validator";
 import { handleApiError } from "@/lib/api-handler";
-import { requireRequestSession } from "@/lib/auth-guards";
+import { requireAdminServerSession } from "@/lib/auth-guards";
 import {
   deleteCategoryService,
   getCategoryByIdService,
@@ -15,7 +15,6 @@ type RouteContext = {
 
 export const GET = async (req: Request, context: RouteContext) => {
   try {
-    await requireRequestSession(req);
     const { id } = await context.params;
 
     const result = await getCategoryByIdService(id);
@@ -27,7 +26,7 @@ export const GET = async (req: Request, context: RouteContext) => {
 
 export const PATCH = async (req: Request, context: RouteContext) => {
   try {
-    await requireRequestSession(req);
+    await requireAdminServerSession();
     const { id } = await context.params;
 
     const body = await req.json();
@@ -42,7 +41,7 @@ export const PATCH = async (req: Request, context: RouteContext) => {
 
 export const DELETE = async (req: Request, context: RouteContext) => {
   try {
-    await requireRequestSession(req);
+    await requireAdminServerSession();
     const { id } = await context.params;
 
     const result = await deleteCategoryService(id);

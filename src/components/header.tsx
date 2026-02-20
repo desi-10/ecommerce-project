@@ -11,34 +11,37 @@ import Image from "next/image";
 import Link from "next/link";
 import CartSheet from "./sheets/cart-sheet";
 import WishlistSheet from "./sheets/wishlist-sheet";
+import { useCartStore } from "@/stores/cart.store";
+import { useWishlistStore } from "@/stores/wishlist.store";
 
 export default function Header() {
     const [open, setOpen] = useState(false);
-    const [cartOpen, setCartOpen] = useState(false)
+    const [cartOpen, setCartOpen] = useState(false);
     const [wishlistOpen, setWishlistOpen] = useState(false);
+
+    const cartCount = useCartStore((s) => s.getCount());
+    const wishlistCount = useWishlistStore((s) => s.count());
 
     return (
         <div className="bg-white lg:sticky top-0 z-20">
             <CartSheet open={cartOpen} setOpen={setCartOpen} />
             <WishlistSheet open={wishlistOpen} setOpen={setWishlistOpen} />
 
-            <header >
+            <header>
                 <div className="border-b">
                     <Wrapper>
                         <div className="py-6 flex items-center gap-4">
-                            <button className="md:hidden" onClick={() => setOpen((v) => !v)}>
+                            <button className="md:hidden" onClick={() => setOpen((v) => !v)} aria-label="Open menu">
                                 <Menu className="h-5 w-5" />
                             </button>
 
-                            <div className="text-2xl font-extrabold tracking-tight">
+                            <Link href="/" className="text-2xl font-extrabold tracking-tight">
                                 mart<span className="text-blue-600">fury</span>
-                            </div>
+                            </Link>
 
                             {/* Desktop search */}
                             <div className="hidden md:flex flex-1 items-center">
                                 <div className="flex w-full">
-
-                                    {/* Category Select */}
                                     <Select defaultValue="all">
                                         <SelectTrigger className="w-40 rounded-r-none border-r-0 text-xs min-h-11">
                                             <SelectValue placeholder="All" />
@@ -53,15 +56,9 @@ export default function Header() {
                                         </SelectContent>
                                     </Select>
 
-                                    {/* Search Input */}
-                                    <Input
-                                        className="rounded-none border-l-0 border-r-0 h-11"
-                                        placeholder="I'm shopping for..."
-                                    />
+                                    <Input className="rounded-none border-l-0 border-r-0 h-11" placeholder="I'm shopping for..." />
 
-                                    {/* Search Button */}
                                     <Button className="rounded-l-none bg-primary h-11">
-                                        {/* <Search className="h-4 w-4 mr-2" /> */}
                                         Search
                                     </Button>
                                 </div>
@@ -69,9 +66,8 @@ export default function Header() {
 
                             {/* Icons */}
                             <div className="ml-auto flex items-center gap-6">
-
                                 {/* Wishlist */}
-                                <button onClick={() => setWishlistOpen(true)} className="relative size-10 cursor-pointer">
+                                <button onClick={() => setWishlistOpen(true)} className="relative size-10 cursor-pointer" aria-label="Open wishlist">
                                     <Image
                                         width={100}
                                         height={100}
@@ -80,14 +76,15 @@ export default function Header() {
                                         className="w-full h-full"
                                     />
 
-                                    {/* Badge */}
-                                    <span className="absolute -bottom-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full min-w-[20px] h-[20px] flex items-center justify-center">
-                                        2
-                                    </span>
+                                    {wishlistCount > 0 && (
+                                        <span className="absolute -bottom-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full min-w-[20px] h-[20px] flex items-center justify-center">
+                                            {wishlistCount}
+                                        </span>
+                                    )}
                                 </button>
 
                                 {/* Cart */}
-                                <button onClick={() => setCartOpen(true)} className="relative size-10 cursor-pointer">
+                                <button onClick={() => setCartOpen(true)} className="relative size-10 cursor-pointer" aria-label="Open cart">
                                     <Image
                                         width={100}
                                         height={100}
@@ -96,14 +93,15 @@ export default function Header() {
                                         className="w-full h-full"
                                     />
 
-                                    {/* Badge */}
-                                    <span className="absolute -bottom-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full min-w-[20px] h-[20px] flex items-center justify-center">
-                                        10
-                                    </span>
+                                    {cartCount > 0 && (
+                                        <span className="absolute -bottom-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full min-w-[20px] h-[20px] flex items-center justify-center">
+                                            {cartCount}
+                                        </span>
+                                    )}
                                 </button>
 
                                 {/* Auth */}
-                                <button className="hidden md:inline-flex items-center gap-2 text-sm">
+                                <button className="hidden md:inline-flex items-center gap-2 text-sm" aria-label="Account">
                                     <div className="w-10">
                                         <Image
                                             width={100}
@@ -113,6 +111,7 @@ export default function Header() {
                                             className="w-full h-full"
                                         />
                                     </div>
+
                                     <span className="text-left">
                                         <Link href="/auth/sign-in">
                                             <span className="block text-sm text-muted-foreground hover:text-primary">
@@ -127,24 +126,22 @@ export default function Header() {
                                     </span>
                                 </button>
                             </div>
-
                         </div>
                     </Wrapper>
-
                 </div>
+
                 <Navbar />
 
-                {/* Mobile search like screenshot */}
+                {/* Mobile search */}
                 <div className="md:hidden px-4 pb-4">
                     <div className="flex">
                         <Input className="rounded-r-none" placeholder="Search something..." />
-                        <Button className="rounded-l-none bg-blue-600 hover:bg-blue-700 px-4">
+                        <Button className="rounded-l-none bg-blue-600 hover:bg-blue-700 px-4" aria-label="Search">
                             <Search className="h-4 w-4" />
                         </Button>
                     </div>
                 </div>
 
-                {/* Optional mobile drawer placeholder */}
                 {open && (
                     <div className="md:hidden px-4 pb-4 text-sm text-muted-foreground">
                         Menu (wire your links here)

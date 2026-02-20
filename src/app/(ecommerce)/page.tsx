@@ -3,8 +3,6 @@
 import CategoryMonth from "@/components/categoryofthemonth";
 import DealOfDay from "@/components/deal";
 import FeatureRow from "@/components/feature";
-// import Hero from "@/components/hero";
-// import { HeroWithCategories } from "@/components/hero-a";
 import { HeroBannerPlusPromos } from "@/components/hero-b";
 import ProductSection from "@/components/product";
 import PromoBanners from "@/components/promo";

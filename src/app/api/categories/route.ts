@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { validateOrThrow } from "@/lib/validator";
 import { handleApiError } from "@/lib/api-handler";
-import { requireRequestSession } from "@/lib/auth-guards";
+import { requireAdminServerSession } from "@/lib/auth-guards";
 import {
   createCategoryService,
   getCategoryService,
@@ -13,8 +13,6 @@ import {
 
 export const GET = async (req: Request) => {
   try {
-    await requireRequestSession(req);
-
     const url = new URL(req.url);
     const rawQuery = Object.fromEntries(url.searchParams.entries());
     const query = validateOrThrow(listCategorySchema, rawQuery);
@@ -28,7 +26,7 @@ export const GET = async (req: Request) => {
 
 export const POST = async (req: Request) => {
   try {
-    await requireRequestSession(req);
+    await requireAdminServerSession();
     const body = await req.json();
     const valid = validateOrThrow(categorySchema, body);
 
