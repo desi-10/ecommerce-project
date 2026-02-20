@@ -2,7 +2,7 @@ import { ApiError } from "@/lib/api-error";
 import { apiResponse } from "@/lib/api-response";
 import prisma from "@/lib/db";
 import { StatusCodes } from "http-status-codes";
-import { OrderSchema, OrderType } from "./orders.validators";
+import { ListOrderInput, OrderSchema, OrderType } from "./orders.validators";
 import { validateStatusTransition } from "./orders.utils";
 import { OrderStatus, Prisma } from "../../../prisma/generated/client";
 
@@ -227,13 +227,13 @@ export const createOrderService = async (raw: unknown) => {
 
     const order = await tx.order.create({
       data: {
-        userId: data.userId,
+        userId: data.userId || null,
         status: "PENDING",
         subtotal,
         discountTotal,
         total,
         couponId,
-        currency: "GHS",
+        // currency: "GHS",
         items: {
           create: orderItemsData.map((it) => ({
             variantId: it.variantId,
@@ -357,4 +357,73 @@ export const markOrderPaidService = async (orderId: string) => {
   });
 
   return apiResponse("Order marked as paid", updatedOrder);
+};
+
+export const getOrdersService = async (data: ListOrderInput) => {
+  const { page, limit, q, status, sort } = data;
+
+  const where: Prisma.OrderWhereInput = {
+    ...(status ? { status } : {}),
+
+    ...(q
+      ? {
+          OR: [
+            {
+              email: {
+                contains: q,
+                mode: "insensitive",
+              },
+            },
+            {
+              orderNumber: {
+                contains: q,
+                mode: "insensitive",
+              },
+            },
+          ],
+        }
+      : {}),
+  };
+
+  const orderBy: Prisma.OrderOrderByWithRelationInput =
+    sort === "newest"
+      ? { createdAt: "desc" }
+      : sort === "oldest"
+        ? { createdAt: "asc" }
+        : { createdAt: "desc" }; // fallback
+
+  const [total, orders] = await prisma.$transaction([
+    prisma.order.count({ where }),
+    prisma.order.findMany({
+      where,
+      orderBy,
+      skip: (page - 1) * limit,
+      take: limit,
+      include: {
+        items: true, // adjust if you have relation name
+        payments: true, // optional
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+    }),
+  ]);
+
+  const totalPages = Math.max(1, Math.ceil(total / limit));
+
+  return apiResponse("Orders fetched successfully", {
+    orders,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages,
+      hasNext: page < totalPages,
+      hasPrev: page > 1,
+    },
+  });
 };

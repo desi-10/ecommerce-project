@@ -26,7 +26,7 @@ export const GET = async (req: Request) => {
 
 export const POST = async (req: Request) => {
   try {
-    await requireAdminServerSession();
+    // await requireAdminServerSession();
     const body = await req.json();
     const valid = validateOrThrow(categorySchema, body);
 

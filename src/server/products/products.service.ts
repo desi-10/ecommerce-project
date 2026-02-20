@@ -5,10 +5,12 @@ import {
   ListProductsInput,
   UpdateProductInput,
 } from "./products.validators";
-import { decimal } from "./products.utils";
 import prisma from "@/lib/db";
 import { StatusCodes } from "http-status-codes";
-import { Prisma } from "../../../prisma/generated/prisma/client";
+
+import { Prisma } from "../../../prisma/generated/client";
+
+export const decimal = (n: number) => new Prisma.Decimal(n);
 // --------------------------
 // Common selectors
 // --------------------------
@@ -144,30 +146,30 @@ export const getProductsService = async (data: ListProductsInput) => {
           ? { name: "asc" }
           : { name: "desc" };
 
-  // const [total, products] = await prisma.$transaction([
-  //   prisma.product.count({ where }),
-  //   prisma.product.findMany({
-  //     where,
-  //     orderBy,
-  //     skip: (page - 1) * limit,
-  //     take: limit,
-  //     select: productSelect,
-  //   }),
-  // ]);
+  const [total, products] = await prisma.$transaction([
+    prisma.product.count({ where }),
+    prisma.product.findMany({
+      where,
+      orderBy,
+      skip: (page - 1) * limit,
+      take: limit,
+      select: productSelect,
+    }),
+  ]);
 
-  // const totalPages = Math.max(1, Math.ceil(total / limit));
+  const totalPages = Math.max(1, Math.ceil(total / limit));
 
-  // return apiResponse("Products fetched successfully", {
-  //   products,
-  //   pagination: {
-  //     page,
-  //     limit,
-  //     total,
-  //     totalPages,
-  //     hasNext: page < totalPages,
-  //     hasPrev: page > 1,
-  //   },
-  // });
+  return apiResponse("Products fetched successfully", {
+    products,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages,
+      hasNext: page < totalPages,
+      hasPrev: page > 1,
+    },
+  });
 };
 
 export const getProductByIdService = async (id: string) => {

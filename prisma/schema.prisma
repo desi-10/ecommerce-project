@@ -281,8 +281,8 @@ enum OrderStatus {
 
 model Order {
   id            String      @id @default(cuid())
-  userId        String
-  user          User        @relation(fields: [userId], references: [id], onDelete: Restrict)
+  userId        String?
+  user          User?        @relation(fields: [userId], references: [id], onDelete: Restrict)
 
   status        OrderStatus @default(PENDING)
 
@@ -344,8 +344,8 @@ enum PaymentStatus {
 
 model Payment {
   id            String          @id @default(cuid())
-  userId        String
-  user          User            @relation(fields: [userId], references: [id], onDelete: Restrict)
+  userId        String?
+  user          User?            @relation(fields: [userId], references: [id], onDelete: Restrict)
 
   orderId       String?
   order         Order?          @relation(fields: [orderId], references: [id], onDelete: SetNull)

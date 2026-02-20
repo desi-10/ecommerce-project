@@ -1,4 +1,3 @@
-import { statusCodes } from "better-auth";
 import { apiResponse } from "@/lib/api-response";
 import { ApiError } from "@/lib/api-error";
 import prisma from "@/lib/db";
@@ -7,6 +6,7 @@ import {
   ListCategorySchemaType,
   UpdateCategorySchemaType,
 } from "./categories.validators";
+import { StatusCodes } from "http-status-codes";
 
 const toSlug = (value: string) =>
   value
@@ -43,7 +43,7 @@ export const createCategoryService = async (data: CategorySchemaType) => {
   });
 
   if (exists) {
-    throw new ApiError("Category name already exists", statusCodes.CONFLICT);
+    throw new ApiError("Category name already exists", StatusCodes.CONFLICT);
   }
 
   const slug = await ensureUniqueSlug(data.name);
@@ -89,7 +89,7 @@ export const getCategoryService = async (query: ListCategorySchemaType) => {
   const totalPages = Math.max(1, Math.ceil(total / query.limit));
 
   return apiResponse("Categories fetched successfully", {
-    items,
+    categories: items,
     pagination: {
       page: query.page,
       limit: query.limit,
@@ -103,7 +103,7 @@ export const getCategoryService = async (query: ListCategorySchemaType) => {
 
 export const getCategoryByIdService = async (id: string) => {
   if (!id) {
-    throw new ApiError("Category id is required", statusCodes.BAD_REQUEST);
+    throw new ApiError("Category id is required", StatusCodes.BAD_REQUEST);
   }
 
   const category = await prisma.category.findUnique({
@@ -118,7 +118,7 @@ export const getCategoryByIdService = async (id: string) => {
   });
 
   if (!category) {
-    throw new ApiError("Category not found", statusCodes.NOT_FOUND);
+    throw new ApiError("Category not found", StatusCodes.NOT_FOUND);
   }
 
   return apiResponse("Category fetched successfully", category);
@@ -129,7 +129,7 @@ export const updateCategoryService = async (
   data: UpdateCategorySchemaType,
 ) => {
   if (!id) {
-    throw new ApiError("Category id is required", statusCodes.BAD_REQUEST);
+    throw new ApiError("Category id is required", StatusCodes.BAD_REQUEST);
   }
 
   const existing = await prisma.category.findUnique({
@@ -138,7 +138,7 @@ export const updateCategoryService = async (
   });
 
   if (!existing) {
-    throw new ApiError("Category not found", statusCodes.NOT_FOUND);
+    throw new ApiError("Category not found", StatusCodes.NOT_FOUND);
   }
 
   if (data.name && data.name !== existing.name) {
@@ -148,7 +148,7 @@ export const updateCategoryService = async (
     });
 
     if (duplicate) {
-      throw new ApiError("Category name already exists", statusCodes.CONFLICT);
+      throw new ApiError("Category name already exists", StatusCodes.CONFLICT);
     }
   }
 
@@ -168,7 +168,7 @@ export const updateCategoryService = async (
 
 export const deleteCategoryService = async (id: string) => {
   if (!id) {
-    throw new ApiError("Category id is required", statusCodes.BAD_REQUEST);
+    throw new ApiError("Category id is required", StatusCodes.BAD_REQUEST);
   }
 
   const existing = await prisma.category.findUnique({
@@ -183,13 +183,13 @@ export const deleteCategoryService = async (id: string) => {
   });
 
   if (!existing) {
-    throw new ApiError("Category not found", statusCodes.NOT_FOUND);
+    throw new ApiError("Category not found", StatusCodes.NOT_FOUND);
   }
 
   if (existing.products.length > 0) {
     throw new ApiError(
       "Cannot delete category with products",
-      statusCodes.CONFLICT,
+      StatusCodes.CONFLICT,
     );
   }
 

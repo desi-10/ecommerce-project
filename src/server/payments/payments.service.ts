@@ -4,15 +4,16 @@ import { ApiError } from "@/lib/api-error";
 import prisma from "@/lib/db";
 import { Currency } from "@noelzappy/voltax";
 import {
-  CreatePaymentInput,
+  createOrderPaymentInput,
   CreatePaymentRecordInput,
   ListPaymentsInput,
   UpdatePaymentRecordInput,
 } from "./payment.validators";
 import StatusCodes from "http-status-codes";
+import { createOrderService } from "../order/orders.service";
 
-export const initiateService = async (
-  data: CreatePaymentInput,
+export const initiateOrderService = async (
+  data: createOrderPaymentInput,
   userId: string,
 ) => {
   const payment = await paystack.initiatePayment({
@@ -21,13 +22,19 @@ export const initiateService = async (
     currency: Currency.GHS,
   });
 
+  const order = await createOrderService({
+    items: data.items,
+    userId: data.userId, //change this
+    coupon: data.couponCode,
+  });
+
   await prisma.payment.create({
     data: {
       provider: "PAYSTACK",
       amount: data.amount,
       metadata: data.metadata,
-      orderId: data.orderId,
-      userId: userId,
+      orderId: order.data.id,
+      userId: order.data.userId || null,
       reference: payment.reference,
       status: "PENDING",
     },
@@ -70,7 +77,7 @@ export const listPaymentsService = async (
   const totalPages = Math.max(1, Math.ceil(total / query.limit));
 
   return apiResponse("Payments fetched successfully", {
-    items,
+    payments: items,
     pagination: {
       page: query.page,
       limit: query.limit,

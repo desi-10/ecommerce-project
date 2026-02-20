@@ -1,14 +1,20 @@
-import { Prisma } from "@/generated/prisma/client";
-
+// validators/products.utils.ts  ✅ safe for frontend + backend
 export const toNumber = (v: unknown) => {
   if (v === "" || v === null || v === undefined) return undefined;
-  const n = typeof v === "string" ? Number(v) : (v as number);
-  return Number.isFinite(n) ? n : undefined;
+
+  if (typeof v === "number") return Number.isFinite(v) ? v : undefined;
+
+  if (typeof v === "string") {
+    const trimmed = v.trim();
+    if (!trimmed) return undefined;
+    const n = Number(trimmed);
+    return Number.isFinite(n) ? n : undefined;
+  }
+
+  return undefined;
 };
 
 export const toInt = (v: unknown) => {
   const n = toNumber(v);
   return n === undefined ? undefined : Math.trunc(n);
 };
-
-export const decimal = (n: number) => new Prisma.Decimal(n);

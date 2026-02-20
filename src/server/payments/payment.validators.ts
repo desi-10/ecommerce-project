@@ -1,6 +1,29 @@
 import { z } from "zod";
 import { toInt } from "../products/products.utils";
 
+export const createOrderPayment = z.object({
+  email: z.string().email(),
+  amount: z.number().positive(),
+  orderId: z.string().optional(),
+  metadata: z.string().optional(),
+  userId: z.string().optional(),
+  couponCode: z
+    .string()
+    .trim()
+    .min(3)
+    .max(30)
+    .transform((s) => s.toUpperCase().replace(/\s+/g, ""))
+    .optional(),
+  items: z
+    .array(
+      z.object({
+        variantId: z.string().min(1),
+        quantity: z.number().int().positive(),
+      }),
+    )
+    .min(1),
+});
+
 export const createPayment = z.object({
   email: z.string().email(),
   amount: z.number().positive(),
@@ -37,6 +60,7 @@ export const listPaymentsSchema = z.object({
     .optional(),
 });
 
+export type createOrderPaymentInput = z.infer<typeof createOrderPayment>;
 export type CreatePaymentInput = z.infer<typeof createPayment>;
 export type CreatePaymentRecordInput = z.infer<
   typeof createPaymentRecordSchema
