@@ -1,46 +1,39 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import ShopSidebar from "./shop-sidebar";
 import ShopToolbar from "./shop-toolbar";
 import ProductGridCard from "./product-grid";
 import ProductListRow from "./product-list";
 import PaginationBar from "./pagination";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "../ui/sheet";
+import {
+    Sheet,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
+} from "../ui/sheet";
+import { useGetProducts } from "@/hooks/use-product";
 
 type ViewMode = "grid" | "list";
 type SortMode = "latest" | "price_low" | "price_high";
 
-export const ALL_PRODUCTS = Array.from({ length: 18 }).map((_, i) => ({
-    id: `${i + 1} `,
-    brand: "",
-    name: [
-        "NYX Beauty Couton Palette Makeup 12",
-        "WarGold 100% Juice Milk 360ml",
-        "Beef Loin Fresh Frozen Loin",
-        "Pineapple (Imported) 500g",
-        "Organic Oranges Valencia 1kg",
-        "Lovely Cut Strawberry 1kg",
-        "Package 2 60mm Beadlock Rim Tire",
-        "Beats Mix On Ear Bluetooth Headphones",
-        "RLA Pro Mini Bluetooth Speaker",
-        "Acrylic Cover Case for iPhone X (Clear)",
-        "HP Chromebook CB 11.6 Ultra",
-        "GoPro Karma 4K Camera & Drone",
-        "Apple TV 4K — 32GB (4th Gen)",
-        "EDM 2.4 Plus Kit Hider & Charger",
-        "Bose Ear Phone Bluetooth",
-        "Apple Macbook Air Retina 12",
-        "YI 11 Inch 2K TV",
-        "Samsung Galaxy A10 4GB RAM",
-    ][i],
-    price: [16.19, 17.99, 39.99, 52.99, 83.99, 87.99, 79.99, 31.99, 59.99, 16.99, 97.99, 89.99, 96.99, 75.99, 22.99, 84.99, 95.99, 86.99][i],
-    oldPrice: i % 4 === 0 ? [25.99, 19.99, 49.99, 69.99][i % 4] : null,
-    rating: 4,
-    reviews: 2,
-    image: "/martfury/product.png",
-}));
+// If your Product components expect these fields, normalize your API product here.
+function normalizeProduct(p: any) {
+    return {
+        id: String(p.id),
+        brand: p.brand ?? "",
+        name: p.name ?? "",
+        price: Number(p.salePrice ?? p.price ?? 0),
+        oldPrice: p.salePrice ? Number(p.price ?? 0) : (p.oldPrice ?? null),
+        rating: p.rating ?? 4,
+        reviews: p.reviews ?? 0,
+        image: p.image ?? p.images?.[0]?.url ?? p.images?.[0] ?? "/martfury/product.png",
+        // keep the rest if needed:
+        ...p,
+    };
+}
 
 export default function ShopResultsWithSidebar() {
     const [view, setView] = useState<ViewMode>("grid");
@@ -49,14 +42,41 @@ export default function ShopResultsWithSidebar() {
 
     const pageSize = 12;
 
-    const sorted = useMemo(() => {
-        const items = [...ALL_PRODUCTS];
-        if (sort === "price_low") items.sort((a, b) => a.price - b.price);
-        if (sort === "price_high") items.sort((a, b) => b.price - a.price);
-        return items;
+    const { data: productsData, isLoading, isError } = useGetProducts();
+
+    // Your current shape: productsData?.data.products
+    const rawProducts = productsData?.data?.products ?? [];
+
+    // normalize so ProductGridCard/ProductListRow always get what they expect
+    const products = useMemo(() => rawProducts.map(normalizeProduct), [rawProducts]);
+
+    // when sort changes, ensure page resets
+    useEffect(() => {
+        setPage(1);
     }, [sort]);
 
-    const totalPages = Math.ceil(sorted.length / pageSize);
+    const sorted = useMemo(() => {
+        const items = [...products];
+
+        if (sort === "price_low") items.sort((a, b) => (a.price ?? 0) - (b.price ?? 0));
+        if (sort === "price_high") items.sort((a, b) => (b.price ?? 0) - (a.price ?? 0));
+
+        // "latest": if you have createdAt, sort by it; otherwise leave order as-is
+        if (sort === "latest" && items[0]?.createdAt) {
+            items.sort(
+                (a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            );
+        }
+
+        return items;
+    }, [products, sort]);
+
+    const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize));
+
+    // keep page within range when data changes
+    useEffect(() => {
+        setPage((p) => Math.min(Math.max(1, p), totalPages));
+    }, [totalPages]);
 
     const paged = useMemo(() => {
         const start = (page - 1) * pageSize;
@@ -73,7 +93,7 @@ export default function ShopResultsWithSidebar() {
             {/* Main */}
             <section className="min-w-0">
                 {/* Mobile: Filter button opens sidebar */}
-                <div className="md:hidden mb-3 flex items-center justify-between">
+                <div className="mb-3 flex items-center justify-between md:hidden">
                     <Sheet>
                         <SheetTrigger asChild>
                             <Button variant="outline" className="rounded-sm">
@@ -81,7 +101,7 @@ export default function ShopResultsWithSidebar() {
                             </Button>
                         </SheetTrigger>
                         <SheetContent side="left" className="w-[320px] p-0">
-                            <SheetHeader className="px-4 py-3 border-b">
+                            <SheetHeader className="border-b px-4 py-3">
                                 <SheetTitle>Filters</SheetTitle>
                             </SheetHeader>
                             <div className="p-4">
@@ -90,11 +110,13 @@ export default function ShopResultsWithSidebar() {
                         </SheetContent>
                     </Sheet>
 
-                    <div className="text-xs text-muted-foreground">{ALL_PRODUCTS.length} products found</div>
+                    <div className="text-xs text-muted-foreground">
+                        {products.length} products found
+                    </div>
                 </div>
 
                 <ShopToolbar
-                    count={ALL_PRODUCTS.length}
+                    count={products.length}
                     view={view}
                     onViewChange={setView}
                     sort={sort}
@@ -104,22 +126,35 @@ export default function ShopResultsWithSidebar() {
                     }}
                 />
 
-                {/* Results */}
-                {view === "grid" ? (
-                    <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 lg:grid-cols-4">
-                        {paged.map((p) => (
-                            <ProductGridCard key={p.id} p={p} />
-                        ))}
-                    </div>
+                {/* Loading / Error */}
+                {isLoading ? (
+                    <div className="mt-6 text-sm text-muted-foreground">Loading products...</div>
+                ) : isError ? (
+                    <div className="mt-6 text-sm text-red-600">Failed to load products.</div>
                 ) : (
-                    <div className="mt-4 space-y-4">
-                        {paged.map((p) => (
-                            <ProductListRow key={p.id} p={p} />
-                        ))}
-                    </div>
-                )}
+                    <>
+                        {/* Results */}
+                        {view === "grid" ? (
+                            <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 lg:grid-cols-4">
+                                {paged.map((p) => (
+                                    <ProductGridCard key={p.id} p={p} />
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="mt-4 space-y-4">
+                                {paged.map((p) => (
+                                    <ProductListRow key={p.id} p={p} />
+                                ))}
+                            </div>
+                        )}
 
-                <PaginationBar page={page} totalPages={totalPages} onChange={setPage} />
+                        <PaginationBar
+                            page={page}
+                            totalPages={totalPages}
+                            onChange={setPage}
+                        />
+                    </>
+                )}
             </section>
         </div>
     );

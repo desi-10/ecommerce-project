@@ -369,13 +369,7 @@ export const getOrdersService = async (data: ListOrderInput) => {
       ? {
           OR: [
             {
-              email: {
-                contains: q,
-                mode: "insensitive",
-              },
-            },
-            {
-              orderNumber: {
+              userId: {
                 contains: q,
                 mode: "insensitive",
               },

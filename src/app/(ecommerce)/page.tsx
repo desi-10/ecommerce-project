@@ -8,22 +8,20 @@ import ProductSection from "@/components/product";
 import PromoBanners from "@/components/promo";
 import ProductGridCard from "@/components/shop/product-grid";
 import ProductListRow from "@/components/shop/product-list";
-import { ALL_PRODUCTS } from "@/components/shop/shop-results";
+// import { ALL_PRODUCTS } from "@/components/shop/shop-results";
 import Wrapper from "@/components/wrapper";
+import { useGetProducts } from "@/hooks/use-product";
 import Image from "next/image";
 import { useMemo } from "react";
 
 
 export default function Page() {
-  const sorted = useMemo(() => {
-    const items = [...ALL_PRODUCTS];
-    return items;
-  }, []);
-
+  const { data: productsData, isLoading, isError } = useGetProducts();
+  const products = productsData?.data.products || []
 
   const paged = useMemo(() => {
-    return sorted.slice(0, 4);
-  }, [sorted]);
+    return products?.slice(0, 4);
+  }, [products]);
 
 
   return (
