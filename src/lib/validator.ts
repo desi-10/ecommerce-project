@@ -1,6 +1,6 @@
 import z from "zod";
 import { ApiError } from "./api-error";
-import { statusCodes } from "better-auth";
+import StatusCodes from "http-status-codes";
 
 // ✅ generic validator: pass (schema, body/query) and get typed data back
 export function validateOrThrow<T extends z.ZodTypeAny>(
@@ -10,7 +10,7 @@ export function validateOrThrow<T extends z.ZodTypeAny>(
   const parsed = schema.safeParse(input);
 
   if (!parsed.success) {
-    throw new ApiError("Validation error", statusCodes.UNPROCESSABLE_ENTITY);
+    throw new ApiError("Validation error", StatusCodes.UNPROCESSABLE_ENTITY);
   }
 
   return parsed.data as z.infer<T>;

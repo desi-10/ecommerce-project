@@ -2,14 +2,13 @@ import { apiResponse } from "@/lib/api-response";
 import { ApiError } from "@/lib/api-error";
 import {
   CreateProductInput,
-  listProductsSchema,
+  ListProductsInput,
   UpdateProductInput,
 } from "./products.validators";
 import { decimal } from "./products.utils";
-import { Prisma } from "@/generated/prisma/client";
-import { statusCodes } from "better-auth";
 import prisma from "@/lib/db";
-
+import { StatusCodes } from "http-status-codes";
+import { Prisma } from "../../../prisma/generated/prisma/client";
 // --------------------------
 // Common selectors
 // --------------------------
@@ -48,7 +47,7 @@ export const createProductService = async (data: CreateProductInput) => {
       if (set.size !== skus.length) {
         throw new ApiError(
           "Duplicate SKU in variants payload.",
-          statusCodes.BAD_REQUEST,
+          StatusCodes.BAD_REQUEST,
         );
       }
     }
@@ -121,8 +120,8 @@ export const createProductService = async (data: CreateProductInput) => {
   return apiResponse("Product created successfully", result);
 };
 
-export const getProductsService = async (raw: unknown) => {
-  const { page, limit, q, status, sort } = listProductsSchema.parse(raw);
+export const getProductsService = async (data: ListProductsInput) => {
+  const { page, limit, q, status, sort } = data;
 
   const where: Prisma.ProductWhereInput = {
     ...(status ? { status } : {}),
@@ -145,30 +144,30 @@ export const getProductsService = async (raw: unknown) => {
           ? { name: "asc" }
           : { name: "desc" };
 
-  const [total, data] = await prisma.$transaction([
-    prisma.product.count({ where }),
-    prisma.product.findMany({
-      where,
-      orderBy,
-      skip: (page - 1) * limit,
-      take: limit,
-      select: productSelect,
-    }),
-  ]);
+  // const [total, products] = await prisma.$transaction([
+  //   prisma.product.count({ where }),
+  //   prisma.product.findMany({
+  //     where,
+  //     orderBy,
+  //     skip: (page - 1) * limit,
+  //     take: limit,
+  //     select: productSelect,
+  //   }),
+  // ]);
 
-  const totalPages = Math.max(1, Math.ceil(total / limit));
+  // const totalPages = Math.max(1, Math.ceil(total / limit));
 
-  return apiResponse("Products fetched successfully", {
-    data,
-    pagination: {
-      page,
-      limit,
-      total,
-      totalPages,
-      hasNext: page < totalPages,
-      hasPrev: page > 1,
-    },
-  });
+  // return apiResponse("Products fetched successfully", {
+  //   products,
+  //   pagination: {
+  //     page,
+  //     limit,
+  //     total,
+  //     totalPages,
+  //     hasNext: page < totalPages,
+  //     hasPrev: page > 1,
+  //   },
+  // });
 };
 
 export const getProductByIdService = async (id: string) => {
@@ -177,7 +176,7 @@ export const getProductByIdService = async (id: string) => {
     select: productSelect,
   });
 
-  if (!product) throw new ApiError("Product not found", statusCodes.NOT_FOUND);
+  if (!product) throw new ApiError("Product not found", StatusCodes.NOT_FOUND);
 
   return apiResponse("Product fetched successfully", product);
 };
@@ -193,7 +192,7 @@ export const updateProductService = async (
     });
 
     if (!existing)
-      throw new ApiError("Product not found", statusCodes.NOT_FOUND);
+      throw new ApiError("Product not found", StatusCodes.NOT_FOUND);
 
     // update product core
     await tx.product.update({
@@ -219,7 +218,7 @@ export const updateProductService = async (
     if (set.size !== skus.length) {
       throw new ApiError(
         "Duplicate SKU in variants payload.",
-        statusCodes.BAD_REQUEST,
+        StatusCodes.BAD_REQUEST,
       );
     }
 
@@ -263,7 +262,7 @@ export const updateProductService = async (
         if (variant.productId !== id) {
           throw new ApiError(
             "Variant does not belong to this product.",
-            statusCodes.BAD_REQUEST,
+            StatusCodes.BAD_REQUEST,
           );
         }
 
@@ -298,7 +297,7 @@ export const updateProductService = async (
     if (count === 0) {
       throw new ApiError(
         "A product must have at least one variant.",
-        statusCodes.BAD_REQUEST,
+        StatusCodes.BAD_REQUEST,
       );
     }
 
@@ -322,7 +321,7 @@ export const deleteProductService = async (
     select: { id: true, status: true },
   });
 
-  if (!exists) throw new ApiError("Product not found", statusCodes.NOT_FOUND);
+  if (!exists) throw new ApiError("Product not found", StatusCodes.NOT_FOUND);
 
   if (opts?.soft) {
     const updated = await prisma.product.update({

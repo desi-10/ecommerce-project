@@ -8,9 +8,13 @@ import {
   listProductsSchema,
 } from "@/server/products/products.validators";
 import { validateOrThrow } from "@/lib/validator";
+import { handleApiError } from "@/lib/api-handler";
+import { requireRequestSession } from "@/lib/auth-guards";
 
 export const GET = async (req: Request) => {
   try {
+    await requireRequestSession(req);
+
     const url = new URL(req.url);
 
     const rawQuery = Object.fromEntries(url.searchParams.entries());
@@ -19,29 +23,19 @@ export const GET = async (req: Request) => {
     const result = await getProductsService(query);
     return NextResponse.json(result);
   } catch (err) {
-    // if validateOrThrow threw a NextResponse, return it
-    if (err instanceof Response) return err;
-
-    return NextResponse.json(
-      { message: "Internal server error" },
-      { status: 500 },
-    );
+    return handleApiError(err);
   }
 };
 
 export const POST = async (req: Request) => {
   try {
+    await requireRequestSession(req);
+
     const body = await req.json();
     const valid = validateOrThrow(createProductSchema, body);
     const result = await createProductService(valid);
     return NextResponse.json(result);
   } catch (err) {
-    // if validateOrThrow threw a NextResponse, return it
-    if (err instanceof Response) return err;
-
-    return NextResponse.json(
-      { message: "Internal server error" },
-      { status: 500 },
-    );
+    return handleApiError(err);
   }
 };

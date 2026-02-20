@@ -1,92 +1,49 @@
 // app/checkout/page.tsx
 "use client";
 
+import { Checkbox } from "@/components/ui/checkbox";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { ShoppingBag } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import z from "zod";
 
-type CartItem = {
-    id: string;
-    name: string;
-    variant?: string;
-    price: number;
-    qty: number;
-    image: string;
-};
+const checkoutSchema = z.object({
+    email: z.email(),
+    firstName: z.string(),
+    lastName: z.string(),
+    country: z.string(),
+    state: z.string(),
+    discount: z.string().optional(),
+    phone: z.string(),
+    company: z.string().optional(),
+    address: z.string(),
+    suburb: z.string().optional(),
+    postcode: z.string().optional()
+})
+type CheckoutType = z.infer<typeof checkoutSchema>
 
 export default function CheckoutPage() {
-    const [email, setEmail] = useState("");
-    const [news, setNews] = useState(false);
 
-    const [firstName, setFirstName] = useState("");
-    const [lastName, setLastName] = useState("");
-    const [company, setCompany] = useState("");
-    const [address, setAddress] = useState("");
-    const [suburb, setSuburb] = useState("");
-    const [country, setCountry] = useState("Australia");
-    const [stateTerritory, setStateTerritory] = useState("");
-    const [postcode, setPostcode] = useState("");
-    const [phone, setPhone] = useState("");
+    const { register, handleSubmit } = useForm<CheckoutType>({
+        resolver: zodResolver(checkoutSchema)
+    })
 
-    const [discount, setDiscount] = useState("");
+    const [gateway, setGateway] = useState<"stripe" | "paystack">("stripe");
 
-    // demo items (replace with your cart store)
-    const items: CartItem[] = [
-        {
-            id: "1",
-            name: "Cypress Wallet - Dark Chocolate",
-            price: 99.95,
-            qty: 1,
-            image: "/martfury/product.png",
-        },
-        {
-            id: "2",
-            name: "Ashford Unisex Sandal - Brown",
-            variant: "8US / Brown",
-            price: 99.95,
-            qty: 1,
-            image: "/martfury/product.png",
-        },
-    ];
-
-    const subtotal = useMemo(
-        () => items.reduce((sum, i) => sum + i.price * i.qty, 0),
-        [items]
-    );
-
-    // Shopify screenshot shows shipping calculated later
-    const shippingText = "Calculated at next step";
-
-    // optional: fake tax line like screenshot
-    const tax = 18.18;
-    const total = subtotal; // screenshot total == subtotal (shipping later)
-
-    function onContinue() {
-        // Replace with: create checkout session / payment intent etc
-        console.log({
-            email,
-            news,
-            firstName,
-            lastName,
-            company,
-            address,
-            suburb,
-            country,
-            stateTerritory,
-            postcode,
-            phone,
-            discount,
-            items,
-        });
-        alert("Continue to shipping (demo)");
+    const onSubmit = async (data: CheckoutType) => {
+        if (gateway === "stripe") {
+            console.log(data);
+            return
+        }
+        console.log(data);
     }
-
-    const [gateway, setGateway] = useState("stripe");
 
     return (
         <main className="min-h-screen bg-white">
-            <div className="mx-auto max-w-[1100px] px-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="mx-auto max-w-[1100px] px-4">
                 <div className="pt-10 flex justify-between items-center">
                     <h1 className="text-2xl font-semibold text-neutral-900">
                         Example Shopify Store
@@ -138,20 +95,14 @@ export default function CheckoutPage() {
                                 <div>
                                     <label className="sr-only">Email</label>
                                     <input
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
+                                        {...register}
                                         placeholder="Email"
                                         className="h-11 w-full rounded-md border border-neutral-200 px-3 text-sm outline-none focus:border-neutral-400"
                                     />
                                 </div>
 
                                 <label className="flex items-center gap-2 text-sm text-neutral-700">
-                                    <input
-                                        type="checkbox"
-                                        checked={news}
-                                        onChange={(e) => setNews(e.target.checked)}
-                                        className="h-4 w-4 rounded border-neutral-300"
-                                    />
+                                    <Checkbox />
                                     Email me with news and offers
                                 </label>
                             </div>
@@ -163,36 +114,31 @@ export default function CheckoutPage() {
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <input
-                                    value={firstName}
-                                    onChange={(e) => setFirstName(e.target.value)}
+                                    {...register("firstName")}
                                     placeholder="First name"
                                     className="h-11 rounded-md border border-neutral-200 px-3 text-sm outline-none focus:border-neutral-400"
                                 />
                                 <input
-                                    value={lastName}
-                                    onChange={(e) => setLastName(e.target.value)}
+                                    {...register("lastName")}
                                     placeholder="Last name"
                                     className="h-11 rounded-md border border-neutral-200 px-3 text-sm outline-none focus:border-neutral-400"
                                 />
                             </div>
 
                             <input
-                                value={company}
-                                onChange={(e) => setCompany(e.target.value)}
+                                {...register("company")}
                                 placeholder="Company (optional)"
                                 className="mt-3 h-11 w-full rounded-md border border-neutral-200 px-3 text-sm outline-none focus:border-neutral-400"
                             />
 
                             <input
-                                value={address}
-                                onChange={(e) => setAddress(e.target.value)}
+                                {...register("address")}
                                 placeholder="Address"
                                 className="mt-3 h-11 w-full rounded-md border border-neutral-200 px-3 text-sm outline-none focus:border-neutral-400"
                             />
 
                             <input
-                                value={suburb}
-                                onChange={(e) => setSuburb(e.target.value)}
+                                {...register("suburb")}
                                 placeholder="Suburb"
                                 className="mt-3 h-11 w-full rounded-md border border-neutral-200 px-3 text-sm outline-none focus:border-neutral-400"
                             />
@@ -201,8 +147,7 @@ export default function CheckoutPage() {
                                 <div>
                                     <div className="relative">
                                         <select
-                                            value={country}
-                                            onChange={(e) => setCountry(e.target.value)}
+                                            {...register("country")}
                                             className="h-11 w-full appearance-none rounded-md border border-neutral-200 bg-white px-3 pr-9 text-sm outline-none focus:border-neutral-400"
                                         >
                                             <option>Australia</option>
@@ -221,8 +166,7 @@ export default function CheckoutPage() {
                                 <div>
                                     <div className="relative">
                                         <select
-                                            value={stateTerritory}
-                                            onChange={(e) => setStateTerritory(e.target.value)}
+                                            {...register("state")}
                                             className="h-11 w-full appearance-none rounded-md border border-neutral-200 bg-white px-3 pr-9 text-sm outline-none focus:border-neutral-400"
                                         >
                                             <option value="">State/territory</option>
@@ -244,8 +188,7 @@ export default function CheckoutPage() {
 
                                 <div>
                                     <input
-                                        value={postcode}
-                                        onChange={(e) => setPostcode(e.target.value)}
+                                        {...register("postcode")}
                                         placeholder="Postcode"
                                         className="h-11 w-full rounded-md border border-neutral-200 px-3 text-sm outline-none focus:border-neutral-400"
                                     />
@@ -254,8 +197,7 @@ export default function CheckoutPage() {
                             </div>
 
                             <input
-                                value={phone}
-                                onChange={(e) => setPhone(e.target.value)}
+                                {...register("phone")}
                                 placeholder="Phone"
                                 className="mt-3 h-11 w-full rounded-md border border-neutral-200 px-3 text-sm outline-none focus:border-neutral-400"
                             />
@@ -326,8 +268,7 @@ export default function CheckoutPage() {
                             {/* Discount */}
                             <div className="flex gap-3">
                                 <input
-                                    value={discount}
-                                    onChange={(e) => setDiscount(e.target.value)}
+                                    {...register("discount")}
                                     placeholder="Gift card or discount code"
                                     className="h-11 flex-1 rounded-md border border-neutral-200 px-3 text-sm outline-none focus:border-neutral-400"
                                 />
@@ -425,7 +366,7 @@ export default function CheckoutPage() {
 
 
                 </div>
-            </div>
+            </form>
         </main>
     );
 }
