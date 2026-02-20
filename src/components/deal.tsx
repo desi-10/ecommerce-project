@@ -74,6 +74,7 @@ const toNumberPrice = (value: string) => {
 };
 
 export default function DealOfDay() {
+
     // ✅ subscribe to state (reactive)
     const cartItems = useCartStore((s) => s.items);
     const wishItems = useWishlistStore((s) => s.items);

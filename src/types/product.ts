@@ -16,13 +16,17 @@ export type Variant = {
   inventory: Inventory;
 };
 
+export type ProductImage = { id: string; url: string };
+
 export type Product = {
   id: string;
   name: string;
   description: string;
   status: ProductStatus;
-  createdAt: string; // ISO
-  updatedAt: string; // ISO
+  createdAt: string;
+  updatedAt: string;
+  images?: ProductImage[]; // <-- if API returns it
+  brand?: string | null; // <-- if API returns it
   variants: Variant[];
 };
 

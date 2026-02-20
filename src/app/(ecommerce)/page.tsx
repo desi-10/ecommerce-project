@@ -8,7 +8,6 @@ import ProductSection from "@/components/product";
 import PromoBanners from "@/components/promo";
 import ProductGridCard from "@/components/shop/product-grid";
 import ProductListRow from "@/components/shop/product-list";
-// import { ALL_PRODUCTS } from "@/components/shop/shop-results";
 import Wrapper from "@/components/wrapper";
 import { useGetProducts } from "@/hooks/use-product";
 import Image from "next/image";
@@ -42,6 +41,7 @@ export default function Page() {
 
             <ProductSection
               title="Popular Smartphones & Tablets"
+              category=""
             />
             {/* <ProductSection
             title="Best Seller Laptops & Sounds"
@@ -96,6 +96,7 @@ export default function Page() {
 
             <ProductSection
               title="Technology Toys Recommended For You"
+              category=""
             />
           </div>
         </Wrapper>

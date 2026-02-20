@@ -62,7 +62,7 @@ export default function ProductMain() {
             </section>
 
             {/* Mobile sticky buy bar */}
-            <MobileStickyBuyBar product={product} selectedVariant={selectedVariant} />
+            {/* <MobileStickyBuyBar product={product} selectedVariant={selectedVariant} /> */}
         </>
     );
 }

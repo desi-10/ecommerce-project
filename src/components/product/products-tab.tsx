@@ -35,8 +35,8 @@ export default function ProductTabs({ product, selectedVariant }: Props) {
     return (
         <section className="border-t border-neutral-200">
             <Tabs defaultValue="description">
-                <div className="p-4 border-b">
-                    <TabsList className="bg-transparent flex flex-wrap gap-6 border-neutral-200">
+                <div className="p-4 border-b overflow-x-auto">
+                    <TabsList className="bg-transparent flex gap-6 min-w-max">
                         {[
                             ["description", "Description"],
                             ["spec", "Specification"],
@@ -44,7 +44,11 @@ export default function ProductTabs({ product, selectedVariant }: Props) {
                             ["reviews", "Reviews"],
                             ["qa", "Questions & Answers"],
                         ].map(([v, label]) => (
-                            <TabsTrigger key={v} value={v} className="p-5">
+                            <TabsTrigger
+                                key={v}
+                                value={v}
+                                className="p-5 whitespace-nowrap"
+                            >
                                 {label}
                             </TabsTrigger>
                         ))}

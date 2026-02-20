@@ -6,62 +6,80 @@ import { Button } from "@/components/ui/button";
 import { Heart, ShoppingCart, Check, BarChart3 } from "lucide-react";
 import { useCartStore } from "@/stores/cart.store";
 import { useWishlistStore } from "@/stores/wishlist.store";
+import type { Product } from "@/types/product";
 
+function pickDisplayVariant(p: Product) {
+    if (!p.variants?.length) return null;
 
-export default function ProductGridCard({
-    p,
-}: {
-    p: {
-        id: string; // ✅ ADD id (variantId or productId)
-        brand: string;
-        name: string;
-        price: number;
-        oldPrice: number | null;
-        rating: number;
-        reviews: number;
-        image: string;
-    };
-}) {
+    // Prefer a variant with sale price > 0, else first
+    const withSale = p.variants.find((v) => Number(v.salePrice) > 0);
+    return withSale ?? p.variants[0];
+}
+
+export default function ProductGridCard({ p }: { p: Product }) {
     const addItem = useCartStore((s) => s.addItem);
-    const inCart = useCartStore((s) => s.has(p.id));
 
     const toggleWish = useWishlistStore((s) => s.toggle);
-    const inWish = useWishlistStore((s) => s.has(p.id));
+
+    const v = pickDisplayVariant(p);
+
+    // Use variantId as the unique cart/wish key (best practice)
+    const keyId = v?.id ? String(v.id) : String(p.id);
+
+    const inCart = useCartStore((s) => s.has(keyId));
+    const inWish = useWishlistStore((s) => s.has(keyId));
+
+    const price = v ? Number(v.salePrice || v.price || 0) : 0;
+    const oldPrice =
+        v && Number(v.salePrice) > 0 ? Number(v.price || 0) : null;
+
+    const stock = v?.inventory?.stock ?? 0;
+    const disabled = !v || stock <= 0;
+
+    // Your types don't include these yet — safe defaults
+    const imageSrc = "/martfury/product.png";
+    const brand = ""; // or p.brand ?? "" if you add later
+    const reviews = 0;
 
     const productHref = `/shop/${p.id}`;
 
     return (
-        <div className="group border border-neutral-200 bg-white p-3 hover:shadow-sm transition">
+        <div className="group border border-neutral-200 bg-white p-3 transition hover:shadow-sm">
             {/* Image + hover overlay */}
             <div className="relative aspect-square w-full overflow-hidden">
                 <Image
-                    src={p.image}
+                    src={imageSrc}
                     alt={p.name}
                     fill
+                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                     className="object-contain p-4 transition-transform duration-200 group-hover:scale-[1.02]"
                 />
 
-                {/* Hover actions (like Woo/WordPress themes) */}
+                {/* Hover actions */}
                 <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                    <div className="pointer-events-auto translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition duration-200">
-                        <div className="flex items-center gap-2 rounded-full bg-white/90 p-2 shadow-sm border border-neutral-200">
+                    <div className="pointer-events-auto translate-y-2 opacity-0 transition duration-200 group-hover:translate-y-0 group-hover:opacity-100">
+                        <div className="flex items-center gap-2 rounded-full border border-neutral-200 bg-white/90 p-2 shadow-sm">
                             <Button
                                 size="icon"
                                 variant="outline"
                                 className="h-9 w-9"
                                 onClick={() =>
                                     toggleWish({
-                                        id: p.id,
+                                        id: keyId,
                                         name: p.name,
-                                        price: p.price,
-                                        image: p.image,
-                                        brand: p.brand,
+                                        price,
+                                        image: imageSrc,
+                                        brand,
+                                        // optionally save productId + variantId if your store supports it
+                                        // productId: p.id,
+                                        // variantId: v?.id,
                                     })
                                 }
                                 aria-label={inWish ? "Remove from wishlist" : "Add to wishlist"}
                             >
                                 <Heart
-                                    className={`h-4 w-4 ${inWish ? "fill-red-500 text-red-500" : "text-neutral-700"}`}
+                                    className={`h-4 w-4 ${inWish ? "fill-red-500 text-red-500" : "text-neutral-700"
+                                        }`}
                                 />
                             </Button>
 
@@ -69,24 +87,35 @@ export default function ProductGridCard({
                                 size="icon"
                                 variant="outline"
                                 className="h-9 w-9"
+                                disabled={disabled}
                                 onClick={() => {
-                                    if (!inCart) {
-                                        addItem({ id: p.id, name: p.name, price: p.price, image: p.image });
+                                    if (!inCart && v) {
+                                        addItem({
+                                            id: keyId, // store by variant id
+                                            name: p.name,
+                                            price,
+                                            image: imageSrc,
+                                            // optional extras
+                                            // productId: p.id,
+                                            // variantId: v.id,
+                                            // sku: v.sku,
+                                        });
                                     }
                                 }}
                                 aria-label={inCart ? "Already in cart" : "Add to cart"}
                             >
-                                {inCart ? <Check className="h-4 w-4" /> : <ShoppingCart className="h-4 w-4" />}
+                                {inCart ? (
+                                    <Check className="h-4 w-4" />
+                                ) : (
+                                    <ShoppingCart className="h-4 w-4" />
+                                )}
                             </Button>
 
                             <Button
                                 size="icon"
                                 variant="outline"
                                 className="h-9 w-9"
-                                onClick={() => {
-                                    // compare can come later; for now you can store a compare list similar to wishlist
-                                    console.log("compare", p.id);
-                                }}
+                                onClick={() => console.log("compare", p.id)}
                                 aria-label="Compare"
                             >
                                 <BarChart3 className="h-4 w-4" />
@@ -95,47 +124,52 @@ export default function ProductGridCard({
                     </div>
                 </div>
 
-                {/* Small badge top-left (optional) */}
-                {p.oldPrice && (
+                {/* Sale badge */}
+                {oldPrice !== null && oldPrice > price ? (
                     <div className="absolute left-2 top-2 rounded bg-red-500 px-2 py-1 text-[10px] font-semibold text-white">
                         Sale
                     </div>
-                )}
+                ) : null}
             </div>
 
             {/* Text content */}
-            <div className="mt-2 text-[11px] text-muted-foreground">{p.brand}</div>
+            {brand ? (
+                <div className="mt-2 text-[11px] text-muted-foreground">{brand}</div>
+            ) : null}
 
             <Link
                 href={productHref}
-                className="mt-1 text-xs font-medium text-blue-600 line-clamp-2 hover:underline cursor-pointer"
+                className="mt-1 line-clamp-2 cursor-pointer text-xs font-medium text-blue-600 hover:underline"
             >
                 {p.name}
             </Link>
 
             <div className="mt-1 text-xs text-yellow-500">
-                {"★★★★☆"} <span className="text-muted-foreground">({p.reviews})</span>
+                {"★★★★☆"} <span className="text-muted-foreground">({reviews})</span>
             </div>
 
             <div className="mt-1 flex items-center gap-2">
-                <div className="text-sm font-semibold">${p.price.toFixed(2)}</div>
-                {p.oldPrice && (
+                <div className="text-sm font-semibold">${price.toFixed(2)}</div>
+                {oldPrice !== null && oldPrice > price ? (
                     <div className="text-xs text-muted-foreground line-through">
-                        ${p.oldPrice.toFixed(2)}
+                        ${oldPrice.toFixed(2)}
                     </div>
-                )}
+                ) : null}
             </div>
 
-            {/* Bottom row button (optional, also like WP themes) */}
+            {/* Bottom button */}
             <div className="mt-3">
                 <Button
                     className="w-full"
                     variant={inCart ? "outline" : "default"}
+                    disabled={disabled}
                     onClick={() => {
-                        if (!inCart) addItem({ id: p.id, name: p.name, price: p.price, image: p.image });
+                        if (!inCart && v) {
+                            addItem({ id: keyId, name: p.name, price, image: imageSrc });
+                        }
                     }}
                 >
-                    {inCart ? "In cart ✓" : "Add to cart"}
+                    {disabled ? "Out of stock" : inCart ? "In cart ✓" : "Add to cart"}
                 </Button>
             </div>
         </div>
