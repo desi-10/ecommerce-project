@@ -6,23 +6,30 @@ import Wrapper from "./wrapper";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { Search } from "lucide-react";
+import { Search, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BottomSheet } from "@/components/sheets/bottom-sheet";
 import SearchSheetContent from "@/components/sheets/search-sheet";
+import { useSession } from "@/lib/auth-client";
+import { UserAvatar } from "./user/user-avatar";
 
-const links = [
+const baseLinks = [
     { label: "Home", href: "/", url: "https://img.icons8.com/ios/50/home--v1.png", alt: "home--v1" },
     { label: "Shop", href: "/shop", url: "https://img.icons8.com/dotty/80/shop.png", alt: "shop" },
     { label: "About Us", href: "/about", url: "https://img.icons8.com/ios/50/info--v1.png", alt: "info--v1" },
     { label: "Blog", href: "/blog", url: "https://img.icons8.com/ink/48/newspaper-.png", alt: "newspaper-" },
     { label: "Contact", href: "/contact", url: "https://img.icons8.com/ios/50/phone--v1.png", alt: "phone--v1" },
-    { label: "Dashboard", href: "/dashboard", url: "https://img.icons8.com/laces/64/web-design.png", alt: "web-design" },
 ];
+
+const adminLink = { label: "Dashboard", href: "/dashboard", url: "https://img.icons8.com/laces/64/web-design.png", alt: "web-design" };
 
 export default function Navbar() {
     const [searchOpen, setSearchOpen] = useState(false);
     const pathname = usePathname();
+    const { data: session } = useSession();
+    
+    const isAdmin = session?.user?.role === "admin";
+    const links = isAdmin ? [...baseLinks, adminLink] : baseLinks;
 
     return (
         <>
@@ -43,14 +50,25 @@ export default function Navbar() {
                                 </div>
                             ))}
                         </div>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setSearchOpen(true)}
-                            className="text-white hover:bg-primary-foreground/10"
-                        >
-                            <Search className="h-5 w-5" />
-                        </Button>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setSearchOpen(true)}
+                                className="text-white hover:bg-primary-foreground/10"
+                            >
+                                <Search className="h-5 w-5" />
+                            </Button>
+                            {session ? (
+                                <UserAvatar />
+                            ) : (
+                                <Link href="/auth/sign-in">
+                                    <Button variant="ghost" size="icon" className="text-white hover:bg-primary-foreground/10">
+                                        <LogIn className="h-5 w-5" />
+                                    </Button>
+                                </Link>
+                            )}
+                        </div>
                     </nav>
                 </Wrapper>
             </div>

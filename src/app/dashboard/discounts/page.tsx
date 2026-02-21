@@ -1,90 +1,53 @@
 "use client";
 
-import { ColumnDef } from "@tanstack/react-table";
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { DashboardDataTable } from "../_components/dashboard-data-table";
 import { DashboardShell } from "../_components/dashboard-shell";
 import { SummaryCards } from "../_components/summary-cards";
-
-type DiscountRow = {
-  id: string;
-  code: string;
-  type: "PERCENT" | "AMOUNT";
-  value: string;
-  usage: string;
-  status: "ACTIVE" | "INACTIVE";
-  expiresAt: string;
-};
-
-const discountRows: DiscountRow[] = [
-  {
-    id: "d_001",
-    code: "WELCOME10",
-    type: "PERCENT",
-    value: "10%",
-    usage: "128 / 500",
-    status: "ACTIVE",
-    expiresAt: "2026-03-15",
-  },
-  {
-    id: "d_002",
-    code: "SHIPFREE",
-    type: "AMOUNT",
-    value: "$5.00",
-    usage: "74 / 200",
-    status: "ACTIVE",
-    expiresAt: "2026-02-28",
-  },
-  {
-    id: "d_003",
-    code: "FLASH20",
-    type: "PERCENT",
-    value: "20%",
-    usage: "200 / 200",
-    status: "INACTIVE",
-    expiresAt: "2026-02-10",
-  },
-];
-
-const columns: ColumnDef<DiscountRow>[] = [
-  { accessorKey: "code", header: "Code" },
-  { accessorKey: "type", header: "Type" },
-  { accessorKey: "value", header: "Value" },
-  { accessorKey: "usage", header: "Usage" },
-  {
-    accessorKey: "status",
-    header: "Status",
-    cell: ({ row }) =>
-      row.original.status === "ACTIVE" ? (
-        <Badge variant="secondary">ACTIVE</Badge>
-      ) : (
-        <Badge variant="outline">INACTIVE</Badge>
-      ),
-  },
-  { accessorKey: "expiresAt", header: "Expires" },
-];
+import { useGetDiscounts } from "@/hooks/use-discount";
+import { discountColumns } from "@/columns/discounts.columns";
+import { AddDiscountDialog } from "@/components/discount/add-discount";
+import { Plus } from "lucide-react";
 
 export default function DiscountsDashboardPage() {
-  const activeCount = discountRows.filter((row) => row.status === "ACTIVE").length;
+  const [addOpen, setAddOpen] = useState(false);
+  const { data: discountsData, refetch } = useGetDiscounts();
+  
+  const discounts = discountsData?.data?.discounts || [];
+  const activeCount = discounts.filter((d: any) => d.status === "ACTIVE").length;
 
   return (
     <DashboardShell
       title="Discounts"
-      description="Manage coupon campaigns and monitor usage against limits."
+      description="Manage product discounts and monitor active campaigns."
     >
       <SummaryCards
         cards={[
-          { title: "Total Discounts", value: String(discountRows.length) },
+          { title: "Total Discounts", value: String(discounts.length) },
           { title: "Active", value: String(activeCount) },
-          { title: "Redeemed", value: "402" },
-          { title: "Expiring Soon", value: "1" },
+          { title: "Inactive", value: String(discounts.length - activeCount) },
+          { title: "Total Products", value: String(new Set(discounts.map((d: any) => d.productId)).size) },
         ]}
       />
 
-      <section className="rounded-xl border p-4">
-        <h2 className="text-base font-medium">Coupon Campaigns</h2>
-        <DashboardDataTable columns={columns} rows={discountRows} />
+      <section className="rounded-xl border p-4 space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-base font-medium">Active Discounts</h2>
+          <Button onClick={() => setAddOpen(true)} size="sm">
+            <Plus className="h-4 w-4 mr-2" />
+            Add Discount
+          </Button>
+        </div>
+        <DashboardDataTable columns={discountColumns} rows={discounts} />
       </section>
+
+      <AddDiscountDialog
+        open={addOpen}
+        onOpenChange={setAddOpen}
+        onSuccess={() => refetch()}
+      />
     </DashboardShell>
   );
 }
