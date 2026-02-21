@@ -15,12 +15,13 @@ import {
     SheetTrigger,
 } from "../ui/sheet";
 import { useGetProducts } from "@/hooks/use-product";
+import { Product } from "@/types/product";
 
 type ViewMode = "grid" | "list";
 type SortMode = "latest" | "price_low" | "price_high";
 
 // If your Product components expect these fields, normalize your API product here.
-function normalizeProduct(p: any) {
+function normalizeProduct(p) {
     return {
         id: String(p.id),
         brand: p.brand ?? "",
@@ -56,7 +57,7 @@ export default function ShopResultsWithSidebar() {
     }, [sort]);
 
     const sorted = useMemo(() => {
-        const items = [...products];
+        const items: Product[] = [...products];
 
         if (sort === "price_low") items.sort((a, b) => (a.price ?? 0) - (b.price ?? 0));
         if (sort === "price_high") items.sort((a, b) => (b.price ?? 0) - (a.price ?? 0));
@@ -64,7 +65,7 @@ export default function ShopResultsWithSidebar() {
         // "latest": if you have createdAt, sort by it; otherwise leave order as-is
         if (sort === "latest" && items[0]?.createdAt) {
             items.sort(
-                (a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+                (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
             );
         }
 
