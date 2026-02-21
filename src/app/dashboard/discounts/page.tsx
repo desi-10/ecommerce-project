@@ -49,5 +49,4 @@ export default function DiscountsDashboardPage() {
         onSuccess={() => refetch()}
       />
     </DashboardShell>
-  );
 }
