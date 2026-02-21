@@ -40,9 +40,26 @@ export const listProductsSchema = z.object({
   limit: z.preprocess(toInt, z.number().int().min(1).max(100)).default(20),
   q: z.string().trim().optional(),
   status: productStatusSchema.optional(),
+  category: z.string().trim().optional(),
+  onDiscount: z.preprocess((v) => {
+    if (v === "true" || v === true) return true;
+    if (v === "false" || v === false) return false;
+    return undefined;
+  }, z.boolean().optional()),
   sort: z.enum(["newest", "oldest", "name_asc", "name_desc"]).default("newest"),
 });
 
 export type CreateProductInput = z.infer<typeof createProductSchema>;
 export type UpdateProductInput = z.infer<typeof updateProductSchema>;
 export type ListProductsInput = z.infer<typeof listProductsSchema>;
+
+// For internal use
+export type ListProductsParams = {
+  page?: number;
+  limit?: number;
+  q?: string;
+  status?: "ACTIVE" | "INACTIVE";
+  category?: string;
+  onDiscount?: boolean;
+  sort?: "newest" | "oldest" | "name_asc" | "name_desc";
+};

@@ -3,6 +3,9 @@
 
 import type { ColumnDef } from "@tanstack/react-table";
 import type { Inventory } from "@/types/inventories";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { AdjustStockDialog } from "@/components/inventory/adjust-stock";
 
 function IndeterminateCheckbox({
   checked,
@@ -30,6 +33,27 @@ function IndeterminateCheckbox({
 
 const nfmt = (n: number) =>
   new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 }).format(n);
+
+function AdjustStockButton({ inventory }: { inventory: Inventory }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => setOpen(true)}
+      >
+        Adjust
+      </Button>
+      <AdjustStockDialog
+        inventory={inventory}
+        open={open}
+        onOpenChange={setOpen}
+      />
+    </>
+  );
+}
 
 export const inventoryColumns: ColumnDef<Inventory>[] = [
   {
@@ -107,5 +131,13 @@ export const inventoryColumns: ColumnDef<Inventory>[] = [
     accessorKey: "updatedAt",
     header: "Updated",
     cell: ({ row }) => new Date(row.original.updatedAt).toLocaleString(),
+  },
+
+  {
+    id: "actions",
+    header: "Actions",
+    cell: ({ row }) => <AdjustStockButton inventory={row.original} />,
+    enableSorting: false,
+    enableHiding: false,
   },
 ];

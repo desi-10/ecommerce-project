@@ -8,7 +8,15 @@ import type {
   UpdateProductDto,
 } from "@/types/product";
 
-export async function getProducts(params?: { page?: number; limit?: number }) {
+export async function getProducts(params?: { 
+  page?: number; 
+  limit?: number;
+  q?: string;
+  category?: string;
+  onDiscount?: boolean;
+  status?: string;
+  sort?: string;
+}) {
   const res = await axios.get("/api/products", { params });
   return res.data;
 }

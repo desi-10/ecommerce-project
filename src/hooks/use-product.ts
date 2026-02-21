@@ -15,7 +15,15 @@ import type {
 
 export const productsKeys = {
   all: ["products"] as const,
-  list: (params?: { page?: number; limit?: number; category?: string }) =>
+  list: (params?: { 
+    page?: number; 
+    limit?: number; 
+    category?: string;
+    q?: string;
+    onDiscount?: boolean;
+    status?: string;
+    sort?: string;
+  }) =>
     ["products", "list", params ?? {}] as const,
   detail: (id: string) => ["products", "detail", id] as const,
 };
@@ -23,7 +31,11 @@ export const productsKeys = {
 export function useGetProducts(params?: {
   page?: number;
   limit?: number;
-  category: string;
+  category?: string;
+  q?: string;
+  onDiscount?: boolean;
+  status?: string;
+  sort?: string;
 }) {
   return useQuery<GetProductsResponse>({
     queryKey: productsKeys.list(params),
