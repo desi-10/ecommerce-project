@@ -4,6 +4,61 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import type { Category } from "@/types/categories";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { MoreHorizontal, Edit, Trash2 } from "lucide-react";
+import { EditCategoryDialog } from "@/components/category/edit-category";
+import { DeleteCategoryDialog } from "@/components/category/delete-category";
+
+function CategoryActions({ category, onRefresh }: { category: Category; onRefresh?: () => void }) {
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+
+  return (
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="h-8 w-8 p-0">
+            <span className="sr-only">Open menu</span>
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onClick={() => setEditOpen(true)}>
+            <Edit className="h-4 w-4 mr-2" />
+            Edit
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => setDeleteOpen(true)}
+            className="text-red-600"
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            Delete
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <EditCategoryDialog
+        category={category}
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        onSuccess={onRefresh}
+      />
+      <DeleteCategoryDialog
+        category={category}
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        onSuccess={onRefresh}
+      />
+    </>
+  );
+}
 
 function IndeterminateCheckbox({
     checked,
@@ -70,5 +125,13 @@ export const categoryColumns: ColumnDef<Category>[] = [
         accessorKey: "createdAt",
         header: "Created",
         cell: ({ row }) => new Date(row.original.createdAt).toLocaleString(),
+    },
+
+    {
+        id: "actions",
+        header: "Actions",
+        cell: ({ row }) => <CategoryActions category={row.original} />,
+        enableSorting: false,
+        enableHiding: false,
     },
 ];
