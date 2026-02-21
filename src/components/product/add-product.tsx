@@ -32,6 +32,7 @@ import {
     type CreateProductInput,
 } from "@/server/products/products.validators"; // <-- your file
 import { useCreateProduct } from "@/hooks/use-product"; // your mutation hook
+import { ImageUpload } from "@/components/image-upload";
 
 export function CreateProductDialog() {
     const [open, setOpen] = React.useState(false);
@@ -98,6 +99,14 @@ export function CreateProductDialog() {
                             {errors.name ? (
                                 <p className="text-sm text-red-600">{errors.name.message}</p>
                             ) : null}
+                        </div>
+
+                        <div className="grid gap-2 sm:col-span-2">
+                            <Label>Product Image</Label>
+                            <ImageUpload
+                                onUpload={(url) => setValue("image", url)}
+                                defaultValue={watch("image")}
+                            />
                         </div>
 
                         <div className="grid gap-2 sm:col-span-2">

@@ -5,8 +5,63 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Mail, MapPin, Phone } from "lucide-react";
 import Wrapper from "@/components/wrapper";
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 export default function ContactUsSection() {
+    const [loading, setLoading] = useState(false);
+    const [formData, setFormData] = useState({
+        name: "",
+        email: "",
+        subject: "",
+        message: "",
+    });
+    const { toast } = useToast();
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        setFormData((prev) => ({ ...prev, [name]: value }));
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+
+        try {
+            const res = await fetch("/api/contact", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(formData),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                toast({
+                    variant: "destructive",
+                    title: "Error",
+                    description: data.message || "Failed to send message",
+                });
+                return;
+            }
+
+            toast({
+                title: "Success",
+                description: "Your message has been sent successfully",
+            });
+
+            setFormData({ name: "", email: "", subject: "", message: "" });
+        } catch (error) {
+            toast({
+                variant: "destructive",
+                title: "Error",
+                description: "Failed to send message",
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <section className="bg-white border-b">
             <Wrapper>
@@ -22,15 +77,48 @@ export default function ContactUsSection() {
 
                         <div className="mt-6 grid gap-6 md:grid-cols-[1fr_320px]">
                             {/* form */}
-                            <form className="space-y-4">
+                            <form className="space-y-4" onSubmit={handleSubmit}>
                                 <div className="grid gap-4 md:grid-cols-2">
-                                    <Input className="rounded-sm" placeholder="Full name" />
-                                    <Input className="rounded-sm" placeholder="Email address" />
+                                    <Input
+                                        className="rounded-sm"
+                                        placeholder="Full name"
+                                        name="name"
+                                        value={formData.name}
+                                        onChange={handleChange}
+                                        required
+                                    />
+                                    <Input
+                                        className="rounded-sm"
+                                        placeholder="Email address"
+                                        name="email"
+                                        type="email"
+                                        value={formData.email}
+                                        onChange={handleChange}
+                                        required
+                                    />
                                 </div>
-                                <Input className="rounded-sm" placeholder="Subject" />
-                                <Textarea className="rounded-sm min-h-[140px]" placeholder="Your message..." />
-                                <Button className="rounded-sm bg-blue-600 hover:bg-blue-700">
-                                    Send message
+                                <Input
+                                    className="rounded-sm"
+                                    placeholder="Subject"
+                                    name="subject"
+                                    value={formData.subject}
+                                    onChange={handleChange}
+                                    required
+                                />
+                                <Textarea
+                                    className="rounded-sm min-h-[140px]"
+                                    placeholder="Your message..."
+                                    name="message"
+                                    value={formData.message}
+                                    onChange={handleChange}
+                                    required
+                                />
+                                <Button
+                                    className="rounded-sm bg-blue-600 hover:bg-blue-700"
+                                    disabled={loading}
+                                    type="submit"
+                                >
+                                    {loading ? "Sending..." : "Send message"}
                                 </Button>
                             </form>
 

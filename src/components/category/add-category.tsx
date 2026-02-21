@@ -29,10 +29,12 @@ import {
 } from "@/components/ui/select";
 
 import { useCreateCategory } from "@/hooks/use-category";
+import { ImageUpload } from "@/components/image-upload";
 
 const createCategorySchema = z.object({
     name: z.string().min(1, "Category name is required"),
     description: z.string().optional(),
+    image: z.string().optional(),
     status: z.enum(["ACTIVE", "INACTIVE"]).default("ACTIVE"),
 });
 
@@ -44,7 +46,7 @@ export function CreateCategoryDialog() {
 
     const form = useForm<CreateCategoryForm>({
         resolver: zodResolver(createCategorySchema),
-        defaultValues: { name: "", description: "", status: "ACTIVE" },
+        defaultValues: { name: "", description: "", image: "", status: "ACTIVE" },
         mode: "onTouched",
     });
 
@@ -91,6 +93,14 @@ export function CreateCategoryDialog() {
                         {errors.description ? (
                             <p className="text-sm text-red-600">{errors.description.message}</p>
                         ) : null}
+                    </div>
+
+                    <div className="grid gap-2">
+                        <Label>Category Image</Label>
+                        <ImageUpload
+                            onUpload={(url) => setValue("image", url)}
+                            defaultValue={watch("image")}
+                        />
                     </div>
 
                     <div className="grid gap-2">
