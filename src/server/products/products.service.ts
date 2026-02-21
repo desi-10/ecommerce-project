@@ -123,7 +123,7 @@ export const createProductService = async (data: CreateProductInput) => {
 };
 
 export const getProductsService = async (data: ListProductsInput) => {
-  const { page, limit, q, status, sort } = data;
+  const { page, limit, q, status, sort, category, onDiscount } = data;
 
   const where: Prisma.ProductWhereInput = {
     ...(status ? { status } : {}),
@@ -132,6 +132,26 @@ export const getProductsService = async (data: ListProductsInput) => {
           name: {
             contains: q,
             mode: "insensitive",
+          },
+        }
+      : {}),
+    ...(category
+      ? {
+          categories: {
+            some: {
+              category: {
+                slug: category,
+              },
+            },
+          },
+        }
+      : {}),
+    ...(onDiscount
+      ? {
+          discounts: {
+            some: {
+              status: "ACTIVE",
+            },
           },
         }
       : {}),

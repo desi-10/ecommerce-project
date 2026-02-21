@@ -15,65 +15,23 @@ import { Heart, ShoppingCart, Check, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useCartStore } from "@/stores/cart.store";
 import { useWishlistStore } from "@/stores/wishlist.store";
+import { useGetProducts } from "@/hooks/use-product";
+import type { Product } from "@/types/product";
 
-
-const products = [
-    {
-        id: "1",
-        category: "Gaming",
-        name: "Xbox Wireless Controller – Carbon Black",
-        price: "$59.99",
-        image:
-            "https://images.unsplash.com/photo-1606813907291-d86efa9b94db?auto=format&fit=crop&w=600&q=80",
-    },
-    {
-        id: "2",
-        category: "Audio",
-        name: "Wireless Bluetooth Over-Ear Headphones",
-        price: "$89.99",
-        image:
-            "https://images.unsplash.com/photo-1580894894513-541e068a3e2b?auto=format&fit=crop&w=600&q=80",
-    },
-    {
-        id: "3",
-        category: "Laptops",
-        name: "Ultra-Slim Chromebook 13-inch",
-        price: "$299.99",
-        image:
-            "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=600&q=80",
-    },
-    {
-        id: "4",
-        category: "Computers",
-        name: "Apple MacBook Air M2 – 13-inch",
-        price: "$1099.99",
-        image:
-            "https://images.unsplash.com/photo-1512499617640-c2f999098c01?auto=format&fit=crop&w=600&q=80",
-    },
-    {
-        id: "5",
-        category: "Mobile Phones",
-        name: "Samsung Galaxy Smartphone – 128GB",
-        price: "$499.99",
-        image:
-            "https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&w=600&q=80",
-    },
-    {
-        id: "6",
-        category: "Smart Home",
-        name: "Smart LED Light Starter Kit",
-        price: "$39.99",
-        image:
-            "https://images.unsplash.com/photo-1558002038-1055907df827?auto=format&fit=crop&w=600&q=80",
-    },
-];
-
-const toNumberPrice = (value: string) => {
+const toNumberPrice = (value: string | number) => {
+    if (typeof value === "number") return value;
     const n = Number(value.replace(/[^0-9.]/g, ""));
     return Number.isFinite(n) ? n : 0;
 };
 
 export default function DealOfDay() {
+    // Fetch products with active discounts
+    const { data: productsData } = useGetProducts({
+        onDiscount: true,
+        limit: 12,
+    });
+
+    const products = productsData?.data?.products || [];
 
     // ✅ subscribe to state (reactive)
     const cartItems = useCartStore((s) => s.items);
@@ -108,12 +66,16 @@ export default function DealOfDay() {
                 <Carousel opts={{ align: "start", loop: true }}>
                     <CarouselContent className="-ml-3">
                         {products.map((p) => {
-                            const id = String(p.id);
-                            const priceNum = toNumberPrice(p.price);
+                            const variant = p.variants?.[0];
+                            const id = variant?.id || p.id;
+                            const priceNum = toNumberPrice(variant?.salePrice || variant?.price || 0);
+                            const oldPrice = variant && Number(variant.salePrice) > 0 
+                                ? toNumberPrice(variant.price) 
+                                : null;
                             const isInCart = cartSet.has(id);
                             const isInWish = wishSet.has(id);
-
                             const showActions = activeId === id;
+                            const imageSrc = "/martfury/product.png";
 
                             return (
                                 <CarouselItem
@@ -128,7 +90,7 @@ export default function DealOfDay() {
                                         {/* Image */}
                                         <div className="relative h-48">
                                             <Image
-                                                src={p.image}
+                                                src={imageSrc}
                                                 alt={p.name}
                                                 width={1000}
                                                 height={1000}
@@ -157,8 +119,8 @@ export default function DealOfDay() {
                                                                     id,
                                                                     name: p.name,
                                                                     price: priceNum,
-                                                                    image: p.image,
-                                                                    brand: p.category,
+                                                                    image: imageSrc,
+                                                                    brand: "",
                                                                 });
                                                             }}
                                                             aria-label={isInWish ? "Remove from wishlist" : "Add to wishlist"}
@@ -175,7 +137,7 @@ export default function DealOfDay() {
                                                             className="h-9 w-9"
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
-                                                                if (!isInCart) addItem({ id, name: p.name, price: priceNum, image: p.image });
+                                                                if (!isInCart) addItem({ id, name: p.name, price: priceNum, image: imageSrc });
                                                             }}
                                                             aria-label={isInCart ? "Already in cart" : "Add to cart"}
                                                         >
@@ -202,16 +164,21 @@ export default function DealOfDay() {
 
                                         {/* Content */}
                                         <Link
-                                            href={`/shop/${id}`}
+                                            href={`/shop/${p.id}`}
                                             className="mt-1 text-xs font-medium line-clamp-2 block"
-                                            onClick={(e) => e.stopPropagation()} // don’t toggle actions when navigating
+                                            onClick={(e) => e.stopPropagation()} // don't toggle actions when navigating
                                         >
                                             <Button variant="link" className="p-0 text-gray-800 hover:text-primary">
                                                 {p.name}
                                             </Button>
                                         </Link>
 
-                                        <div className="mt-2 text-sm font-bold text-green-600">{p.price}</div>
+                                        <div className="mt-2 flex items-center gap-2">
+                                            <div className="text-sm font-bold text-green-600">${priceNum.toFixed(2)}</div>
+                                            {oldPrice !== null && oldPrice > priceNum ? (
+                                                <div className="text-xs text-muted-foreground line-through">${oldPrice.toFixed(2)}</div>
+                                            ) : null}
+                                        </div>
                                     </div>
                                 </CarouselItem>
                             );

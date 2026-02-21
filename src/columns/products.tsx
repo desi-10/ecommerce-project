@@ -1,8 +1,21 @@
 // table/products-columns.tsx
+"use client";
+
 import type { ColumnDef } from "@tanstack/react-table";
 import type { Product } from "@/types/product";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { MoreHorizontal, Edit, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { EditProductDialog } from "@/components/product/edit-product";
+import { DeleteProductDialog } from "@/components/product/delete-product";
 
 // Simple checkbox component (swap with shadcn Checkbox if you want)
 function IndeterminateCheckbox({
@@ -20,6 +33,48 @@ function IndeterminateCheckbox({
             checked={!!checked}
             className=""
         />
+    );
+}
+
+function ProductActions({ product }: { product: Product }) {
+    const [editOpen, setEditOpen] = useState(false);
+    const [deleteOpen, setDeleteOpen] = useState(false);
+
+    return (
+        <>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="h-8 w-8 p-0">
+                        <span className="sr-only">Open menu</span>
+                        <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => setEditOpen(true)}>
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                        onClick={() => setDeleteOpen(true)}
+                        className="text-red-600"
+                    >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+
+            <EditProductDialog
+                product={product}
+                open={editOpen}
+                onOpenChange={setEditOpen}
+            />
+            <DeleteProductDialog
+                product={product}
+                open={deleteOpen}
+                onOpenChange={setDeleteOpen}
+            />
+        </>
     );
 }
 
@@ -92,5 +147,13 @@ export const productColumns: ColumnDef<Product>[] = [
         header: "Created",
         cell: ({ row }) =>
             new Date(row.original.createdAt).toLocaleString(),
+    },
+
+    {
+        id: "actions",
+        header: "Actions",
+        cell: ({ row }) => <ProductActions product={row.original} />,
+        enableSorting: false,
+        enableHiding: false,
     },
 ];
