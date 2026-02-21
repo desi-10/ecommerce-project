@@ -17,6 +17,7 @@ import { useCartStore } from "@/stores/cart.store";
 import { useWishlistStore } from "@/stores/wishlist.store";
 import { useGetProducts } from "@/hooks/use-product";
 import type { Product } from "@/types/product";
+import { CountdownTimer } from "./countdown-timer";
 
 const toNumberPrice = (value: string | number) => {
     if (typeof value === "number") return value;
@@ -46,15 +47,27 @@ export default function DealOfDay() {
     // ✅ mobile: tap to reveal actions (no hover on touch)
     const [activeId, setActiveId] = useState<string | null>(null);
 
+    // Get the earliest discount end time from products
+    const earliestEndTime = products.reduce((earliest, product) => {
+        const discount = product.discounts?.[0];
+        if (discount?.endDate) {
+            const discountEnd = new Date(discount.endDate);
+            if (!earliest || discountEnd < earliest) {
+                return discountEnd;
+            }
+        }
+        return earliest;
+    }, null as Date | null);
+
+    const dealEndTime = earliestEndTime || new Date(Date.now() + 24 * 60 * 60 * 1000); // Default to 24 hours from now
+
     return (
         <section className="mt-6 bg-white border rounded-sm">
             <div className="flex items-center justify-between px-4 py-3">
                 <div className="mozilla-text text-xl lg:text-2xl font-bold">Deal of the day</div>
                 <div className="flex items-center gap-3">
                     <span className="text-sm text-muted-foreground hidden sm:inline">End in:</span>
-                    <span className="bg-orange-500 text-white text-xs font-semibold px-3 py-1 rounded">
-                        11:19:30:59
-                    </span>
+                    <CountdownTimer endTime={dealEndTime} />
                     <Button variant="link" className="p-0 text-sm text-muted-foreground hover:text-foreground">
                         View all
                     </Button>
