@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { AlertCircle, CheckCircle2 } from "lucide-react";
 
 import {
   updateProductSchema,
@@ -44,6 +46,8 @@ export function EditProductDialog({
   onOpenChange,
 }: EditProductDialogProps) {
   const { mutateAsync, isPending } = useUpdateProduct();
+  const [submitError, setSubmitError] = React.useState<string | null>(null);
+  const [showSuccess, setShowSuccess] = React.useState(false);
 
   const form = useForm<UpdateProductInput>({
     resolver: zodResolver(updateProductSchema),
@@ -74,9 +78,27 @@ export function EditProductDialog({
     name: "variants",
   });
 
+  // Reset error on dialog close
+  useEffect(() => {
+    if (!open) {
+      setSubmitError(null);
+      setShowSuccess(false);
+    }
+  }, [open]);
+
   const onSubmit = async (values: UpdateProductInput) => {
-    await mutateAsync({ id: product.id, payload: values });
-    onOpenChange(false);
+    try {
+      setSubmitError(null);
+      await mutateAsync({ id: product.id, payload: values });
+      setShowSuccess(true);
+      setTimeout(() => {
+        onOpenChange(false);
+      }, 1200);
+    } catch (error: any) {
+      const errorMessage = error?.message || "Failed to update product. Please try again.";
+      setSubmitError(errorMessage);
+      console.error("Failed to update product:", error);
+    }
   };
 
   return (
@@ -88,6 +110,26 @@ export function EditProductDialog({
             Update product details and variants.
           </DialogDescription>
         </DialogHeader>
+
+        {showSuccess && (
+          <div className="flex items-start gap-3 rounded-lg bg-green-50 p-4 border border-green-200">
+            <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-medium text-green-900">Changes saved successfully!</p>
+              <p className="text-sm text-green-700 mt-0.5">Closing dialog...</p>
+            </div>
+          </div>
+        )}
+
+        {submitError && (
+          <div className="flex items-start gap-3 rounded-lg bg-red-50 p-4 border border-red-200">
+            <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-medium text-red-900">Error</p>
+              <p className="text-sm text-red-700 mt-0.5">{submitError}</p>
+            </div>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit(onSubmit)} className="grid gap-5">
           {/* Basic info */}
@@ -288,12 +330,12 @@ export function EditProductDialog({
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
-              disabled={isPending}
+              disabled={isPending || showSuccess}
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isPending}>
-              {isPending ? "Saving..." : "Save changes"}
+            <Button type="submit" disabled={isPending || showSuccess}>
+              {showSuccess ? "Saved!" : isPending ? "Saving..." : "Save changes"}
             </Button>
           </DialogFooter>
         </form>
