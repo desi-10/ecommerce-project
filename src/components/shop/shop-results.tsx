@@ -15,26 +15,11 @@ import {
     SheetTrigger,
 } from "../ui/sheet";
 import { useGetProducts } from "@/hooks/use-product";
+import { normalizeProduct } from "@/lib/product-normalizer";
 import { Product } from "@/types/product";
 
 type ViewMode = "grid" | "list";
 type SortMode = "latest" | "price_low" | "price_high";
-
-// If your Product components expect these fields, normalize your API product here.
-function normalizeProduct(p) {
-    return {
-        id: String(p.id),
-        brand: p.brand ?? "",
-        name: p.name ?? "",
-        price: Number(p.salePrice ?? p.price ?? 0),
-        oldPrice: p.salePrice ? Number(p.price ?? 0) : (p.oldPrice ?? null),
-        rating: p.rating ?? 4,
-        reviews: p.reviews ?? 0,
-        image: p.image ?? p.images?.[0]?.url ?? p.images?.[0] ?? "/martfury/product.png",
-        // keep the rest if needed:
-        ...p,
-    };
-}
 
 export default function ShopResultsWithSidebar() {
     const [view, setView] = useState<ViewMode>("grid");

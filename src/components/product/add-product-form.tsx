@@ -4,6 +4,7 @@ import * as React from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 // shadcn/ui
 import { Button } from "@/components/ui/button";
@@ -25,12 +26,14 @@ import {
 } from "@/server/products/products.validators";
 import { useCreateProduct } from "@/hooks/use-product";
 import { ImageUpload } from "@/components/image-upload";
-import { ArrowLeft, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, AlertCircle, CheckCircle2 } from "lucide-react";
 
 export function AddProductForm() {
     const router = useRouter();
-    const { mutateAsync, isPending } = useCreateProduct();
+    const { mutateAsync, isPending, isError, error } = useCreateProduct();
     const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
+    const [submitError, setSubmitError] = React.useState<string | null>(null);
+    const [showSuccess, setShowSuccess] = React.useState(false);
 
     const form = useForm<CreateProductInput>({
         resolver: zodResolver(createProductSchema),
@@ -41,7 +44,7 @@ export function AddProductForm() {
     });
 
     const { control, register, handleSubmit, setValue, watch, formState } = form;
-    const { errors } = formState;
+    const { errors, isValid } = formState;
 
     const variants = watch("variants");
 
@@ -50,8 +53,22 @@ export function AddProductForm() {
         name: "variants",
     });
 
+    // Reset error messages when user starts typing
+    useEffect(() => {
+        if (submitError) {
+            setSubmitError(null);
+        }
+    }, [watch("name"), submitError]);
+
     const onSubmit = async (values: CreateProductInput) => {
         try {
+            setSubmitError(null);
+
+            if (!selectedFile && !values.variants?.length) {
+                setSubmitError("Please upload at least one product image");
+                return;
+            }
+
             const formData = new FormData();
             
             // Append basic fields
@@ -75,16 +92,43 @@ export function AddProductForm() {
             }
 
             await mutateAsync(formData as any);
+            setShowSuccess(true);
             form.reset();
             variantsArr.remove();
-            router.push("/dashboard/products");
-        } catch (error) {
+            
+            // Redirect after brief success message
+            setTimeout(() => {
+                router.push("/dashboard/products");
+            }, 1500);
+        } catch (error: any) {
+            const errorMessage = error?.message || "Failed to create product. Please try again.";
+            setSubmitError(errorMessage);
             console.error("Failed to create product:", error);
         }
     };
 
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+            {showSuccess && (
+                <div className="flex items-start gap-3 rounded-lg bg-green-50 p-4 border border-green-200 animate-in fade-in">
+                    <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                        <p className="font-medium text-green-900">Product created successfully!</p>
+                        <p className="text-sm text-green-700 mt-0.5">Redirecting to products list...</p>
+                    </div>
+                </div>
+            )}
+
+            {submitError && (
+                <div className="flex items-start gap-3 rounded-lg bg-red-50 p-4 border border-red-200">
+                    <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                        <p className="font-medium text-red-900">Error</p>
+                        <p className="text-sm text-red-700 mt-0.5">{submitError}</p>
+                    </div>
+                </div>
+            )}
+
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                     <Button
@@ -93,6 +137,7 @@ export function AddProductForm() {
                         size="icon"
                         className="h-8 w-8"
                         onClick={() => router.push("/dashboard/products")}
+                        disabled={isPending}
                     >
                         <ArrowLeft className="h-4 w-4" />
                         <span className="sr-only">Back</span>
@@ -112,10 +157,10 @@ export function AddProductForm() {
                     </Button>
                     <Button 
                         type="submit" 
-                        disabled={isPending}
+                        disabled={isPending || showSuccess}
                         className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-sm px-6"
                     >
-                        {isPending ? "Saving..." : "Save Product"}
+                        {showSuccess ? "Saved!" : isPending ? "Saving..." : "Save Product"}
                     </Button>
                 </div>
             </div>

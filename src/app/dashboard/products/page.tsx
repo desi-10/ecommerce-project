@@ -6,25 +6,63 @@ import Wrapper from "@/components/wrapper";
 import { useGetProducts } from "@/hooks/use-product";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { Plus, AlertCircle, Package } from "lucide-react";
 
 export default function ProductsDashboardPage() {
-
-  const { data: productsData } = useGetProducts()
-  const products = productsData?.data.products || []
+  const { data: productsData, isLoading, isError, error } = useGetProducts();
+  const products = productsData?.data.products || [];
 
   return (
     <main>
       <Wrapper>
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-semibold tracking-tight">Products</h1>
-          <Button asChild>
-            <Link href="/dashboard/products/new" className="gap-2">
-              <Plus className="w-4 h-4" /> New Product
-            </Link>
-          </Button>
+        <div className="mb-6">
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight text-gray-900">Products</h1>
+              <p className="text-sm text-gray-600 mt-2">Manage your product catalog</p>
+            </div>
+            <Button asChild className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl">
+              <Link href="/dashboard/products/new" className="gap-2">
+                <Plus className="w-4 h-4" /> Add Product
+              </Link>
+            </Button>
+          </div>
+
+          {isError && (
+            <div className="flex items-start gap-3 rounded-lg bg-red-50 p-4 border border-red-200 mb-6">
+              <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="font-medium text-red-900">Failed to load products</p>
+                <p className="text-sm text-red-700 mt-1">
+                  {error?.message || "Unable to fetch products. Please try again later."}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {isLoading ? (
+            <div className="space-y-3">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="h-16 bg-gray-100 animate-pulse rounded-xl" />
+              ))}
+            </div>
+          ) : products.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 rounded-xl border border-dashed border-gray-300 bg-gray-50">
+              <Package className="h-12 w-12 text-gray-400 mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">No products yet</h3>
+              <p className="text-sm text-gray-600 mb-6 text-center max-w-sm">
+                Get started by creating your first product to begin selling online
+              </p>
+              <Button asChild className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl">
+                <Link href="/dashboard/products/new" className="gap-2">
+                  <Plus className="w-4 h-4" /> Create First Product
+                </Link>
+              </Button>
+            </div>
+          ) : (
+            <DataTable columns={productColumns} data={{ items: products }} />
+          )}
         </div>
-        <DataTable columns={productColumns} data={{ items: products }} />
       </Wrapper>
     </main>
   );
