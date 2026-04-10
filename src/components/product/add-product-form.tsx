@@ -27,6 +27,7 @@ import {
 import { useCreateProduct } from "@/hooks/use-product";
 import { ImageUpload } from "@/components/image-upload";
 import { ArrowLeft, Plus, Trash2, AlertCircle, CheckCircle2 } from "lucide-react";
+import { formatGHS } from "@/lib/currency";
 
 export function AddProductForm() {
     const router = useRouter();
@@ -158,7 +159,10 @@ export function AddProductForm() {
                     <Button 
                         type="submit" 
                         disabled={isPending || showSuccess}
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-sm px-6"
+                        className="text-white rounded-xl shadow-sm px-6"
+                        style={{ backgroundColor: 'var(--primary-600)' }}
+                        onMouseEnter={(e) => !isPending && !showSuccess && (e.currentTarget.style.backgroundColor = 'var(--primary-700)')}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--primary-600)'}
                     >
                         {showSuccess ? "Saved!" : isPending ? "Saving..." : "Save Product"}
                     </Button>
@@ -177,7 +181,8 @@ export function AddProductForm() {
                                     <Input
                                         id="name"
                                         placeholder="e.g. MacBook Pro M3"
-                                        className="rounded-xl border-gray-200 focus:ring-indigo-500"
+                                        className="rounded-xl border-gray-200"
+                                        style={{ '--tw-ring-color': 'var(--primary-500)' } as React.CSSProperties}
                                         {...register("name")}
                                     />
                                     {errors.name && <p className="text-sm text-red-500">{errors.name.message}</p>}
@@ -187,7 +192,8 @@ export function AddProductForm() {
                                     <Textarea
                                         id="description"
                                         placeholder="Describe your product in detail..."
-                                        className="min-h-[150px] rounded-xl border-gray-200 focus:ring-indigo-500"
+                                        className="min-h-[150px] rounded-xl border-gray-200"
+                                        style={{ '--tw-ring-color': 'var(--primary-500)' } as React.CSSProperties}
                                         {...register("description")}
                                     />
                                 </div>

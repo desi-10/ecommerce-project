@@ -21,8 +21,23 @@ export default function ProductsDashboardPage() {
               <h1 className="text-3xl font-bold tracking-tight text-gray-900">Products</h1>
               <p className="text-sm text-gray-600 mt-2">Manage your product catalog</p>
             </div>
-            <Button asChild className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl">
-              <Link href="/dashboard/products/new" className="gap-2">
+            <Button 
+              asChild 
+              className="text-white rounded-xl"
+              style={{ backgroundColor: 'var(--primary-600)' }}
+            >
+              <Link 
+                href="/dashboard/products/new" 
+                className="gap-2"
+                onMouseEnter={(e) => {
+                  const btn = e.currentTarget.closest('button') as HTMLButtonElement;
+                  if (btn) btn.style.backgroundColor = 'var(--primary-700)';
+                }}
+                onMouseLeave={(e) => {
+                  const btn = e.currentTarget.closest('button') as HTMLButtonElement;
+                  if (btn) btn.style.backgroundColor = 'var(--primary-600)';
+                }}
+              >
                 <Plus className="w-4 h-4" /> Add Product
               </Link>
             </Button>
@@ -53,8 +68,23 @@ export default function ProductsDashboardPage() {
               <p className="text-sm text-gray-600 mb-6 text-center max-w-sm">
                 Get started by creating your first product to begin selling online
               </p>
-              <Button asChild className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl">
-                <Link href="/dashboard/products/new" className="gap-2">
+              <Button 
+                asChild 
+                className="text-white rounded-xl"
+                style={{ backgroundColor: 'var(--primary-600)' }}
+              >
+                <Link 
+                  href="/dashboard/products/new" 
+                  className="gap-2"
+                  onMouseEnter={(e) => {
+                    const btn = e.currentTarget.closest('button') as HTMLButtonElement;
+                    if (btn) btn.style.backgroundColor = 'var(--primary-700)';
+                  }}
+                  onMouseLeave={(e) => {
+                    const btn = e.currentTarget.closest('button') as HTMLButtonElement;
+                    if (btn) btn.style.backgroundColor = 'var(--primary-600)';
+                  }}
+                >
                   <Plus className="w-4 h-4" /> Create First Product
                 </Link>
               </Button>
