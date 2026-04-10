@@ -54,7 +54,7 @@ export function useGetProduct(id: string) {
 export function useCreateProduct() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (payload: CreateProductDto) => createProduct(payload),
+    mutationFn: (payload: FormData) => createProduct(payload),
     onSuccess: async () => {
       await qc.invalidateQueries({ queryKey: productsKeys.all });
     },

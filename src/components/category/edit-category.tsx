@@ -13,7 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
+// import { useToast } from "@/hooks/use-toast";
 import { ImageUpload } from "@/components/image-upload";
 import type { Category } from "@/types/categories";
 
@@ -31,7 +31,7 @@ export function EditCategoryDialog({
   onSuccess,
 }: EditCategoryDialogProps) {
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
+  // const { toast } = useToast();
 
   const {
     register,
@@ -62,19 +62,12 @@ export function EditCategoryDialog({
         throw new Error(error.message || "Failed to update category");
       }
 
-      toast({
-        title: "Success",
-        description: "Category updated successfully",
-      });
+
 
       onSuccess?.();
       onOpenChange(false);
     } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error.message || "Failed to update category",
-      });
+
     } finally {
       setLoading(false);
     }

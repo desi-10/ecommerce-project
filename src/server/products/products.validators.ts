@@ -20,6 +20,7 @@ export const variantUpdateSchema = variantCreateSchema.extend({
 export const createProductSchema = z.object({
   name: z.string().trim().min(1, "Product name is required"),
   description: z.string().optional(),
+  image: z.string().optional(),
   status: productStatusSchema.default("ACTIVE"),
   variants: z.array(variantCreateSchema).default([]),
 
@@ -31,6 +32,7 @@ export const createProductSchema = z.object({
 export const updateProductSchema = z.object({
   name: z.string().trim().min(1).optional(),
   description: z.string().optional(),
+  image: z.string().optional(),
   status: productStatusSchema.optional(),
   variants: z.array(variantUpdateSchema).optional(),
 });

@@ -11,7 +11,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useToast } from "@/hooks/use-toast";
+// import { useToast } from "@/hooks/use-toast";
 
 interface DeleteDiscountDialogProps {
   discount: any;
@@ -27,7 +27,7 @@ export function DeleteDiscountDialog({
   onSuccess,
 }: DeleteDiscountDialogProps) {
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
+  // const { toast } = useToast();
 
   const handleDelete = async () => {
     setLoading(true);
@@ -41,19 +41,19 @@ export function DeleteDiscountDialog({
         throw new Error(error.message || "Failed to delete discount");
       }
 
-      toast({
-        title: "Success",
-        description: "Discount deleted successfully",
-      });
+      // toast({
+      //   title: "Success",
+      //   description: "Discount deleted successfully",
+      // });
 
       onSuccess?.();
       onOpenChange(false);
     } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error.message || "Failed to delete discount",
-      });
+      // toast({
+      //   variant: "destructive",
+      //   title: "Error",
+      //   description: error.message || "Failed to delete discount",
+      // });
     } finally {
       setLoading(false);
     }

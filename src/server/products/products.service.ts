@@ -18,6 +18,7 @@ const productSelect = {
   id: true,
   name: true,
   description: true,
+  image: true,
   status: true,
   createdAt: true,
   updatedAt: true,
@@ -58,6 +59,7 @@ export const createProductService = async (data: CreateProductInput) => {
       data: {
         name: data.name,
         description: data.description ?? null,
+        image: data.image ?? null,
         status: data.status,
       },
       select: { id: true },
@@ -224,6 +226,7 @@ export const updateProductService = async (
         ...(data.description !== undefined
           ? { description: data.description ?? null }
           : {}),
+        ...(data.image !== undefined ? { image: data.image ?? null } : {}),
         ...(data.status !== undefined ? { status: data.status } : {}),
       },
       select: { id: true },

@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
+// import { useToast } from "@/hooks/use-toast";
 import { useGetProducts } from "@/hooks/use-product";
 import { z } from "zod";
 
@@ -37,9 +37,9 @@ type CreateDiscountInput = z.infer<typeof createDiscountSchema>;
 export function AddDiscountDialog({ onSuccess }: { onSuccess?: () => void }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
+  // const { toast } = useToast();
 
-  const { data: productsData } = useGetProducts({ limit: 1000 });
+  const { data: productsData } = useGetProducts();
   const products = productsData?.data?.products || [];
 
   const {
@@ -75,20 +75,20 @@ export function AddDiscountDialog({ onSuccess }: { onSuccess?: () => void }) {
         throw new Error(error.message || "Failed to create discount");
       }
 
-      toast({
-        title: "Success",
-        description: "Discount created successfully",
-      });
+      // toast({
+      //   title: "Success",
+      //   description: "Discount created successfully",
+      // });
 
       reset();
       onSuccess?.();
       setOpen(false);
     } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error.message || "Failed to create discount",
-      });
+      // toast({
+      //   variant: "destructive",
+      //   title: "Error",
+      //   description: error.message || "Failed to create discount",
+      // });
     } finally {
       setLoading(false);
     }

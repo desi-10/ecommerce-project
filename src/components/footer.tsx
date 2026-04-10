@@ -6,12 +6,12 @@ import { Button } from "@/components/ui/button";
 import Wrapper from "./wrapper";
 import Link from "next/link";
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
+// import { useToast } from "@/hooks/use-toast";
 
 export default function Footer() {
     const [email, setEmail] = useState("");
     const [loading, setLoading] = useState(false);
-    const { toast } = useToast();
+    // const { toast } = useToast();
 
     const handleNewsletterSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -26,27 +26,12 @@ export default function Footer() {
 
             const data = await res.json();
 
-            if (!res.ok) {
-                toast({
-                    variant: "destructive",
-                    title: "Error",
-                    description: data.message || "Failed to subscribe",
-                });
-                return;
-            }
 
-            toast({
-                title: "Success",
-                description: "Successfully subscribed to newsletter",
-            });
+
 
             setEmail("");
         } catch (error) {
-            toast({
-                variant: "destructive",
-                title: "Error",
-                description: "Failed to subscribe to newsletter",
-            });
+
         } finally {
             setLoading(false);
         }

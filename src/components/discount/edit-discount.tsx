@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
+// import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 
 const updateDiscountSchema = z.object({
@@ -45,7 +45,7 @@ export function EditDiscountDialog({
   onSuccess,
 }: EditDiscountDialogProps) {
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
+  // const { toast } = useToast();
 
   const formatDatetime = (date: string | Date) => {
     const d = new Date(date);
@@ -87,19 +87,19 @@ export function EditDiscountDialog({
         throw new Error(error.message || "Failed to update discount");
       }
 
-      toast({
-        title: "Success",
-        description: "Discount updated successfully",
-      });
+      // toast({
+      //   title: "Success",
+      //   description: "Discount updated successfully",
+      // });
 
       onSuccess?.();
       onOpenChange(false);
     } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error.message || "Failed to update discount",
-      });
+      // toast({
+      //   variant: "destructive",
+      //   title: "Error",
+      //   description: error.message || "Failed to update discount",
+      // });
     } finally {
       setLoading(false);
     }

@@ -26,8 +26,12 @@ export async function getProductById(id: string) {
   return res.data;
 }
 
-export async function createProduct(payload: CreateProductDto) {
-  const res = await axios.post<ApiResponse<Product>>("/api/products", payload);
+export async function createProduct(payload: FormData) {
+  const res = await axios.post<ApiResponse<Product>>("/api/products", payload, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
   return res.data;
 }
 

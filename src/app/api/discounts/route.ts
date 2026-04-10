@@ -1,12 +1,16 @@
 import { NextResponse } from "next/server";
 import { validateOrThrow } from "@/lib/validator";
 import { handleApiError } from "@/lib/api-handler";
-import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import prisma from "@/lib/db";
 
 const listDiscountsSchema = z.object({
-  page: z.preprocess((v) => parseInt(String(v)), z.number().int().min(1)).default(1),
-  limit: z.preprocess((v) => parseInt(String(v)), z.number().int().min(1).max(100)).default(20),
+  page: z
+    .preprocess((v) => parseInt(String(v)), z.number().int().min(1))
+    .default(1),
+  limit: z
+    .preprocess((v) => parseInt(String(v)), z.number().int().min(1).max(100))
+    .default(20),
 });
 
 const createDiscountSchema = z.object({
@@ -70,7 +74,7 @@ export async function POST(req: Request) {
     if (!product) {
       return NextResponse.json(
         { status: "error", message: "Product not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -93,7 +97,7 @@ export async function POST(req: Request) {
         message: "Discount created successfully",
         data: { discount },
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     return handleApiError(error);

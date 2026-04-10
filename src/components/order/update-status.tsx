@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
+// import { useToast } from "@/hooks/use-toast";
 import type { Order } from "@/types/orders";
 
 interface UpdateOrderStatusProps {
@@ -43,7 +43,7 @@ export function UpdateOrderStatusDialog({
   const [status, setStatus] = useState(order.status || "PENDING");
   const [loading, setLoading] = useState(false);
   const { mutate: updateStatus } = useUpdateOrderStatus();
-  const { toast } = useToast();
+  // const { toast } = useToast();
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -52,19 +52,19 @@ export function UpdateOrderStatusDialog({
         { id: order.id, status },
         {
           onSuccess: () => {
-            toast({
-              title: "Success",
-              description: "Order status updated successfully",
-            });
+            // toast({
+            //   title: "Success",
+            //   description: "Order status updated successfully",
+            // });
             onOpenChange(false);
             onSuccess?.();
           },
           onError: () => {
-            toast({
-              variant: "destructive",
-              title: "Error",
-              description: "Failed to update order status",
-            });
+            // toast({
+            //   variant: "destructive",
+            //   title: "Error",
+            //   description: "Failed to update order status",
+            // });
           },
         }
       );

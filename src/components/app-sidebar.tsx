@@ -8,12 +8,10 @@ import {
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarRail,
 } from "@/components/ui/sidebar";
 
 // lucide icons
@@ -46,40 +44,50 @@ const navItems: NavItem[] = [
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
 
-  // ✅ safer active check (fixes "/dashboard" matching everything)
+  // safer active check
   const isActive = (url: string) =>
     url === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(url);
 
   return (
-    <Sidebar {...props}>
-      <SidebarHeader className="px-3 py-3">
-        <Link href="/dashboard" className="flex items-center gap-2">
-          <div className="grid h-9 w-9 place-items-center rounded-md bg-neutral-900 text-white">
-            <Settings className="h-4 w-4" />
+    <Sidebar className="border-r-0 bg-white" {...props}>
+      <SidebarHeader className="px-6 py-6 pb-4">
+        <Link href="/dashboard" className="flex items-center gap-3">
+          <div className="grid h-10 w-10 place-items-center rounded-xl bg-indigo-600 text-white shadow-sm">
+            <Settings className="h-5 w-5" />
           </div>
           <div className="leading-tight">
-            <div className="text-sm font-semibold">Dashboard</div>
-            <div className="text-xs text-neutral-500">Manage your store</div>
+            <div className="text-lg font-bold text-gray-900 tracking-tight">Makola UI</div>
+            <div className="text-xs font-medium text-gray-400">Admin Platform</div>
           </div>
         </Link>
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="px-4">
         <SidebarGroup>
-          <SidebarGroupLabel>Getting Started</SidebarGroupLabel>
-
+          <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-2 mt-4">
+            Menu
+          </div>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="gap-1.5">
               {navItems.map((item) => {
                 const Icon = item.icon;
+                const active = isActive(item.url);
                 return (
-                  <SidebarMenuItem key={item.title} className="px-2">
-                    <SidebarMenuButton asChild isActive={isActive(item.url)}>
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton 
+                      asChild 
+                      isActive={active}
+                      className={`h-11 px-3 py-2 rounded-xl transition-all font-medium text-sm ${
+                        active 
+                          ? "bg-indigo-50 text-indigo-700 hover:bg-indigo-100 hover:text-indigo-800" 
+                          : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
+                      }`}
+                    >
                       <Link
                         href={item.url}
-                        className="flex items-center gap-2"
+                        className="flex items-center gap-3 w-full"
                       >
-                        <Icon className="h-4 w-4" />
+                        <Icon className={`h-5 w-5 ${active ? "text-indigo-600" : "text-gray-400"}`} />
                         <span>{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
@@ -90,8 +98,6 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-
-      <SidebarRail />
     </Sidebar>
   );
 }

@@ -11,7 +11,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useToast } from "@/hooks/use-toast";
+// import { useToast } from "@/hooks/use-toast";
 import type { Category } from "@/types/categories";
 
 interface DeleteCategoryDialogProps {
@@ -28,7 +28,7 @@ export function DeleteCategoryDialog({
   onSuccess,
 }: DeleteCategoryDialogProps) {
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
+  // const { toast } = useToast();
 
   const handleDelete = async () => {
     setLoading(true);
@@ -42,19 +42,19 @@ export function DeleteCategoryDialog({
         throw new Error(error.message || "Failed to delete category");
       }
 
-      toast({
-        title: "Success",
-        description: "Category deleted successfully",
-      });
+      // toast({
+      //   title: "Success",
+      //   description: "Category deleted successfully",
+      // });
 
       onSuccess?.();
       onOpenChange(false);
     } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error.message || "Failed to delete category",
-      });
+      // toast({
+      //   variant: "destructive",
+      //   title: "Error",
+      //   description: error.message || "Failed to delete category",
+      // });
     } finally {
       setLoading(false);
     }

@@ -1,10 +1,7 @@
 import { NextResponse } from "next/server";
 import { validateOrThrow } from "@/lib/validator";
 import { handleApiError } from "@/lib/api-handler";
-import {
-  requireAdminServerSession,
-  requireRequestSession,
-} from "@/lib/auth-guards";
+import { requireAdminServerSession } from "@/lib/auth-guards";
 import {
   deleteProductService,
   getProductByIdService,
