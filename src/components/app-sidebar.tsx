@@ -51,8 +51,8 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar className="border-r-0 bg-white" {...props}>
       <SidebarHeader className="px-6 py-6 pb-4">
-        <Link href="/dashboard" className="flex items-center gap-3">
-          <div className="grid h-10 w-10 place-items-center rounded-xl bg-indigo-600 text-white shadow-sm">
+        <Link href="/dashboard" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
+          <div className="grid h-10 w-10 place-items-center rounded-xl text-white shadow-sm" style={{ backgroundColor: 'var(--primary-600)' }}>
             <Settings className="h-5 w-5" />
           </div>
           <div className="leading-tight">
@@ -79,15 +79,19 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                       isActive={active}
                       className={`h-11 px-3 py-2 rounded-xl transition-all font-medium text-sm ${
                         active 
-                          ? "bg-indigo-50 text-indigo-700 hover:bg-indigo-100 hover:text-indigo-800" 
+                          ? "text-gray-700 hover:text-gray-900" 
                           : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
                       }`}
+                      style={active ? { backgroundColor: 'var(--primary-50)' } : {}}
                     >
                       <Link
                         href={item.url}
                         className="flex items-center gap-3 w-full"
                       >
-                        <Icon className={`h-5 w-5 ${active ? "text-indigo-600" : "text-gray-400"}`} />
+                        <Icon 
+                          className="h-5 w-5 transition-colors"
+                          style={active ? { color: 'var(--primary-600)' } : {}}
+                        />
                         <span>{item.title}</span>
                       </Link>
                     </SidebarMenuButton>

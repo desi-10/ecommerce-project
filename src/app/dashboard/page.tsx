@@ -17,6 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useGetDashboardStats } from "@/hooks/use-dashboard";
 import { useGetProducts } from "@/hooks/use-product";
+import { formatGHS } from "@/lib/currency";
 
 const MetricCard = ({ 
   icon: Icon, 
@@ -24,23 +25,15 @@ const MetricCard = ({
   value, 
   trend, 
   trendValue,
-  color = "indigo" 
+  usePrimaryColor = true
 }: {
   icon: any;
   label: string;
   value: string | number;
   trend?: "up" | "down";
   trendValue?: string;
-  color?: "indigo" | "emerald" | "blue" | "purple" | "orange";
+  usePrimaryColor?: boolean;
 }) => {
-  const colorMap = {
-    indigo: "bg-indigo-50 text-indigo-600",
-    emerald: "bg-emerald-50 text-emerald-600",
-    blue: "bg-blue-50 text-blue-600",
-    purple: "bg-purple-50 text-purple-600",
-    orange: "bg-orange-50 text-orange-600",
-  };
-  
   const trendColorMap = {
     up: "text-emerald-700 bg-emerald-50",
     down: "text-red-700 bg-red-50",
@@ -49,7 +42,10 @@ const MetricCard = ({
   return (
     <div className="bg-white rounded-2xl border border-gray-200 p-6 hover:shadow-lg transition-all duration-300">
       <div className="flex items-start justify-between mb-4">
-        <div className={`p-3 rounded-xl ${colorMap[color]}`}>
+        <div 
+          className="p-3 rounded-xl text-white"
+          style={{ backgroundColor: usePrimaryColor ? 'var(--primary-50)' : 'var(--primary-100)', color: 'var(--primary-600)' }}
+        >
           <Icon className="h-6 w-6" />
         </div>
         {trend && trendValue && (
@@ -101,7 +97,12 @@ export default function DashboardOverviewPage() {
           <Button variant="outline" className="rounded-xl border-gray-300">
             Last 30 days
           </Button>
-          <Button className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl">
+          <Button 
+            className="text-white rounded-xl"
+            style={{ backgroundColor: 'var(--primary-600)' }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--primary-700)'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--primary-600)'}
+          >
             Generate Report
           </Button>
         </div>
@@ -118,10 +119,9 @@ export default function DashboardOverviewPage() {
             <MetricCard
               icon={DollarSign}
               label="Total Revenue"
-              value={`$${(metrics[0]?.value || 0).toLocaleString()}`}
+              value={formatGHS(metrics[0]?.value || 0)}
               trend={metrics[0]?.trend === "up" ? "up" : "down"}
               trendValue={metrics[0]?.change || "0%"}
-              color="indigo"
             />
             <MetricCard
               icon={ShoppingCart}
@@ -129,7 +129,6 @@ export default function DashboardOverviewPage() {
               value={recentOrders.length}
               trend="up"
               trendValue={metrics[1]?.change || "0%"}
-              color="blue"
             />
             <MetricCard
               icon={Package}
@@ -137,7 +136,6 @@ export default function DashboardOverviewPage() {
               value={allProducts.length}
               trend={metrics[2]?.trend === "up" ? "up" : "down"}
               trendValue={metrics[2]?.change || "0%"}
-              color="emerald"
             />
             <MetricCard
               icon={Users}
@@ -145,7 +143,6 @@ export default function DashboardOverviewPage() {
               value={metrics[3]?.value || 0}
               trend={metrics[3]?.trend === "up" ? "up" : "down"}
               trendValue={metrics[3]?.change || "0%"}
-              color="purple"
             />
           </>
         )}
@@ -163,9 +160,14 @@ export default function DashboardOverviewPage() {
             {[40, 70, 45, 90, 65, 85, 100, 55, 75, 40, 60, 80].map((height, i) => (
               <div key={i} className="flex-1 flex flex-col items-center gap-2">
                 <div
-                  className="w-full bg-gradient-to-t from-indigo-600 to-indigo-400 rounded-t-lg hover:from-indigo-700 hover:to-indigo-500 transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md"
-                  style={{ height: `${(height / 100) * 100}%` }}
+                  className="w-full rounded-t-lg transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md"
+                  style={{ 
+                    height: `${(height / 100) * 100}%`,
+                    background: `linear-gradient(to top, var(--primary-600), var(--primary-400))`,
+                  }}
                   title={`${height}%`}
+                  onMouseEnter={(e) => e.currentTarget.style.background = `linear-gradient(to top, var(--primary-700), var(--primary-500))`}
+                  onMouseLeave={(e) => e.currentTarget.style.background = `linear-gradient(to top, var(--primary-600), var(--primary-400))`}
                 />
                 <span className="text-xs text-gray-500 font-medium">
                   {["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][i]}
@@ -197,7 +199,10 @@ export default function DashboardOverviewPage() {
               recentOrders.slice(0, 6).map((order: any) => (
                 <div
                   key={order.id}
-                  className="flex items-center justify-between p-4 hover:bg-gray-50 rounded-xl transition-colors cursor-pointer border-l-4 border-transparent hover:border-indigo-500"
+                  className="flex items-center justify-between p-4 hover:bg-gray-50 rounded-xl transition-colors cursor-pointer border-l-4 border-transparent"
+                  style={{ '--hover-border': 'var(--primary-500)' } as React.CSSProperties}
+                  onMouseEnter={(e) => e.currentTarget.style.borderLeftColor = 'var(--primary-500)'}
+                  onMouseLeave={(e) => e.currentTarget.style.borderLeftColor = 'transparent'}
                 >
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-gray-900 text-sm truncate">
@@ -209,7 +214,7 @@ export default function DashboardOverviewPage() {
                   </div>
                   <div className="text-right ml-4">
                     <p className="font-bold text-gray-900 text-sm">
-                      ${Number(order.total).toFixed(2)}
+                      {formatGHS(order.total, false)}
                     </p>
                     <span
                       className={`inline-block text-xs font-bold mt-1 px-2.5 py-1 rounded-full ${
@@ -229,7 +234,13 @@ export default function DashboardOverviewPage() {
           </div>
           {recentOrders.length > 0 && (
             <div className="border-t border-gray-100 p-4">
-              <Button variant="ghost" className="w-full text-indigo-600 hover:bg-indigo-50">
+              <Button 
+                variant="ghost" 
+                className="w-full transition-colors"
+                style={{ color: 'var(--primary-600)' }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--primary-50)'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              >
                 View all orders
                 <ChevronRight className="h-4 w-4 ml-2" />
               </Button>
@@ -299,7 +310,10 @@ export default function DashboardOverviewPage() {
                   className="flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors cursor-pointer border border-gray-100"
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 font-bold text-sm flex-shrink-0">
+                    <div 
+                      className="flex items-center justify-center w-8 h-8 rounded-lg font-bold text-sm flex-shrink-0 text-white"
+                      style={{ backgroundColor: 'var(--primary-600)' }}
+                    >
                       {idx + 1}
                     </div>
                     <div className="min-w-0">
