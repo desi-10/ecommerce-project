@@ -10,6 +10,7 @@ export function validateOrThrow<T extends z.ZodTypeAny>(
   const parsed = schema.safeParse(input);
 
   if (!parsed.success) {
+    console.log(parsed.error.issues);
     throw new ApiError("Validation error", StatusCodes.UNPROCESSABLE_ENTITY);
   }
 

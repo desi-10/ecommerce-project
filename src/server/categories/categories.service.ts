@@ -52,6 +52,7 @@ export const createCategoryService = async (data: CategorySchemaType) => {
     data: {
       name: data.name,
       status: data.status,
+      image: data.image,
       slug,
     },
   });
@@ -159,6 +160,7 @@ export const updateCategoryService = async (
     data: {
       ...(data.name !== undefined ? { name: data.name } : {}),
       ...(data.status !== undefined ? { status: data.status } : {}),
+      ...(data.image !== undefined ? { image: data.image } : {}),
       ...(slug ? { slug } : {}),
     },
   });

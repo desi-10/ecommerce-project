@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import CategoryMonth from "@/components/categoryofthemonth";
 import DealOfDay from "@/components/deal";
@@ -13,19 +13,16 @@ import { useGetProducts } from "@/hooks/use-product";
 import Image from "next/image";
 import { useMemo } from "react";
 
-
 export default function Page() {
   const { data: productsData, isLoading, isError } = useGetProducts();
-  const products = productsData?.data.products || []
+  const products = productsData?.data.products || [];
 
   const paged = useMemo(() => {
     return products?.slice(0, 4);
   }, [products]);
 
-
   return (
     <div className="min-h-screen bg-gray-100">
-
       <main className="pb-20 md:pb-0">
         {/* <Hero /> */}
         <HeroBannerPlusPromos />
@@ -34,15 +31,11 @@ export default function Page() {
 
         <Wrapper>
           <div className="pb-20">
-
             <CategoryMonth />
             <PromoBanners />
             <DealOfDay />
 
-            <ProductSection
-              title="Popular Smartphones & Tablets"
-              category=""
-            />
+            <ProductSection title="Popular Smartphones & Tablets" category="" />
             {/* <ProductSection
             title="Best Seller Laptops & Sounds"
             tabs={["Apple", "Laptop", "Asus", "Marshall", "Speaker"]}
@@ -50,7 +43,6 @@ export default function Page() {
 
             <section className="py-10">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-
                 {/* LEFT — Banner Image */}
                 <div className="lg:col-span-1 h-full">
                   <div className="relative h-full w-full overflow-hidden rounded-xl">
@@ -58,8 +50,9 @@ export default function Page() {
                       src="https://images.unsplash.com/photo-1523275335684-37898b6baf30"
                       alt="Promo banner"
                       className="w-full h-full object-cover"
-                      width={1000}
-                      height={1000}
+                      width={100}
+                      height={100}
+                      quality={80}
                     />
 
                     {/* Optional overlay */}
@@ -88,11 +81,8 @@ export default function Page() {
                     <ProductGridCard key={p.id} p={p} />
                   ))}
                 </div>
-
               </div>
             </section>
-
-
 
             <ProductSection
               title="Technology Toys Recommended For You"
@@ -101,8 +91,6 @@ export default function Page() {
           </div>
         </Wrapper>
       </main>
-
-
     </div>
   );
 }

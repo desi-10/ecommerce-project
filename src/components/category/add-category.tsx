@@ -43,6 +43,7 @@ type CreateCategoryForm = z.infer<typeof createCategorySchema>;
 export function CreateCategoryDialog() {
     const [open, setOpen] = React.useState(false);
     const { mutateAsync, isPending } = useCreateCategory();
+    const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
 
     const form = useForm<CreateCategoryForm>({
         resolver: zodResolver(createCategorySchema),
@@ -61,8 +62,17 @@ export function CreateCategoryDialog() {
     const status = watch("status");
 
     const onSubmit = async (values: CreateCategoryForm) => {
-        await mutateAsync(values);
+        const formData = new FormData();
+        formData.append("name", values.name);
+        if (values.description) formData.append("description", values.description);
+        formData.append("status", values.status);
+        if (selectedFile) {
+            formData.append("image", selectedFile);
+        }
+
+        await mutateAsync(formData as any);
         form.reset();
+        setSelectedFile(null);
         setOpen(false);
     };
 
@@ -98,8 +108,8 @@ export function CreateCategoryDialog() {
                     <div className="grid gap-2">
                         <Label>Category Image</Label>
                         <ImageUpload
-                            onUpload={(url) => setValue("image", url)}
-                            defaultValue={watch("image")}
+                            onFileSelect={(file) => setSelectedFile(file)}
+                            currentImage={null}
                         />
                     </div>
 

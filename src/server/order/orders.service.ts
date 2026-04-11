@@ -421,3 +421,68 @@ export const getOrdersService = async (data: ListOrderInput) => {
     },
   });
 };
+export const getOrderByReferenceService = async (reference: string) => {
+  const payment = await prisma.payment.findUnique({
+    where: { reference },
+    include: {
+      order: {
+        include: {
+          items: {
+            include: {
+              variant: {
+                include: {
+                  product: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!payment || !payment.order) {
+    throw new ApiError("Order not found", StatusCodes.NOT_FOUND);
+  }
+
+  return apiResponse("Order fetched successfully", payment.order);
+};
+
+export const getUserOrdersService = async (userId: string) => {
+  const orders = await prisma.order.findMany({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+    include: {
+      items: true,
+    },
+  });
+
+  return apiResponse("User orders fetched successfully", orders);
+};
+
+export const getUserOrderDetailService = async (
+  orderId: string,
+  userId: string,
+) => {
+  const order = await prisma.order.findFirst({
+    where: { id: orderId, userId },
+    include: {
+      items: {
+        include: {
+          variant: {
+            include: {
+              product: true,
+            },
+          },
+        },
+      },
+      payments: true,
+    },
+  });
+
+  if (!order) {
+    throw new ApiError("Order not found", StatusCodes.NOT_FOUND);
+  }
+
+  return apiResponse("Order detail fetched successfully", order);
+};

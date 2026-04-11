@@ -39,7 +39,11 @@ export default function ProductMain() {
                 {/* Left */}
                 <div>
                     <div className="grid grid-cols-1 gap-8 lg:grid-cols-[420px_1fr]">
-                        <ProductGallery product={product} selectedVariant={selectedVariant} />
+                        <ProductGallery
+                            images={product.images}
+                            mainImage={product.image}
+                            variantId={selectedVariant?.id}
+                        />
 
                         <ProductInfo
                             product={product}

@@ -2,7 +2,7 @@
 // Prisma Setup
 // =========================
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "./generated"
 }
 
@@ -94,6 +94,7 @@ model Product {
   image       String?
   status      ProductStatus @default(ACTIVE)
 
+  images      ProductImage[]
   categories  ProductCategory[]
   variants    ProductVariant[]
   discounts   ProductDiscount[]
@@ -156,6 +157,7 @@ model Category {
   name        String
   slug        String         @unique
   description String?
+  image       String?
   status      CategoryStatus @default(ACTIVE)
 
   products    ProductCategory[]
@@ -182,6 +184,21 @@ model ProductCategory {
   @@index([productId])
   @@index([categoryId])
   @@map("product_category")
+}
+
+model ProductImage {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url       String
+  publicId String
+  alt       String?
+
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("product_image")
 }
 
 // =========================

@@ -22,6 +22,16 @@ const productSelect = {
   status: true,
   createdAt: true,
   updatedAt: true,
+  images: {
+    select: {
+      id: true,
+      url: true,
+      publicId: true,
+      alt: true,
+      position: true,
+    },
+    orderBy: { position: "asc" as const },
+  },
   variants: {
     select: {
       id: true,
@@ -59,11 +69,22 @@ export const createProductService = async (data: CreateProductInput) => {
       data: {
         name: data.name,
         description: data.description ?? null,
-        image: data.image ?? null,
+        image: data.images?.[0]?.url ?? null,
         status: data.status,
       },
       select: { id: true },
     });
+
+    if (data.images && data.images.length > 0) {
+      await tx.productImage.createMany({
+        data: data.images.map((img, index) => ({
+          productId: product.id,
+          url: img.url,
+          publicId: img.id,
+          position: index,
+        })),
+      });
+    }
 
     if (hasVariants) {
       // Create variants + inventories
@@ -128,45 +149,39 @@ export const getProductsService = async (data: ListProductsInput) => {
   const { page, limit, q, status, sort, category, onDiscount } = data;
 
   const where: Prisma.ProductWhereInput = {
-    ...(status ? { status } : {}),
-    ...(q
-      ? {
-          name: {
-            contains: q,
-            mode: "insensitive",
+    ...(status && { status }),
+    ...(q && {
+      name: {
+        contains: q,
+        mode: "insensitive",
+      },
+    }),
+    ...(category && {
+      categories: {
+        some: {
+          category: {
+            slug: category,
           },
-        }
-      : {}),
-    ...(category
-      ? {
-          categories: {
-            some: {
-              category: {
-                slug: category,
-              },
-            },
-          },
-        }
-      : {}),
-    ...(onDiscount
-      ? {
-          discounts: {
-            some: {
-              status: "ACTIVE",
-            },
-          },
-        }
-      : {}),
+        },
+      },
+    }),
+    ...(onDiscount && {
+      discounts: {
+        some: {
+          status: "ACTIVE",
+        },
+      },
+    }),
   };
 
   const orderBy: Prisma.ProductOrderByWithRelationInput =
-    sort === "newest"
-      ? { createdAt: "desc" }
-      : sort === "oldest"
-        ? { createdAt: "asc" }
-        : sort === "name_asc"
-          ? { name: "asc" }
-          : { name: "desc" };
+    sort === "name_asc"
+      ? { name: "asc" }
+      : sort === "name_desc"
+        ? { name: "desc" }
+        : sort === "oldest"
+          ? { createdAt: "asc" }
+          : { createdAt: "desc" };
 
   const [total, products] = await prisma.$transaction([
     prisma.product.count({ where }),
@@ -231,6 +246,26 @@ export const updateProductService = async (
       },
       select: { id: true },
     });
+
+    if (data.images !== undefined) {
+      await tx.productImage.deleteMany({ where: { productId: id } });
+      if (data.images.length > 0) {
+        await tx.productImage.createMany({
+          data: data.images.map((img, index) => ({
+            productId: id,
+            url: img.url,
+            publicId: img.id,
+            position: index,
+          })),
+        });
+
+        // Set first image as main product image
+        await tx.product.update({
+          where: { id },
+          data: { image: data.images[0].url },
+        });
+      }
+    }
 
     // If variants not provided, stop here (core update only)
     if (!data.variants) {

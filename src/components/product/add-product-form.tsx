@@ -25,14 +25,14 @@ import {
     type CreateProductInput,
 } from "@/server/products/products.validators";
 import { useCreateProduct } from "@/hooks/use-product";
-import { ImageUpload } from "@/components/image-upload";
-import { ArrowLeft, Plus, Trash2, AlertCircle, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, AlertCircle, CheckCircle2, Upload, X } from "lucide-react";
 import { formatGHS } from "@/lib/currency";
 
 export function AddProductForm() {
     const router = useRouter();
     const { mutateAsync, isPending, isError, error } = useCreateProduct();
-    const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
+    const [selectedFiles, setSelectedFiles] = React.useState<File[]>([]);
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
     const [submitError, setSubmitError] = React.useState<string | null>(null);
     const [showSuccess, setShowSuccess] = React.useState(false);
 
@@ -65,7 +65,7 @@ export function AddProductForm() {
         try {
             setSubmitError(null);
 
-            if (!selectedFile && !values.variants?.length) {
+            if (selectedFiles.length === 0 && !values.variants?.length) {
                 setSubmitError("Please upload at least one product image");
                 return;
             }
@@ -87,10 +87,10 @@ export function AddProductForm() {
                 formData.append("variants", JSON.stringify(values.variants));
             }
             
-            // Append raw image file
-            if (selectedFile) {
-                formData.append("image", selectedFile);
-            }
+            // Append all image files under the same "images" key
+            selectedFiles.forEach((file) => {
+                formData.append("images", file);
+            });
 
             await mutateAsync(formData as any);
             setShowSuccess(true);
@@ -204,15 +204,74 @@ export function AddProductForm() {
                     {/* Media */}
                     <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
                         <div className="p-6">
-                            <h2 className="text-lg font-semibold mb-4 text-gray-900 tracking-tight">Media</h2>
-                            <div className="grid gap-2">
-                                <Label className="text-sm font-medium text-gray-700">Product Image</Label>
-                                <div className="mt-2 text-gray-500">
-                                    <ImageUpload
-                                        onFileSelect={(file) => setSelectedFile(file)}
-                                        currentImage={null}
-                                    />
+                            <h2 className="text-lg font-semibold mb-1 text-gray-900 tracking-tight">Product Images</h2>
+                            <p className="text-sm text-muted-foreground mb-4">
+                                Select one or more images. The first image will be the main product image.
+                            </p>
+
+                            {/* Selected image previews */}
+                            {selectedFiles.length > 0 && (
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
+                                    {selectedFiles.map((file, index) => (
+                                        <div key={`${file.name}-${index}`} className="relative group rounded-xl overflow-hidden border border-gray-200 bg-gray-100 aspect-square">
+                                            <img
+                                                src={URL.createObjectURL(file)}
+                                                alt={`Preview ${index + 1}`}
+                                                className="w-full h-full object-cover"
+                                            />
+                                            {index === 0 && (
+                                                <span className="absolute top-2 left-2 bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide shadow">
+                                                    Main
+                                                </span>
+                                            )}
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+                                                }}
+                                                className="absolute top-2 right-2 bg-white/90 hover:bg-red-50 border border-gray-200 rounded-lg p-1.5 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+                                            >
+                                                <X className="h-3.5 w-3.5 text-red-600" />
+                                            </button>
+                                        </div>
+                                    ))}
                                 </div>
+                            )}
+
+                            {/* Upload trigger */}
+                            <div
+                                onClick={() => fileInputRef.current?.click()}
+                                className="border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition border-gray-300 hover:border-indigo-400 hover:bg-gray-50"
+                            >
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept="image/*"
+                                    multiple
+                                    onChange={(e) => {
+                                        const files = Array.from(e.target.files || []);
+                                        if (files.length > 0) {
+                                            setSelectedFiles(prev => [...prev, ...files]);
+                                        }
+                                        // Reset input so re-selecting same files works
+                                        e.target.value = "";
+                                    }}
+                                    className="hidden"
+                                />
+                                <div className="flex justify-center mb-3">
+                                    <div className="bg-indigo-100 p-3 rounded-xl">
+                                        <Upload className="h-6 w-6 text-indigo-600" />
+                                    </div>
+                                </div>
+                                <p className="font-semibold text-gray-900">
+                                    {selectedFiles.length > 0 ? "Add more images" : "Click to select images"}
+                                </p>
+                                <p className="text-sm text-gray-600 mt-1">
+                                    Select multiple images at once
+                                </p>
+                                <p className="text-xs text-gray-500 mt-2">
+                                    Supported: JPG, PNG, WebP. Max 5MB per file.
+                                </p>
                             </div>
                         </div>
                     </div>

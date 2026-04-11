@@ -16,7 +16,13 @@ export type Variant = {
   inventory: Inventory;
 };
 
-export type ProductImage = { id: string; url: string };
+export type ProductImage = { 
+  id: string;
+  url: string; 
+  publicId: string;
+  alt?: string | null;
+  position?: number;
+};
 
 export type Product = {
   id: string;
@@ -25,8 +31,9 @@ export type Product = {
   status: ProductStatus;
   createdAt: string;
   updatedAt: string;
-  images?: ProductImage[]; // <-- if API returns it
-  brand?: string | null; // <-- if API returns it
+  image?: string; // Featured image
+  images?: ProductImage[]; // Gallery images
+  brand?: string | null;
   variants: Variant[];
 };
 

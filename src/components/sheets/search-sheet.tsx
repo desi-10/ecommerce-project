@@ -71,14 +71,23 @@ export default function SearchSheetContent() {
           {products.map((p) => {
             const variant = p.variants?.[0];
             const price = variant?.salePrice || variant?.price || "0";
+            const imgSrc = p.image
+              ?? (p.images?.[0] && typeof p.images[0] === 'object' ? (p.images[0] as any).url : p.images?.[0])
+              ?? "/martfury/product.png";
             return (
               <Link
                 key={p.id}
                 href={`/shop/${p.id}`}
                 className="flex gap-3 p-2 rounded hover:bg-muted transition cursor-pointer"
               >
-                <div className="w-12 h-12 flex-shrink-0 bg-muted rounded flex items-center justify-center">
-                  <span className="text-xs text-muted-foreground">No img</span>
+                <div className="w-12 h-12 flex-shrink-0 bg-muted rounded overflow-hidden relative">
+                  <Image
+                    src={imgSrc}
+                    alt={p.name}
+                    fill
+                    className="object-cover"
+                    sizes="48px"
+                  />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium line-clamp-1">{p.name}</p>

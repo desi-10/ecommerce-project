@@ -98,10 +98,7 @@ export default function DashboardOverviewPage() {
             Last 30 days
           </Button>
           <Button 
-            className="text-white rounded-xl"
-            style={{ backgroundColor: 'var(--primary-600)' }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--primary-700)'}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--primary-600)'}
+            className="text-white rounded-xl bg-indigo-600 hover:bg-indigo-700 transition-colors"
           >
             Generate Report
           </Button>
@@ -160,14 +157,12 @@ export default function DashboardOverviewPage() {
             {[40, 70, 45, 90, 65, 85, 100, 55, 75, 40, 60, 80].map((height, i) => (
               <div key={i} className="flex-1 flex flex-col items-center gap-2">
                 <div
-                  className="w-full rounded-t-lg transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md"
+                  className="w-full rounded-t-lg transition-all duration-300 cursor-pointer shadow-sm hover:brightness-110 active:scale-95"
                   style={{ 
                     height: `${(height / 100) * 100}%`,
                     background: `linear-gradient(to top, var(--primary-600), var(--primary-400))`,
                   }}
                   title={`${height}%`}
-                  onMouseEnter={(e) => e.currentTarget.style.background = `linear-gradient(to top, var(--primary-700), var(--primary-500))`}
-                  onMouseLeave={(e) => e.currentTarget.style.background = `linear-gradient(to top, var(--primary-600), var(--primary-400))`}
                 />
                 <span className="text-xs text-gray-500 font-medium">
                   {["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][i]}
@@ -199,10 +194,7 @@ export default function DashboardOverviewPage() {
               recentOrders.slice(0, 6).map((order: any) => (
                 <div
                   key={order.id}
-                  className="flex items-center justify-between p-4 hover:bg-gray-50 rounded-xl transition-colors cursor-pointer border-l-4 border-transparent"
-                  style={{ '--hover-border': 'var(--primary-500)' } as React.CSSProperties}
-                  onMouseEnter={(e) => e.currentTarget.style.borderLeftColor = 'var(--primary-500)'}
-                  onMouseLeave={(e) => e.currentTarget.style.borderLeftColor = 'transparent'}
+                  className="flex items-center justify-between p-4 hover:bg-gray-50 rounded-xl transition-colors cursor-pointer border-l-4 border-transparent hover:border-indigo-500"
                 >
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-gray-900 text-sm truncate">
@@ -236,10 +228,7 @@ export default function DashboardOverviewPage() {
             <div className="border-t border-gray-100 p-4">
               <Button 
                 variant="ghost" 
-                className="w-full transition-colors"
-                style={{ color: 'var(--primary-600)' }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--primary-50)'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                className="w-full transition-colors text-indigo-600 hover:bg-indigo-50"
               >
                 View all orders
                 <ChevronRight className="h-4 w-4 ml-2" />

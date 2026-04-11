@@ -6,6 +6,7 @@ export type Category = {
   name: string;
   slug: string;
   description: string | null;
+  image: string | null;
   status: CategoryStatus;
   createdAt: string;
   updatedAt: string;
@@ -33,6 +34,7 @@ export type GetCategoriesResponse = ApiResponse<GetCategoriesData>;
 export type CreateCategoryDto = {
   name: string;
   description?: string;
+  image?: string;
   status?: CategoryStatus; // default ACTIVE on server
 };
 

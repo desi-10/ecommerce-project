@@ -30,9 +30,10 @@ export default function ProductListRow({ p }: { p: Product }) {
 
     const stock = v?.inventory?.stock ?? 0;
 
-    // Your API/types don't include images/brand yet.
-    // Keep safe fallbacks so UI doesn't crash.
-    const imageSrc = "/martfury/product.png";
+    // Resolve product image from API data
+    const imageSrc = p.image
+        ?? (p.images?.[0] && typeof p.images[0] === 'object' ? (p.images[0] as any).url : p.images?.[0])
+        ?? "/martfury/product.png";
     const brand = ""; // or p.brand if you add it later
     const reviews = 0; // or p.reviewCount if you add it later
 

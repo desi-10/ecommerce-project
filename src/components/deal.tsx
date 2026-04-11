@@ -88,7 +88,9 @@ export default function DealOfDay() {
                             const isInCart = cartSet.has(id);
                             const isInWish = wishSet.has(id);
                             const showActions = activeId === id;
-                            const imageSrc = "/martfury/product.png";
+                            const imageSrc = p.image
+                                ?? (p.images?.[0] && typeof p.images[0] === 'object' ? (p.images[0] as any).url : p.images?.[0])
+                                ?? "/martfury/product.png";
 
                             return (
                                 <CarouselItem

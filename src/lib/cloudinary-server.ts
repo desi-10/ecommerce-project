@@ -12,17 +12,23 @@ cloudinary.config({
  * @param file The file object from FormData
  * @returns The secure URL of the uploaded image
  */
-export async function uploadFileToCloudinary(file: File): Promise<string> {
-    // Convert file to base64
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    const base64File = `data:${file.type};base64,${buffer.toString("base64")}`;
+export async function uploadFileToCloudinary(file: File): Promise<{
+  id: string;
+  url: string;
+}> {
+  // Convert file to base64
+  const arrayBuffer = await file.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
+  const base64File = `data:${file.type};base64,${buffer.toString("base64")}`;
 
-    // Upload to Cloudinary
-    const result = await cloudinary.uploader.upload(base64File, {
-      folder: "ecommerce_products",
-      resource_type: "auto",
-    });
+  // Upload to Cloudinary
+  const result = await cloudinary.uploader.upload(base64File, {
+    folder: "ecommerce_products",
+    resource_type: "auto",
+  });
 
-    return result.secure_url;
+  return {
+    id: result.public_id,
+    url: result.secure_url,
+  };
 }

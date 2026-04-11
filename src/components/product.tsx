@@ -29,8 +29,10 @@ function toCard(p: Product) {
     const id = v?.id ? String(v.id) : String(p.id); // use variantId if possible
     const priceNum = v ? Number(v.salePrice || v.price || 0) : 0;
 
-    // you don't have images/brand in your types yet => fallback
-    const image = "/martfury/product.png";
+    // Resolve product image from API data
+    const image = p.image
+        ?? (p.images?.[0] && typeof p.images[0] === 'object' ? p.images[0].url : p.images?.[0])
+        ?? "/martfury/product.png";
     const brand = ""; // add p.brand later if your API returns it
 
     return {

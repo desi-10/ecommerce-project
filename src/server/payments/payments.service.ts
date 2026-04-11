@@ -17,16 +17,21 @@ export const initiateOrderService = async (
   userId: string,
 ) => {
   const payment = await paystack.initiatePayment({
-    amount: Number(data.amount),
+    amount: Math.round(Number(data.amount) * 100),
     email: data.email,
     currency: Currency.GHS,
+    callbackUrl: `${process.env.BETTER_AUTH_BASE_URL}/checkout/success`,
   });
 
+  console.log("Initiating order");
+  console.log(data, "data");
   const order = await createOrderService({
     items: data.items,
-    userId: data.userId, //change this
-    coupon: data.couponCode,
+    userId: userId || data.userId,
+    couponCode: data.couponCode,
   });
+  console.log("Order created");
+  console.log(order, "order");
 
   await prisma.payment.create({
     data: {
