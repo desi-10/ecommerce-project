@@ -5,24 +5,29 @@ import type { Product } from "@/types/product";
  * across the frontend (dashboard and storefront).
  */
 export function normalizeProduct(rawProduct: any): Product {
+  const firstVariant = rawProduct.variants?.[0];
+  const priceVal = Number(firstVariant?.price ?? rawProduct.price ?? 0);
+  const salePriceVal = firstVariant?.salePrice ? Number(firstVariant.salePrice) : (rawProduct.salePrice ? Number(rawProduct.salePrice) : undefined);
+  const stockVal = firstVariant?.inventory?.stock ?? rawProduct.inventory?.stock ?? rawProduct.stock ?? 0;
+
   return {
     id: String(rawProduct.id),
     brand: rawProduct.brand ?? "",
     name: rawProduct.name ?? "Unnamed Product",
     description: rawProduct.description ?? "",
-    image: rawProduct.image ?? rawProduct.images?.[0]?.url ?? rawProduct.images?.[0] ?? "/default-product.png",
-    images: rawProduct.images ?? [rawProduct.image].filter(Boolean),
+    image: rawProduct.image ?? rawProduct.images?.[0]?.url ?? rawProduct.images?.[0] ?? "/martfury/product.png",
+    images: rawProduct.images?.length ? rawProduct.images : [rawProduct.image].filter(Boolean),
     
-    // Pricing - use sale price as primary if available
-    price: rawProduct.salePrice ? Number(rawProduct.salePrice) : Number(rawProduct.price ?? 0),
-    oldPrice: rawProduct.salePrice ? Number(rawProduct.price ?? 0) : null,
+    // Pricing
+    price: salePriceVal ? salePriceVal : priceVal,
+    oldPrice: salePriceVal ? priceVal : null,
     
     // Alternative pricing fields
-    salePrice: rawProduct.salePrice ? Number(rawProduct.salePrice) : undefined,
+    salePrice: salePriceVal,
     
     // Stock and inventory
-    stock: rawProduct.inventory?.stock ?? rawProduct.stock ?? 0,
-    inventory: rawProduct.inventory,
+    stock: stockVal,
+    inventory: firstVariant?.inventory ?? rawProduct.inventory,
     
     // Variants
     variants: rawProduct.variants ?? [],

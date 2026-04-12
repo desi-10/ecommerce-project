@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { validateOrThrow } from "@/lib/validator";
 import { handleApiError } from "@/lib/api-handler";
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/db";
 import { z } from "zod";
 
 const updateDiscountSchema = z.object({

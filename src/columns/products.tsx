@@ -5,6 +5,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import type { Product } from "@/types/product";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -101,7 +102,25 @@ export const productColumns: ColumnDef<Product>[] = [
         enableHiding: false,
         size: 40,
     },
-
+    {
+        id: "image",
+        header: "Image",
+        cell: ({ row }) => {
+            const p = row.original;
+            const imgSrc = p.image || "/martfury/product.png";
+            return (
+                <div className="relative h-10 w-10 overflow-hidden rounded-md border bg-gray-50">
+                    <Image
+                        src={imgSrc}
+                        alt={p.name}
+                        fill
+                        className="object-contain p-1"
+                    />
+                </div>
+            );
+        },
+        size: 60,
+    },
     {
         accessorKey: "name",
         header: "Name",

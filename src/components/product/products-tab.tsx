@@ -2,6 +2,8 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 type Variant = {
     id: string;
@@ -126,37 +128,38 @@ export default function ProductTabs({ product, selectedVariant }: Props) {
 
                 {/* ================= Vendor ================= */}
                 <TabsContent value="vendor" className="pt-6">
-                    {product.user ? (
+                    {product.vendor ? (
                         <div className="space-y-2 text-sm">
                             <p>
-                                <span className="font-medium">Vendor:</span>{" "}
-                                {product.user.name ?? "Unnamed Vendor"}
-                            </p>
-                            {product.user.email && (
-                                <p>
-                                    <span className="font-medium">Email:</span>{" "}
-                                    {product.user.email}
+                                <span className="font-medium text-blue-600 underline">Vendor:</span>{" "}
+                                {product.vendor.name ?? "Unnamed Store"}
+                                <p className="text-secondary-foreground">
+                                    Trusted seller on Martfury
                                 </p>
-                            )}
+                            </p>
                         </div>
                     ) : (
                         <div className="text-sm text-muted-foreground">
-                            No vendor information available.
+                            Martfury Official Store
                         </div>
                     )}
                 </TabsContent>
 
                 {/* ================= Reviews ================= */}
                 <TabsContent value="reviews" className="pt-6">
-                    <div className="text-sm text-muted-foreground">
-                        Reviews feature coming soon.
+                    <div className="text-sm text-muted-foreground p-8 text-center border rounded-md">
+                        <p className="font-medium text-foreground">No reviews yet</p>
+                        <p>Purchased this product? Be the first to share your thoughts!</p>
+                        <Button variant="outline" className="mt-4">Write a Review</Button>
                     </div>
                 </TabsContent>
 
                 {/* ================= Q&A ================= */}
                 <TabsContent value="qa" className="pt-6">
-                    <div className="text-sm text-muted-foreground">
-                        Questions & Answers coming soon.
+                    <div className="text-sm text-muted-foreground text-center p-8 border rounded-md">
+                        Have a question about this product? 
+                        <br />
+                        <Link href="/contact" className="text-blue-600 font-medium">Ask our support team</Link>
                     </div>
                 </TabsContent>
             </Tabs>

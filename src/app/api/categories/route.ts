@@ -24,30 +24,21 @@ export const GET = async (req: Request) => {
   }
 };
 
-import { uploadFileToCloudinary } from "@/lib/cloudinary-server";
-
 export const POST = async (req: Request) => {
   try {
-    // await requireAdminServerSession();
+    await requireAdminServerSession();
     const formData = await req.formData();
     
-    // Extract file
     const imageFile = formData.get("image") as File | null;
-    let imageUrl = "";
-
-    if (imageFile && imageFile.size > 0) {
-      imageUrl = await uploadFileToCloudinary(imageFile);
-    }
-
+    
     const payload = {
       name: formData.get("name") as string,
       description: (formData.get("description") as string) || undefined,
-      image: imageUrl || undefined,
       status: (formData.get("status") as string) || "ACTIVE",
     };
 
     const valid = validateOrThrow(categorySchema, payload);
-    const result = await createCategoryService(valid);
+    const result = await createCategoryService(valid, imageFile);
     return NextResponse.json(result);
   } catch (error) {
     return handleApiError(error);

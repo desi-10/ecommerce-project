@@ -4,6 +4,7 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import type { Category } from "@/types/categories";
 import { Checkbox } from "@/components/ui/checkbox";
+import Image from "next/image";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -98,9 +99,23 @@ export const categoryColumns: ColumnDef<Category>[] = [
                 onChange={(v) => row.toggleSelected(v)}
             />
         ),
-        enableSorting: false,
         enableHiding: false,
         size: 40,
+    },
+    {
+        id: "image",
+        header: "Image",
+        cell: ({ row }) => (
+            <div className="relative h-10 w-10 overflow-hidden rounded-md border bg-gray-50">
+                <Image
+                    src={row.original.image || "/martfury/product.png"}
+                    alt={row.original.name}
+                    fill
+                    className="object-contain p-1"
+                />
+            </div>
+        ),
+        size: 60,
     },
     {
         accessorKey: "name",

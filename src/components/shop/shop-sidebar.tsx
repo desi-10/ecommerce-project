@@ -84,17 +84,17 @@ export default function ShopSidebar({ onApply }: Props) {
                 <Separator className="my-3" />
                 <div className="space-y-2 max-h-48 overflow-auto">
                     {categories.map((c) => {
-                        const id = String(c.id);
-                        const checked = selectedCats.has(id);
+                        const slug = String(c.slug);
+                        const checked = selectedCats.has(slug);
 
                         return (
-                            <label key={id} className="flex items-center gap-2 text-sm">
+                            <label key={slug} className="flex items-center gap-2 text-sm">
                                 <Checkbox
                                     checked={checked}
                                     onCheckedChange={(val) => {
                                         const next = new Set(selectedCats);
-                                        if (val) next.add(id);
-                                        else next.delete(id);
+                                        if (val) next.add(slug);
+                                        else next.delete(slug);
                                         setSelectedCats(next);
                                     }}
                                 />

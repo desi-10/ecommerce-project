@@ -29,9 +29,17 @@ export const PATCH = async (req: Request, context: RouteContext) => {
     await requireAdminServerSession();
     const { id } = await context.params;
 
-    const body = await req.json();
-    const valid = validateOrThrow(updateCategorySchema, body);
-    const result = await updateCategoryService(id, valid);
+    const formData = await req.formData();
+    const imageFile = formData.get("image") as File | null;
+
+    const payload = {
+      name: (formData.get("name") as string) || undefined,
+      description: (formData.get("description") as string) || undefined,
+      status: (formData.get("status") as string as string) || undefined,
+    };
+
+    const valid = validateOrThrow(updateCategorySchema, payload);
+    const result = await updateCategoryService(id, valid, imageFile);
 
     return NextResponse.json(result);
   } catch (error) {

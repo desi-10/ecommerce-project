@@ -8,6 +8,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -29,6 +30,7 @@ model User {
   profile       Profile?
   orders        Order[]
   payments      Payment[]
+  products      Product[] @relation("ProductVendor")
 
   @@unique([email])
   @@map("user")
@@ -92,12 +94,17 @@ model Product {
   name        String
   description String?
   image       String?
+  brand       String?
   status      ProductStatus @default(ACTIVE)
+
+  vendorId    String?
+  vendor      User?         @relation("ProductVendor", fields: [vendorId], references: [id])
 
   images      ProductImage[]
   categories  ProductCategory[]
   variants    ProductVariant[]
   discounts   ProductDiscount[]
+  reviews     Review[]
 
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
@@ -105,6 +112,21 @@ model Product {
   @@index([status])
   @@index([name])
   @@map("product")
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId    String
+  rating    Int      @default(5)
+  comment   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId])
+  @@map("review")
 }
 
 model ProductVariant {

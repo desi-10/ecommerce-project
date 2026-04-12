@@ -15,7 +15,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 
-function Stars({ value = 4 }: { value?: number }) {
+function Stars({ value = 4, count = 0 }: { value?: number, count?: number }) {
     const full = Math.max(0, Math.min(5, Math.floor(value)));
     return (
         <div className="flex items-center gap-1">
@@ -24,7 +24,7 @@ function Stars({ value = 4 }: { value?: number }) {
                     ★
                 </span>
             ))}
-            <span className="ml-2 text-xs text-muted-foreground">(1 review)</span>
+            <span className="ml-2 text-xs text-muted-foreground">({count} reviews)</span>
         </div>
     );
 }
@@ -42,9 +42,11 @@ type Product = {
     id: string;
     name: string;
     description?: string;
+    brand?: string | null;
     status: "ACTIVE" | "INACTIVE";
     variants: Variant[];
-    // images?: { url: string }[] // if you have it
+    reviews?: any[];
+    vendor?: { name: string } | null;
 };
 
 type Props = {
@@ -114,9 +116,9 @@ export default function ProductInfo({
 
             <div className="mt-2 flex flex-wrap items-center gap-3 text-xs">
                 <div className="text-muted-foreground">
-                    Brand: <span className="text-blue-600 cursor-pointer">No Brand</span>
+                    Brand: <span className="text-blue-600 font-medium">{product.brand || "Original"}</span>
                 </div>
-                <Stars value={4} />
+                <Stars value={product.reviews?.length ? 5 : 0} count={product.reviews?.length || 0} />
             </div>
 
             {/* Variant selector */}
@@ -155,7 +157,7 @@ export default function ProductInfo({
             </div>
 
             <div className="mt-3 text-xs text-muted-foreground">
-                Sold by: <span className="text-blue-600 cursor-pointer font-medium">NO VENDOR</span>
+                Sold by: <span className="text-blue-600 cursor-pointer font-medium">{product.vendor?.name || "Martfury Official"}</span>
             </div>
 
             {product.description ? (

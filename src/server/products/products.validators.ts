@@ -48,12 +48,19 @@ export const listProductsSchema = z.object({
   q: z.string().trim().optional(),
   status: productStatusSchema.optional(),
   category: z.string().trim().optional(),
+  categories: z.preprocess((v) => {
+    if (typeof v === "string") return [v];
+    if (Array.isArray(v)) return v;
+    return undefined;
+  }, z.array(z.string()).optional()),
+  minPrice: z.preprocess(toNumber, z.number().nonnegative().optional()),
+  maxPrice: z.preprocess(toNumber, z.number().nonnegative().optional()),
   onDiscount: z.preprocess((v) => {
     if (v === "true" || v === true) return true;
     if (v === "false" || v === false) return false;
     return undefined;
   }, z.boolean().optional()),
-  sort: z.enum(["newest", "oldest", "name_asc", "name_desc"]).default("newest"),
+  sort: z.enum(["newest", "oldest", "name_asc", "name_desc", "price_asc", "price_desc"]).default("newest"),
 });
 
 export type CreateProductInput = z.infer<typeof createProductSchema>;
@@ -67,6 +74,9 @@ export type ListProductsParams = {
   q?: string;
   status?: "ACTIVE" | "INACTIVE";
   category?: string;
+  categories?: string[];
+  minPrice?: number;
+  maxPrice?: number;
   onDiscount?: boolean;
-  sort?: "newest" | "oldest" | "name_asc" | "name_desc";
+  sort?: "newest" | "oldest" | "name_asc" | "name_desc" | "price_asc" | "price_desc";
 };

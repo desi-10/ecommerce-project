@@ -73,12 +73,12 @@ export default function ProductSection({
         <section className="mt-8 rounded-sm border bg-white">
             <div className="flex items-center justify-between gap-4 p-4">
                 <div className="mozilla-text text-xl font-bold lg:text-2xl">{title}</div>
-                <Button
-                    variant="link"
-                    className="p-0 text-sm text-muted-foreground hover:text-foreground"
+                <Link
+                    href={`/shop?category=${category}`}
+                    className="text-sm font-medium text-blue-600 hover:underline"
                 >
                     View All
-                </Button>
+                </Link>
             </div>
 
             {/* States */}

@@ -19,6 +19,9 @@ export const productsKeys = {
     page?: number; 
     limit?: number; 
     category?: string;
+    categories?: string[];
+    minPrice?: number;
+    maxPrice?: number;
     q?: string;
     onDiscount?: boolean;
     status?: string;
@@ -32,6 +35,9 @@ export function useGetProducts(params?: {
   page?: number;
   limit?: number;
   category?: string;
+  categories?: string[];
+  minPrice?: number;
+  maxPrice?: number;
   q?: string;
   onDiscount?: boolean;
   status?: string;

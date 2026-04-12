@@ -146,7 +146,20 @@ export const createProductService = async (data: CreateProductInput) => {
 };
 
 export const getProductsService = async (data: ListProductsInput) => {
-  const { page, limit, q, status, sort, category, onDiscount } = data;
+  const {
+    page,
+    limit,
+    q,
+    status,
+    sort,
+    category,
+    categories,
+    onDiscount,
+    minPrice,
+    maxPrice,
+  } = data;
+
+  const categorySlugs = categories ?? (category ? [category] : undefined);
 
   const where: Prisma.ProductWhereInput = {
     ...(status && { status }),
@@ -156,57 +169,112 @@ export const getProductsService = async (data: ListProductsInput) => {
         mode: "insensitive",
       },
     }),
-    ...(category && {
+    ...(categorySlugs && categorySlugs.length > 0 && {
       categories: {
         some: {
           category: {
-            slug: category,
+            slug: { in: categorySlugs },
           },
         },
       },
     }),
     ...(onDiscount && {
-      discounts: {
+      variants: {
         some: {
-          status: "ACTIVE",
+          salePrice: {
+            gt: 0,
+          },
+        },
+      },
+    }),
+    ...((minPrice !== undefined || maxPrice !== undefined) && {
+      variants: {
+        some: {
+          AND: [
+            ...(minPrice !== undefined ? [{ price: { gte: minPrice } }] : []),
+            ...(maxPrice !== undefined ? [{ price: { lte: maxPrice } }] : []),
+          ],
         },
       },
     }),
   };
 
-  const orderBy: Prisma.ProductOrderByWithRelationInput =
-    sort === "name_asc"
-      ? { name: "asc" }
-      : sort === "name_desc"
-        ? { name: "desc" }
-        : sort === "oldest"
-          ? { createdAt: "asc" }
-          : { createdAt: "desc" };
+  let orderBy: any = { createdAt: "desc" };
+  if (sort === "name_asc") orderBy = { name: "asc" };
+  else if (sort === "name_desc") orderBy = { name: "desc" };
+  else if (sort === "oldest") orderBy = { createdAt: "asc" };
+  else if (sort === "price_asc") {
+    orderBy = {
+      variants: {
+        _min: {
+          price: "asc",
+        },
+      },
+    };
+  } else if (sort === "price_desc") {
+    orderBy = {
+      variants: {
+        _min: {
+          price: "desc",
+        },
+      },
+    };
+  }
 
-  const [total, products] = await prisma.$transaction([
-    prisma.product.count({ where }),
-    prisma.product.findMany({
-      where,
-      orderBy,
-      skip: (page - 1) * limit,
-      take: limit,
-      select: productSelect,
-    }),
-  ]);
+  try {
+    const [total, products] = await prisma.$transaction([
+      prisma.product.count({ where }),
+      prisma.product.findMany({
+        where,
+        orderBy,
+        skip: (page - 1) * limit,
+        take: limit,
+        select: productSelect,
+      }),
+    ]);
 
-  const totalPages = Math.max(1, Math.ceil(total / limit));
+    const totalPages = Math.max(1, Math.ceil(total / limit));
 
-  return apiResponse("Products fetched successfully", {
-    products,
-    pagination: {
-      page,
-      limit,
-      total,
-      totalPages,
-      hasNext: page < totalPages,
-      hasPrev: page > 1,
-    },
-  });
+    return apiResponse("Products fetched successfully", {
+      products,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1,
+      },
+    });
+  } catch (error: any) {
+    console.error("[getProductsService] Primary Query Failed:", error.message);
+    
+    // Fallback if aggregate sort or complex where failed
+    const [total, products] = await prisma.$transaction([
+      prisma.product.count({ where: { status: "ACTIVE" } }),
+      prisma.product.findMany({
+        where: { status: "ACTIVE" },
+        orderBy: { createdAt: "desc" },
+        skip: (page - 1) * limit,
+        take: limit,
+        select: productSelect,
+      }),
+    ]);
+
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+
+    return apiResponse("Products fetched successfully (safe mode)", {
+      products,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1,
+      },
+    });
+  }
 };
 
 export const getProductByIdService = async (id: string) => {

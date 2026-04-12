@@ -14,12 +14,8 @@ import Image from "next/image";
 import { useMemo } from "react";
 
 export default function Page() {
-  const { data: productsData, isLoading, isError } = useGetProducts();
-  const products = productsData?.data.products || [];
-
-  const paged = useMemo(() => {
-    return products?.slice(0, 4);
-  }, [products]);
+  const { data: fashionData } = useGetProducts({ category: "fashion", limit: 4 });
+  const fashionProducts = fashionData?.data.products || [];
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -35,11 +31,11 @@ export default function Page() {
             <PromoBanners />
             <DealOfDay />
 
-            <ProductSection title="Popular Smartphones & Tablets" category="" />
+            <ProductSection title="Fresh Groceries & Daily Essentials" category="groceries" />
             {/* <ProductSection
             title="Best Seller Laptops & Sounds"
             tabs={["Apple", "Laptop", "Asus", "Marshall", "Speaker"]}
-          /> */}
+            /> */}
 
             <section className="py-10">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
@@ -50,19 +46,19 @@ export default function Page() {
                       src="https://images.unsplash.com/photo-1523275335684-37898b6baf30"
                       alt="Promo banner"
                       className="w-full h-full object-cover"
-                      width={100}
-                      height={100}
-                      quality={80}
+                      width={600}
+                      height={800}
+                      quality={85}
                     />
 
                     {/* Optional overlay */}
                     <div className="absolute inset-0 bg-black/40 flex items-end p-6">
                       <div>
                         <h2 className="text-white text-2xl font-bold">
-                          Summer Collection
+                          Summer Fashion
                         </h2>
                         <p className="text-white/80 text-sm">
-                          Up to 40% off selected items
+                          Up to 40% off selected styles
                         </p>
                       </div>
                     </div>
@@ -71,13 +67,16 @@ export default function Page() {
 
                 {/* RIGHT — Product List */}
                 <div className="hidden lg:block lg:col-span-2 space-y-4 w-full">
-                  {paged.map((p) => (
+                  {fashionProducts.map((p) => (
                     <ProductListRow key={p.id} p={p} />
                   ))}
+                  {fashionProducts.length === 0 && (
+                    <div className="text-muted-foreground italic">Fetching the latest styles...</div>
+                  )}
                 </div>
 
                 <div className="lg:hidden mt-4 grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 lg:grid-cols-4">
-                  {paged.map((p) => (
+                  {fashionProducts.map((p) => (
                     <ProductGridCard key={p.id} p={p} />
                   ))}
                 </div>
@@ -85,8 +84,8 @@ export default function Page() {
             </section>
 
             <ProductSection
-              title="Technology Toys Recommended For You"
-              category=""
+              title="Digital Electronics & Accessories"
+              category="electronics"
             />
           </div>
         </Wrapper>

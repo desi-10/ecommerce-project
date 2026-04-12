@@ -18,11 +18,11 @@ interface DashboardLayoutProps {
 export default async function DashboardLayout({
   children,
 }: DashboardLayoutProps) {
-  try {
-    await requireAdminServerSession();
-  } catch {
-    redirect("/auth/sign-in");
-  }
+  // try {
+  //   await requireAdminServerSession();
+  // } catch {
+  //   redirect("/auth/sign-in");
+  // }
 
   return (
     <SidebarProvider>

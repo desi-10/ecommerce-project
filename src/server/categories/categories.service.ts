@@ -7,6 +7,7 @@ import {
   UpdateCategorySchemaType,
 } from "./categories.validators";
 import { StatusCodes } from "http-status-codes";
+import { uploadFileToCloudinary } from "@/lib/cloudinary-server";
 
 const toSlug = (value: string) =>
   value
@@ -36,7 +37,10 @@ const ensureUniqueSlug = async (baseName: string, excludeId?: string) => {
   }
 };
 
-export const createCategoryService = async (data: CategorySchemaType) => {
+export const createCategoryService = async (
+  data: CategorySchemaType,
+  imageFile?: File | null,
+) => {
   const exists = await prisma.category.findFirst({
     where: { name: data.name },
     select: { id: true },
@@ -46,13 +50,19 @@ export const createCategoryService = async (data: CategorySchemaType) => {
     throw new ApiError("Category name already exists", StatusCodes.CONFLICT);
   }
 
+  let imageUrl = data.image;
+  if (imageFile && imageFile.size > 0) {
+    const upload = await uploadFileToCloudinary(imageFile);
+    imageUrl = upload.url;
+  }
+
   const slug = await ensureUniqueSlug(data.name);
 
   const category = await prisma.category.create({
     data: {
       name: data.name,
       status: data.status,
-      image: data.image,
+      image: imageUrl || null,
       slug,
     },
   });
@@ -128,6 +138,7 @@ export const getCategoryByIdService = async (id: string) => {
 export const updateCategoryService = async (
   id: string,
   data: UpdateCategorySchemaType,
+  imageFile?: File | null,
 ) => {
   if (!id) {
     throw new ApiError("Category id is required", StatusCodes.BAD_REQUEST);
@@ -155,12 +166,18 @@ export const updateCategoryService = async (
 
   const slug = data.name ? await ensureUniqueSlug(data.name, id) : undefined;
 
+  let imageUrl = data.image;
+  if (imageFile && imageFile.size > 0) {
+    const upload = await uploadFileToCloudinary(imageFile);
+    imageUrl = upload.url;
+  }
+
   const updated = await prisma.category.update({
     where: { id },
     data: {
       ...(data.name !== undefined ? { name: data.name } : {}),
       ...(data.status !== undefined ? { status: data.status } : {}),
-      ...(data.image !== undefined ? { image: data.image } : {}),
+      ...(imageUrl !== undefined ? { image: imageUrl } : {}),
       ...(slug ? { slug } : {}),
     },
   });

@@ -4,6 +4,7 @@ import * as React from "react";
 import { useParams } from "next/navigation";
 
 import { useGetProduct } from "@/hooks/use-product";
+import Breadcrumbs from "./breadcrumbs";
 import MobileStickyBuyBar from "./mobile-sticky-bar";
 import ProductGallery from "./product-gallery";
 import ProductInfo from "./product-info";
@@ -33,8 +34,18 @@ export default function ProductMain() {
     if (isLoading) return <div className="py-10">Loading…</div>;
     if (isError || !product) return <div className="py-10">Product not found</div>;
 
+    const mainCategory = product.categories?.[0]?.category;
+
     return (
         <>
+            <div className="py-3">
+                <Breadcrumbs 
+                    productName={product.name} 
+                    categoryName={mainCategory?.name}
+                    categorySlug={mainCategory?.slug}
+                />
+            </div>
+
             <section className="grid grid-cols-1 gap-8 md:grid-cols-[1fr_320px]">
                 {/* Left */}
                 <div>

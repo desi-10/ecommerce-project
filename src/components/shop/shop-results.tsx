@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import ShopSidebar from "./shop-sidebar";
 import ShopToolbar from "./shop-toolbar";
@@ -21,59 +22,64 @@ import { Product } from "@/types/product";
 type ViewMode = "grid" | "list";
 type SortMode = "latest" | "price_low" | "price_high";
 
+const sortMap: Record<string, string> = {
+    latest: "newest",
+    price_low: "price_asc",
+    price_high: "price_desc",
+};
+
 export default function ShopResultsWithSidebar() {
+    const searchParams = useSearchParams();
+    const router = useRouter();
+
     const [view, setView] = useState<ViewMode>("grid");
     const [sort, setSort] = useState<SortMode>("latest");
     const [page, setPage] = useState(1);
+    
+    // Initialize filters from SearchParams (for homepage redirects)
+    const [filters, setFilters] = useState({
+        q: searchParams.get("q") || "",
+        categories: searchParams.get("category") ? [searchParams.get("category")!] : [] as string[],
+        minPrice: Number(searchParams.get("minPrice") || 0),
+        maxPrice: Number(searchParams.get("maxPrice") || 2000),
+    });
 
     const pageSize = 12;
 
-    const { data: productsData, isLoading, isError } = useGetProducts();
+    const { data: productsData, isLoading, isError } = useGetProducts({
+        page,
+        limit: pageSize,
+        q: filters.q || undefined,
+        categories: filters.categories.length > 0 ? filters.categories : undefined,
+        minPrice: filters.minPrice,
+        maxPrice: filters.maxPrice,
+        sort: sortMap[sort] || "newest",
+    });
 
-    // Your current shape: productsData?.data.products
     const rawProducts = productsData?.data?.products ?? [];
-
-    // normalize so ProductGridCard/ProductListRow always get what they expect
     const products = useMemo(() => rawProducts.map(normalizeProduct), [rawProducts]);
+    const totalPages = productsData?.data?.pagination?.totalPages ?? 1;
+
+    const handleApplyFilters = (payload: any) => {
+        setFilters({
+            q: payload.search,
+            categories: payload.categories,
+            minPrice: payload.minPrice,
+            maxPrice: payload.maxPrice,
+        });
+        setPage(1);
+    };
 
     // when sort changes, ensure page resets
     useEffect(() => {
         setPage(1);
     }, [sort]);
 
-    const sorted = useMemo(() => {
-        const items: Product[] = [...products];
-
-        if (sort === "price_low") items.sort((a, b) => (a.price ?? 0) - (b.price ?? 0));
-        if (sort === "price_high") items.sort((a, b) => (b.price ?? 0) - (a.price ?? 0));
-
-        // "latest": if you have createdAt, sort by it; otherwise leave order as-is
-        if (sort === "latest" && items[0]?.createdAt) {
-            items.sort(
-                (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-            );
-        }
-
-        return items;
-    }, [products, sort]);
-
-    const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize));
-
-    // keep page within range when data changes
-    useEffect(() => {
-        setPage((p) => Math.min(Math.max(1, p), totalPages));
-    }, [totalPages]);
-
-    const paged = useMemo(() => {
-        const start = (page - 1) * pageSize;
-        return sorted.slice(start, start + pageSize);
-    }, [sorted, page]);
-
     return (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-[260px_1fr]">
             {/* Desktop sidebar */}
             <aside className="hidden md:block">
-                <ShopSidebar />
+                <ShopSidebar onApply={handleApplyFilters} />
             </aside>
 
             {/* Main */}
@@ -91,23 +97,23 @@ export default function ShopResultsWithSidebar() {
                                 <SheetTitle>Filters</SheetTitle>
                             </SheetHeader>
                             <div className="p-4">
-                                <ShopSidebar />
+                                <ShopSidebar onApply={handleApplyFilters} />
                             </div>
                         </SheetContent>
                     </Sheet>
 
                     <div className="text-xs text-muted-foreground">
-                        {products.length} products found
+                        {productsData?.data?.pagination?.total ?? products.length} products found
                     </div>
                 </div>
 
                 <ShopToolbar
-                    count={products.length}
+                    count={productsData?.data?.pagination?.total ?? products.length}
                     view={view}
                     onViewChange={setView}
                     sort={sort}
                     onSortChange={(v) => {
-                        setSort(v);
+                        setSort(v as SortMode);
                         setPage(1);
                     }}
                 />
@@ -122,13 +128,13 @@ export default function ShopResultsWithSidebar() {
                         {/* Results */}
                         {view === "grid" ? (
                             <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 lg:grid-cols-4">
-                                {paged.map((p) => (
+                                {products.map((p) => (
                                     <ProductGridCard key={p.id} p={p} />
                                 ))}
                             </div>
                         ) : (
                             <div className="mt-4 space-y-4">
-                                {paged.map((p) => (
+                                {products.map((p) => (
                                     <ProductListRow key={p.id} p={p} />
                                 ))}
                             </div>

@@ -31,19 +31,16 @@ export function EditCategoryDialog({
   onSuccess,
 }: EditCategoryDialogProps) {
   const [loading, setLoading] = useState(false);
-  // const { toast } = useToast();
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const {
     register,
     handleSubmit,
-    watch,
     setValue,
     formState: { errors },
   } = useForm({
     defaultValues: {
       name: category.name,
-      slug: category.slug,
-      image: category.image || "",
       description: category.description || "",
     },
   });
@@ -51,10 +48,17 @@ export function EditCategoryDialog({
   const onSubmit = async (data: any) => {
     setLoading(true);
     try {
+      const formData = new FormData();
+      formData.append("name", data.name);
+      if (data.description) formData.append("description", data.description);
+      
+      if (selectedFile) {
+        formData.append("image", selectedFile);
+      }
+
       const res = await fetch(`/api/categories/${category.id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: formData,
       });
 
       if (!res.ok) {
@@ -62,12 +66,10 @@ export function EditCategoryDialog({
         throw new Error(error.message || "Failed to update category");
       }
 
-
-
       onSuccess?.();
       onOpenChange(false);
     } catch (error: any) {
-
+      alert(error.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -88,16 +90,10 @@ export function EditCategoryDialog({
           </div>
 
           <div className="space-y-2">
-            <Label>Slug</Label>
-            <Input placeholder="category-slug" {...register("slug", { required: true })} />
-            {errors.slug && <p className="text-sm text-red-600">Required</p>}
-          </div>
-
-          <div className="space-y-2">
             <Label>Image</Label>
             <ImageUpload
-              onUpload={(url) => setValue("image", url)}
-              defaultValue={watch("image")}
+              onFileSelect={(file) => setSelectedFile(file)}
+              currentImage={category.image}
             />
           </div>
 
