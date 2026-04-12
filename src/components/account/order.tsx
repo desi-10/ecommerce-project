@@ -101,13 +101,13 @@ export default function OrdersPage() {
                       Order #{order.id.slice(-6).toUpperCase()}
                     </p>
                     <p className="text-xs text-neutral-500 mt-0.5">
-                      {/* {new Intl.DateTimeFormat("en-US", {
+                      {order.createdAt ? new Intl.DateTimeFormat("en-US", {
                         month: "long",
                         day: "numeric",
                         year: "numeric",
-                      }).format(new Date(order.createdAt))}{" "}
-                      • {order._count.items}{" "}
-                      {order._count.items === 1 ? "item" : "items"} */}
+                      }).format(new Date(order.createdAt)) : "Date N/A"}{" "}
+                      • {order._count?.items ?? order.items?.length ?? 0}{" "}
+                      {(order._count?.items ?? order.items?.length ?? 0) === 1 ? "item" : "items"}
                     </p>
                   </div>
                 </div>

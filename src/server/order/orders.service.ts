@@ -396,6 +396,9 @@ export const getOrdersService = async (data: ListOrderInput) => {
       include: {
         items: true, // adjust if you have relation name
         payments: true, // optional
+        _count: {
+          select: { items: true },
+        },
         user: {
           select: {
             id: true,
@@ -454,6 +457,9 @@ export const getUserOrdersService = async (userId: string) => {
     orderBy: { createdAt: "desc" },
     include: {
       items: true,
+      _count: {
+        select: { items: true },
+      },
     },
   });
 

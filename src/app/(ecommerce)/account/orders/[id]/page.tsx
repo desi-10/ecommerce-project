@@ -58,7 +58,7 @@ export default function OrderDetailPage() {
                     <div className="flex flex-wrap items-center gap-4 mt-3">
                         <div className="flex items-center gap-1.5 text-sm text-neutral-500">
                             <Calendar className="h-4 w-4" />
-                            {new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).format(new Date(order.createdAt))}
+                            {order.createdAt ? new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).format(new Date(order.createdAt)) : "Date N/A"}
                         </div>
                         <div className="h-1 w-1 rounded-full bg-neutral-300" />
                         <div className="flex items-center gap-1.5 text-sm font-semibold text-blue-600">

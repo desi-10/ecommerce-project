@@ -4,6 +4,7 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import type { Payment } from "@/types/payments";
 import { Checkbox } from "@/components/ui/checkbox";
+import { PaymentActions } from "@/components/payment/payment-actions";
 
 function IndeterminateCheckbox({
   checked,
@@ -109,5 +110,11 @@ export const paymentColumns: ColumnDef<Payment>[] = [
     accessorKey: "createdAt",
     header: "Created",
     cell: ({ row }) => new Date(row.original.createdAt).toLocaleString(),
+  },
+
+  {
+    id: "actions",
+    header: "Actions",
+    cell: ({ row }) => <PaymentActions payment={row.original} />,
   },
 ];

@@ -1,73 +1,73 @@
-import prisma from "@/lib/db";
-import { format } from "date-fns";
-import { requireAdminServerSession } from "@/lib/auth-guards";
+"use client";
 
-export const dynamic = 'force-dynamic';
+import { useQuery } from "@tanstack/react-query";
+import { DataTable } from "@/components/data-table";
+import { contactColumns } from "@/columns/contacts";
+import Wrapper from "@/components/wrapper";
+import { AlertCircle, Inbox, Loader2 } from "lucide-react";
 
-export default async function ContactsDashboardPage() {
-    await requireAdminServerSession();
-
-    const inquiries = await prisma.inquiry.findMany({
-        orderBy: { createdAt: 'desc' }
+export default function ContactsDashboardPage() {
+    const { 
+        data: response, 
+        isLoading, 
+        isError, 
+        error, 
+        refetch 
+    } = useQuery({
+        queryKey: ["contacts"],
+        queryFn: async () => {
+            const res = await fetch("/api/contact");
+            if (!res.ok) throw new Error("Failed to fetch inquiries");
+            return res.json();
+        }
     });
 
-    return (
-        <div className="space-y-6">
-            <div>
-                <h1 className="text-3xl font-bold tracking-tight">Customer Inquiries</h1>
-                <p className="text-muted-foreground mt-2 text-sm">
-                    Review and respond to messages submitted through the public contact page.
-                </p>
-            </div>
+    const inquiries = response?.data || [];
 
-            <div className="rounded-md border bg-white overflow-hidden shadow-sm">
-                <table className="w-full text-sm text-left">
-                    <thead className="bg-gray-50 border-b text-gray-500 uppercase text-xs">
-                        <tr>
-                            <th className="px-6 py-4 font-medium">Date</th>
-                            <th className="px-6 py-4 font-medium">Sender</th>
-                            <th className="px-6 py-4 font-medium">Subject</th>
-                            <th className="px-6 py-4 font-medium">Message Snapshot</th>
-                            <th className="px-6 py-4 font-medium">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                        {inquiries.length === 0 ? (
-                            <tr>
-                                <td colSpan={5} className="px-6 py-12 text-center text-gray-400">
-                                    No inquiries found. When customers use the contact page, their messages will appear here.
-                                </td>
-                            </tr>
-                        ) : (
-                            inquiries.map((inq) => (
-                                <tr key={inq.id} className="hover:bg-gray-50/50 transition-colors">
-                                    <td className="px-6 py-4 whitespace-nowrap text-gray-500">
-                                        {format(new Date(inq.createdAt), "MMM d, yyyy")}
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="font-medium text-gray-900">{inq.name}</div>
-                                        <div className="text-gray-500 text-xs">{inq.email}</div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-800">
-                                        {inq.subject}
-                                    </td>
-                                    <td className="px-6 py-4 text-gray-600 max-w-xs truncate">
-                                        {inq.message}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${
-                                            inq.status === 'UNREAD' ? 'bg-red-100 text-red-700' : 
-                                            inq.status === 'READ' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'
-                                        }`}>
-                                            {inq.status}
-                                        </span>
-                                    </td>
-                                </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
-            </div>
-        </div>
+    return (
+        <main>
+            <Wrapper>
+                <div className="mb-6">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                        <div>
+                            <h1 className="text-3xl font-bold tracking-tight text-gray-900">Customer Inquiries</h1>
+                            <p className="text-sm text-gray-600 mt-2">
+                                Review and manage customer messages submitted through the website.
+                            </p>
+                        </div>
+                    </div>
+
+                    {isError && (
+                        <div className="flex items-start gap-3 rounded-lg bg-red-50 p-4 border border-red-200 mb-6 font-medium text-red-900">
+                            <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+                            <div>
+                                <p>Failed to load inquiries</p>
+                                <p className="text-sm text-red-700 mt-1">{(error as Error)?.message}</p>
+                            </div>
+                        </div>
+                    )}
+
+                    {isLoading ? (
+                        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-xl border border-gray-100 shadow-sm">
+                            <Loader2 className="h-8 w-8 animate-spin text-blue-600 mb-4" />
+                            <p className="text-neutral-500 font-medium animate-pulse">Fetching records...</p>
+                        </div>
+                    ) : inquiries.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-xl border border-dashed border-gray-300">
+                            <Inbox className="h-12 w-12 text-gray-400 mb-4" />
+                            <h3 className="text-lg font-semibold text-gray-900">Inbox is empty</h3>
+                            <p className="text-sm text-gray-500 mt-2">No customer inquiries have been received yet.</p>
+                        </div>
+                    ) : (
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-1">
+                            <DataTable 
+                                columns={contactColumns(refetch)} 
+                                data={{ items: inquiries }} 
+                            />
+                        </div>
+                    )}
+                </div>
+            </Wrapper>
+        </main>
     );
 }

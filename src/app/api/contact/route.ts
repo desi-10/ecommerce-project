@@ -9,6 +9,18 @@ const contactSchema = z.object({
   message: z.string().min(10, "Message must be at least 10 characters").max(5000),
 });
 
+export const GET = async () => {
+  try {
+    const inquiries = await prisma.inquiry.findMany({
+      orderBy: { createdAt: "desc" },
+    });
+    return NextResponse.json({ success: true, data: inquiries });
+  } catch (error) {
+    console.error("CONTACT GET ERROR:", error);
+    return NextResponse.json({ success: false, message: "Internal Server Error" }, { status: 500 });
+  }
+};
+
 export const POST = async (req: Request) => {
   try {
     const body = await req.json();
