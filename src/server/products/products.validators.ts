@@ -49,7 +49,7 @@ export const listProductsSchema = z.object({
   status: productStatusSchema.optional(),
   category: z.string().trim().optional(),
   categories: z.preprocess((v) => {
-    if (typeof v === "string") return [v];
+    if (typeof v === "string" && v !== "") return v.split(",");
     if (Array.isArray(v)) return v;
     return undefined;
   }, z.array(z.string()).optional()),

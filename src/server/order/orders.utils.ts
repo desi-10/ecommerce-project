@@ -1,6 +1,6 @@
 import { ApiError } from "@/lib/api-error";
 import { StatusCodes } from "http-status-codes";
-import { OrderStatus } from "../../../prisma/generated/enums";
+import { OrderStatus } from "../../../prisma/generated/client";
 
 const allowedTransitions: Record<OrderStatus, OrderStatus[]> = {
   PENDING: ["PAID", "FAILED", "CANCELLED"],

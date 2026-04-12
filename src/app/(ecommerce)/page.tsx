@@ -14,7 +14,10 @@ import Image from "next/image";
 import { useMemo } from "react";
 
 export default function Page() {
-  const { data: fashionData } = useGetProducts({ category: "fashion", limit: 4 });
+  const { data: fashionData } = useGetProducts({
+    category: "fashion",
+    limit: 4,
+  });
   const fashionProducts = fashionData?.data.products || [];
 
   return (
@@ -31,7 +34,10 @@ export default function Page() {
             <PromoBanners />
             <DealOfDay />
 
-            <ProductSection title="Fresh Groceries & Daily Essentials" category="groceries" />
+            <ProductSection
+              title="Fresh Groceries & Daily Essentials"
+              category="groceries"
+            />
             {/* <ProductSection
             title="Best Seller Laptops & Sounds"
             tabs={["Apple", "Laptop", "Asus", "Marshall", "Speaker"]}
@@ -71,7 +77,9 @@ export default function Page() {
                     <ProductListRow key={p.id} p={p} />
                   ))}
                   {fashionProducts.length === 0 && (
-                    <div className="text-muted-foreground italic">Fetching the latest styles...</div>
+                    <div className="text-muted-foreground italic">
+                      Fetching the latest styles...
+                    </div>
                   )}
                 </div>
 

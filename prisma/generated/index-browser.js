@@ -189,6 +189,8 @@ exports.Prisma.ReviewScalarFieldEnum = {
   userId: 'userId',
   rating: 'rating',
   comment: 'comment',
+  reply: 'reply',
+  replyAt: 'replyAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -322,6 +324,17 @@ exports.Prisma.PaymentScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.InquiryScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  email: 'email',
+  subject: 'subject',
+  message: 'message',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -392,6 +405,12 @@ exports.PaymentStatus = exports.$Enums.PaymentStatus = {
   REFUNDED: 'REFUNDED'
 };
 
+exports.InquiryStatus = exports.$Enums.InquiryStatus = {
+  UNREAD: 'UNREAD',
+  READ: 'READ',
+  RESOLVED: 'RESOLVED'
+};
+
 exports.Prisma.ModelName = {
   User: 'User',
   Session: 'Session',
@@ -409,7 +428,8 @@ exports.Prisma.ModelName = {
   ProductDiscount: 'ProductDiscount',
   Order: 'Order',
   OrderItem: 'OrderItem',
-  Payment: 'Payment'
+  Payment: 'Payment',
+  Inquiry: 'Inquiry'
 };
 
 /**

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Mail, MapPin, Phone } from "lucide-react";
 import Wrapper from "@/components/wrapper";
 import { useState } from "react";
-// import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 export default function ContactUsSection() {
     const [loading, setLoading] = useState(false);
@@ -16,7 +16,6 @@ export default function ContactUsSection() {
         subject: "",
         message: "",
     });
-    // const { toast } = useToast();
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -37,26 +36,21 @@ export default function ContactUsSection() {
             const data = await res.json();
 
             if (!res.ok) {
-                // toast({
-                //     variant: "destructive",
-                //     title: "Error",
-                //     description: data.message || "Failed to send message",
-                // });
+                toast.error("Error", {
+                    description: data.message || "Failed to send message",
+                });
                 return;
             }
 
-            // toast({
-            //     title: "Success",
-            //     description: "Your message has been sent successfully",
-            // });
+            toast.success("Success", {
+                description: "Your message has been sent successfully",
+            });
 
             setFormData({ name: "", email: "", subject: "", message: "" });
         } catch (error) {
-            // toast({
-            //     variant: "destructive",
-            //     title: "Error",
-            //     description: "Failed to send message",
-            // });
+            toast.error("Error", {
+                description: "Failed to send message",
+            });
         } finally {
             setLoading(false);
         }

@@ -522,8 +522,13 @@ async function main() {
 
   // 0. Cleanup
   console.log("Cleaning up database...");
+  await prisma.review.deleteMany();
+  await prisma.orderItem.deleteMany();
+  await prisma.payment.deleteMany();
+  await prisma.order.deleteMany();
   await prisma.productCategory.deleteMany();
   await prisma.inventory.deleteMany();
+  await prisma.productImage.deleteMany();
   await prisma.productVariant.deleteMany();
   await prisma.productDiscount.deleteMany();
   await prisma.product.deleteMany();
@@ -582,6 +587,44 @@ async function main() {
   }
 
   console.log("Seeding finished.");
+
+  // 3. Create Admin User
+  console.log("Creating Admin User...");
+  // Use a pre-generated bcrypt hash for 'admin123' to avoid missing dependency imports
+  const adminPasswordHash = "$2a$10$w6zByjYt4m5iW2x1WfO5tOh8sS5o4iXW5CqH9c7z4ZzT/5L5.RzIq"; // "admin123"
+
+  const adminUser = await prisma.user.upsert({
+    where: { email: "admin@makola.com" },
+    update: {
+      role: "admin",
+      name: "Store Admin"
+    },
+    create: {
+      id: "admin-seed-id",
+      email: "admin@makola.com",
+      name: "Store Admin",
+      role: "admin",
+      emailVerified: true,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }
+  });
+
+  await prisma.account.upsert({
+    where: { id: "admin-acc-id" },
+    update: {
+      password: adminPasswordHash
+    },
+    create: {
+      id: "admin-acc-id",
+      accountId: "admin",
+      providerId: "credential",
+      userId: adminUser.id,
+      password: adminPasswordHash,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }
+  });
 }
 
 main()

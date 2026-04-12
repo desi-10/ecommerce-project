@@ -95,7 +95,7 @@ export default function ProductInfo({
 
     const buyNow = () => {
         addToCart();
-        router.push("/cart");
+        router.push("/checkout");
     };
 
     return (

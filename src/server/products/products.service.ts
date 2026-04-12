@@ -22,6 +22,31 @@ const productSelect = {
   status: true,
   createdAt: true,
   updatedAt: true,
+  brand: true,
+  categories: {
+    select: {
+      category: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+        },
+      },
+    },
+  },
+  vendor: {
+    select: {
+      name: true,
+    },
+  },
+  reviews: {
+    select: {
+      id: true,
+      rating: true,
+      comment: true,
+      createdAt: true,
+    },
+  },
   images: {
     select: {
       id: true,
@@ -309,7 +334,6 @@ export const updateProductService = async (
         ...(data.description !== undefined
           ? { description: data.description ?? null }
           : {}),
-        ...(data.image !== undefined ? { image: data.image ?? null } : {}),
         ...(data.status !== undefined ? { status: data.status } : {}),
       },
       select: { id: true },

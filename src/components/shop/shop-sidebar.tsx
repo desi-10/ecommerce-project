@@ -6,7 +6,8 @@ import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { useGetCategories } from "@/hooks/use-category";
 
 type FilterPayload = {
@@ -27,10 +28,31 @@ export default function ShopSidebar({ onApply }: Props) {
     const { data: categoryData } = useGetCategories();
     const categories = categoryData?.data?.categories ?? [];
 
+    const searchParams = useSearchParams();
+
     const [search, setSearch] = useState("");
     const [price, setPrice] = useState<[number, number]>([0, 2000]);
     const [selectedCats, setSelectedCats] = useState<Set<string>>(new Set());
     const [selectedBrands, setSelectedBrands] = useState<Set<string>>(new Set());
+
+    // Sync visual UI state with initial search params or when URL changes externally
+    useEffect(() => {
+        const q = searchParams.get("q");
+        if (q) setSearch(q);
+        
+        const cat = searchParams.get("category");
+        if (cat) {
+            setSelectedCats(new Set([cat]));
+        } else {
+            setSelectedCats(new Set()); // Clear if URL loses the query
+        }
+
+        const min = searchParams.get("minPrice");
+        const max = searchParams.get("maxPrice");
+        if (min || max) {
+            setPrice([Number(min || 0), Number(max || 2000)]);
+        }
+    }, [searchParams]);
 
     const handleApply = () => {
         onApply?.({

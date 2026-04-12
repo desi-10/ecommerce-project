@@ -75,6 +75,18 @@ export default function ShopResultsWithSidebar() {
         setPage(1);
     }, [sort]);
 
+    // Sync URL searchParams to internal filter state (e.g., when routing from homepage categories)
+    useEffect(() => {
+        setFilters({
+            q: searchParams.get("q") || "",
+            categories: searchParams.get("category") ? [searchParams.get("category")!] : [],
+            minPrice: Number(searchParams.get("minPrice") || 0),
+            maxPrice: Number(searchParams.get("maxPrice") || 2000),
+        });
+        setPage(1);
+    }, [searchParams]);
+
+
     return (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-[260px_1fr]">
             {/* Desktop sidebar */}

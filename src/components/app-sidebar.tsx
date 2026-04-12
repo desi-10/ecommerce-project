@@ -12,7 +12,9 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarFooter,
 } from "@/components/ui/sidebar";
+import { useSession, signOut } from "@/lib/auth-client";
 
 // lucide icons
 import {
@@ -23,6 +25,9 @@ import {
   BadgePercent,
   CreditCard,
   Settings,
+  MessageSquare,
+  LogOut,
+  Home,
 } from "lucide-react";
 
 type NavItem = {
@@ -39,10 +44,13 @@ const navItems: NavItem[] = [
   { title: "Inventory", url: "/dashboard/inventory", icon: Package },
   { title: "Discounts", url: "/dashboard/discounts", icon: BadgePercent },
   { title: "Payments", url: "/dashboard/payments", icon: CreditCard },
+  { title: "Reviews", url: "/dashboard/reviews", icon: MessageSquare },
+  { title: "Contacts", url: "/dashboard/contacts", icon: MessageSquare },
 ];
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
+  const { data: session } = useSession();
 
   // safer active check
   const isActive = (url: string) =>
@@ -56,7 +64,9 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
             <Settings className="h-5 w-5" />
           </div>
           <div className="leading-tight">
-            <div className="text-lg font-bold text-gray-900 tracking-tight">Makola UI</div>
+            <div className="text-lg font-bold text-gray-900 tracking-tight">
+              mart<span className="text-blue-600">fury</span>
+            </div>
             <div className="text-xs font-medium text-gray-400">Admin Platform</div>
           </div>
         </Link>
@@ -102,6 +112,38 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarFooter className="border-t border-gray-100 p-4 space-y-3">
+        <Link 
+          href="/" 
+          className="flex items-center gap-3 w-full h-10 px-3 rounded-xl transition-all font-medium text-sm text-gray-500 hover:text-gray-900 hover:bg-gray-50"
+        >
+          <Home className="h-4 w-4" />
+          <span>Back to Store</span>
+        </Link>
+
+        {session?.user && (
+          <div className="flex items-center gap-3 px-3 py-2 bg-gray-50 rounded-xl border border-gray-100">
+            <div className="h-8 w-8 rounded-full text-white flex items-center justify-center font-semibold text-xs shrink-0" style={{ backgroundColor: 'var(--primary-600)' }}>
+              {session.user.name?.charAt(0).toUpperCase() || "A"}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-gray-900 truncate">
+                {session.user.name}
+              </p>
+              <p className="text-xs text-gray-500 truncate">
+                {session.user.email}
+              </p>
+            </div>
+            <button 
+              onClick={() => signOut({ fetchOptions: { onSuccess: () => { window.location.href = '/'; } } })}
+              className="p-1.5 text-gray-400 hover:text-red-600 transition-colors rounded-md hover:bg-red-50"
+              title="Log out"
+            >
+              <LogOut className="h-4 w-4" />
+            </button>
+          </div>
+        )}
+      </SidebarFooter>
     </Sidebar>
   );
 }

@@ -17,7 +17,13 @@ export async function getProducts(params?: {
   status?: string;
   sort?: string;
 }) {
-  const res = await axios.get("/api/products", { params });
+  const query = { ...params } as Record<string, any>;
+  
+  if (Array.isArray(query.categories)) {
+    query.categories = query.categories.join(',');
+  }
+
+  const res = await axios.get("/api/products", { params: query });
   return res.data;
 }
 

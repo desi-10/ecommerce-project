@@ -30,6 +30,7 @@ model User {
   orders   Order[]
   payments Payment[]
   products Product[] @relation("ProductVendor")
+  reviews  Review[]
 
   @@unique([email])
   @@map("user")
@@ -115,17 +116,21 @@ model Product {
 }
 
 model Review {
-  id        String  @id @default(cuid())
+  id        String    @id @default(cuid())
   productId String
-  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product   Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
   userId    String
-  rating    Int     @default(5)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rating    Int       @default(5)
   comment   String?
+  reply     String?
+  replyAt   DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([productId])
+  @@index([userId])
   @@map("review")
 }
 
@@ -407,4 +412,27 @@ model Payment {
   @@index([orderId])
   @@index([status])
   @@map("payment")
+}
+
+// =========================
+// Contacts / Inquiries
+// =========================
+enum InquiryStatus {
+  UNREAD
+  READ
+  RESOLVED
+}
+
+model Inquiry {
+  id      String        @id @default(cuid())
+  name    String
+  email   String
+  subject String
+  message String
+  status  InquiryStatus @default(UNREAD)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("inquiry")
 }
