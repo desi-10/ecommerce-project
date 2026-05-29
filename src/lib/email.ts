@@ -162,3 +162,82 @@ export const sendNewsletterEmail = async (email: string) => {
     throw error;
   }
 };
+
+export const sendPurchaseEmail = async (email: string, orderDetails: any) => {
+  try {
+    const itemsHtml = orderDetails.items.map((item: any) => `
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd;">${item.variant.product.name} (${item.variant.name})</td>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd; text-align: center;">${item.qty}</td>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd; text-align: right;">GHS ${item.lineTotal}</td>
+      </tr>
+    `).join('');
+
+    await transporter.sendMail({
+      from: process.env.NODEMAILER_FROM_EMAIL,
+      to: email,
+      subject: "Your Order Receipt - Thank you for your purchase!",
+      html: `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="UTF-8">
+            <style>
+              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+              .container { max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; }
+              .header { background-color: #2563eb; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+              .content { background-color: white; padding: 20px; border-radius: 0 0 8px 8px; }
+              .total-row { font-weight: bold; font-size: 1.1em; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>Order Confirmed!</h1>
+              </div>
+              <div class="content">
+                <p>Hi,</p>
+                <p>Thank you for your purchase. We are processing your order and will let you know once it's on the way.</p>
+                
+                <h3>Order Summary</h3>
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                  <thead>
+                    <tr>
+                      <th style="padding: 10px; border-bottom: 2px solid #ddd; text-align: left;">Item</th>
+                      <th style="padding: 10px; border-bottom: 2px solid #ddd; text-align: center;">Qty</th>
+                      <th style="padding: 10px; border-bottom: 2px solid #ddd; text-align: right;">Price</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${itemsHtml}
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <td colspan="2" style="padding: 10px; text-align: right;">Subtotal:</td>
+                      <td style="padding: 10px; text-align: right;">GHS ${orderDetails.subtotal}</td>
+                    </tr>
+                    ${orderDetails.discountTotal > 0 ? `
+                    <tr>
+                      <td colspan="2" style="padding: 10px; text-align: right; color: #16a34a;">Discount:</td>
+                      <td style="padding: 10px; text-align: right; color: #16a34a;">-GHS ${orderDetails.discountTotal}</td>
+                    </tr>` : ''}
+                    <tr class="total-row">
+                      <td colspan="2" style="padding: 10px; text-align: right;">Total:</td>
+                      <td style="padding: 10px; text-align: right;">GHS ${orderDetails.total}</td>
+                    </tr>
+                  </tfoot>
+                </table>
+                <p>If you have any questions, feel free to contact us.</p>
+              </div>
+            </div>
+          </body>
+        </html>
+      `,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to send purchase email:", error);
+    // Don't throw to avoid failing the main request if email fails
+  }
+};

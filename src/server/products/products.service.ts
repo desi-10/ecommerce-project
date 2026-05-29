@@ -9,6 +9,8 @@ import prisma from "@/lib/db";
 import { StatusCodes } from "http-status-codes";
 
 import { Prisma } from "../../../prisma/generated/client";
+import { generateEmbedding } from "../ai/embedding";
+import { getPineconeIndex } from "@/lib/pinecone";
 
 export const decimal = (n: number) => new Prisma.Decimal(n);
 // --------------------------
@@ -77,6 +79,11 @@ const productSelect = {
 
 export const createProductService = async (data: CreateProductInput) => {
   const hasVariants = data.variants.length > 0;
+
+  // Generate embedding for search
+  const embeddingText = `${data.name} ${data.description || ""}`;
+  const embedding = await generateEmbedding(embeddingText);
+
   const result = await prisma.$transaction(async (tx) => {
     // basic duplicate SKU guard within payload
     if (hasVariants) {
@@ -99,6 +106,28 @@ export const createProductService = async (data: CreateProductInput) => {
       },
       select: { id: true },
     });
+
+    if (embedding.length > 0) {
+      const index = getPineconeIndex();
+      await index.upsert({
+        records: [
+          {
+            id: product.id,
+            values: embedding,
+            metadata: { name: data.name, description: data.description || "" },
+          },
+        ]
+      });
+    }
+
+    if (data.categoryId) {
+      await tx.productCategory.create({
+        data: {
+          productId: product.id,
+          categoryId: data.categoryId,
+        },
+      });
+    }
 
     if (data.images && data.images.length > 0) {
       await tx.productImage.createMany({
@@ -182,11 +211,13 @@ export const getProductsService = async (data: ListProductsInput) => {
     onDiscount,
     minPrice,
     maxPrice,
+    ids,
   } = data;
 
   const categorySlugs = categories ?? (category ? [category] : undefined);
 
   const where: Prisma.ProductWhereInput = {
+    ...(ids && ids.length > 0 && { id: { in: ids } }),
     ...(status && { status }),
     ...(q && {
       name: {
@@ -247,7 +278,7 @@ export const getProductsService = async (data: ListProductsInput) => {
   }
 
   try {
-    const [total, products] = await prisma.$transaction([
+    const [total, products] = await Promise.all([
       prisma.product.count({ where }),
       prisma.product.findMany({
         where,
@@ -275,7 +306,7 @@ export const getProductsService = async (data: ListProductsInput) => {
     console.error("[getProductsService] Primary Query Failed:", error.message);
     
     // Fallback if aggregate sort or complex where failed
-    const [total, products] = await prisma.$transaction([
+    const [total, products] = await Promise.all([
       prisma.product.count({ where: { status: "ACTIVE" } }),
       prisma.product.findMany({
         where: { status: "ACTIVE" },
@@ -317,6 +348,21 @@ export const updateProductService = async (
   id: string,
   data: UpdateProductInput,
 ) => {
+  // If name or description changed, regenerate embedding
+  let embedding: number[] | null = null;
+  if (data.name !== undefined || data.description !== undefined) {
+    const existingProduct = await prisma.product.findUnique({
+      where: { id },
+      select: { name: true, description: true },
+    });
+    
+    if (existingProduct) {
+      const name = data.name ?? existingProduct.name;
+      const description = data.description ?? existingProduct.description;
+      embedding = await generateEmbedding(`${name} ${description || ""}`);
+    }
+  }
+
   const updated = await prisma.$transaction(async (tx) => {
     const existing = await tx.product.findUnique({
       where: { id },
@@ -327,7 +373,7 @@ export const updateProductService = async (
       throw new ApiError("Product not found", StatusCodes.NOT_FOUND);
 
     // update product core
-    await tx.product.update({
+    const updatedProduct = await tx.product.update({
       where: { id },
       data: {
         ...(data.name !== undefined ? { name: data.name } : {}),
@@ -336,8 +382,36 @@ export const updateProductService = async (
           : {}),
         ...(data.status !== undefined ? { status: data.status } : {}),
       },
-      select: { id: true },
+      select: { id: true, name: true, description: true },
     });
+
+    if (embedding && embedding.length > 0) {
+      const index = getPineconeIndex();
+      await index.upsert({
+        records: [
+          {
+            id: id,
+            values: embedding,
+            metadata: { 
+              name: updatedProduct.name, 
+              description: updatedProduct.description || "" 
+            },
+          },
+        ]
+      });
+    }
+
+    if (data.categoryId !== undefined) {
+      await tx.productCategory.deleteMany({ where: { productId: id } });
+      if (data.categoryId) {
+        await tx.productCategory.create({
+          data: {
+            productId: id,
+            categoryId: data.categoryId,
+          },
+        });
+      }
+    }
 
     if (data.images !== undefined) {
       await tx.productImage.deleteMany({ where: { productId: id } });
@@ -510,6 +584,14 @@ export const deleteProductService = async (
 
     await tx.product.delete({ where: { id } });
   });
+
+  // Remove from Pinecone
+  try {
+    const index = getPineconeIndex();
+    await index.deleteOne(id);
+  } catch (error) {
+    console.error("Failed to delete from Pinecone:", error);
+  }
 
   return apiResponse("Product deleted successfully", null);
 };

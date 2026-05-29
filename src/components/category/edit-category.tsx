@@ -15,6 +15,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 // import { useToast } from "@/hooks/use-toast";
 import { ImageUpload } from "@/components/image-upload";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { Category } from "@/types/categories";
 
 interface EditCategoryDialogProps {
@@ -37,21 +44,26 @@ export function EditCategoryDialog({
     register,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors },
   } = useForm({
     defaultValues: {
       name: category.name,
       description: category.description || "",
+      status: category.status,
     },
   });
+
+  const status = watch("status");
 
   const onSubmit = async (data: any) => {
     setLoading(true);
     try {
       const formData = new FormData();
       formData.append("name", data.name);
+      formData.append("status", data.status);
       if (data.description) formData.append("description", data.description);
-      
+
       if (selectedFile) {
         formData.append("image", selectedFile);
       }
@@ -85,7 +97,10 @@ export function EditCategoryDialog({
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label>Category Name</Label>
-            <Input placeholder="Category name" {...register("name", { required: true })} />
+            <Input
+              placeholder="Category name"
+              {...register("name", { required: true })}
+            />
             {errors.name && <p className="text-sm text-red-600">Required</p>}
           </div>
 
@@ -99,7 +114,28 @@ export function EditCategoryDialog({
 
           <div className="space-y-2">
             <Label>Description</Label>
-            <Textarea placeholder="Category description" {...register("description")} />
+            <Textarea
+              placeholder="Category description"
+              {...register("description")}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Status</Label>
+            <Select
+              value={status}
+              onValueChange={(v) =>
+                setValue("status", v as any, { shouldDirty: true })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ACTIVE">Active</SelectItem>
+                <SelectItem value="INACTIVE">Inactive</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="flex justify-end gap-2">

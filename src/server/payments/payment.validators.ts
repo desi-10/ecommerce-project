@@ -4,6 +4,7 @@ import { toInt } from "../products/products.utils";
 export const createOrderPayment = z.object({
   email: z.string().email(),
   amount: z.number().positive(),
+  gateway: z.enum(["stripe", "paystack"]),
   orderId: z.string().optional(),
   metadata: z.string().optional(),
   userId: z.string().optional(),

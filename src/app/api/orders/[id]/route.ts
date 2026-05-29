@@ -1,15 +1,27 @@
 import { NextResponse } from "next/server";
 import { handleApiError } from "@/lib/api-handler";
 import { requireAdminServerSession } from "@/lib/auth-guards";
-import { updatePaymentStatusService, deletePaymentService } from "@/server/payments/payments.service";
+import { adminGetOrderService, updateOrderStatusService } from "@/server/order/orders.service";
 
 type RouteContext = {
   params: Promise<{ id: string }>;
 };
 
+export const GET = async (req: Request, context: RouteContext) => {
+  try {
+    await requireAdminServerSession();
+    const { id } = await context.params;
+
+    const result = await adminGetOrderService(id);
+    return NextResponse.json(result);
+  } catch (error) {
+    return handleApiError(error);
+  }
+};
+
 export const PATCH = async (req: Request, context: RouteContext) => {
   try {
-    const session = await requireAdminServerSession();
+    await requireAdminServerSession();
     const { id } = await context.params;
     const { status } = await req.json();
 
@@ -17,21 +29,9 @@ export const PATCH = async (req: Request, context: RouteContext) => {
         return NextResponse.json({ message: "Status is required" }, { status: 400 });
     }
 
-    const result = await updatePaymentStatusService(id, status);
+    const result = await updateOrderStatusService(id, status);
     return NextResponse.json(result);
   } catch (error) {
     return handleApiError(error);
   }
 };
-
-export const DELETE = async (req: Request, context: RouteContext) => {
-    try {
-      const session = await requireAdminServerSession();
-      const { id } = await context.params;
-  
-      const result = await deletePaymentService(id, session.user.id);
-      return NextResponse.json(result);
-    } catch (error) {
-      return handleApiError(error);
-    }
-  };

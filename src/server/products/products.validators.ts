@@ -28,6 +28,7 @@ export const createProductSchema = z.object({
   images: z.array(imageObjectSchema).optional(),
   status: productStatusSchema.default("ACTIVE"),
   variants: z.array(variantCreateSchema).default([]),
+  categoryId: z.string().optional(),
 
   defaultPrice: z.preprocess(toNumber, z.number().nonnegative().optional()),
   defaultSalePrice: z.preprocess(toNumber, z.number().nonnegative().optional()),
@@ -40,6 +41,7 @@ export const updateProductSchema = z.object({
   images: z.array(imageObjectSchema).optional(),
   status: productStatusSchema.optional(),
   variants: z.array(variantUpdateSchema).optional(),
+  categoryId: z.string().optional(),
 });
 
 export const listProductsSchema = z.object({
@@ -61,6 +63,7 @@ export const listProductsSchema = z.object({
     return undefined;
   }, z.boolean().optional()),
   sort: z.enum(["newest", "oldest", "name_asc", "name_desc", "price_asc", "price_desc"]).default("newest"),
+  ids: z.array(z.string()).optional(),
 });
 
 export type CreateProductInput = z.infer<typeof createProductSchema>;

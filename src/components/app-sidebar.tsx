@@ -42,7 +42,7 @@ const navItems: NavItem[] = [
   { title: "Orders", url: "/dashboard/orders", icon: ShoppingBag },
   { title: "Categories", url: "/dashboard/categories", icon: Tags },
   { title: "Inventory", url: "/dashboard/inventory", icon: Package },
-  { title: "Discounts", url: "/dashboard/discounts", icon: BadgePercent },
+  { title: "Coupons", url: "/dashboard/coupons", icon: BadgePercent },
   { title: "Payments", url: "/dashboard/payments", icon: CreditCard },
   { title: "Reviews", url: "/dashboard/reviews", icon: MessageSquare },
   { title: "Contacts", url: "/dashboard/contacts", icon: MessageSquare },

@@ -5,6 +5,7 @@ import { StatusCodes } from "http-status-codes";
 import { ListOrderInput, OrderSchema, OrderType } from "./orders.validators";
 import { validateStatusTransition } from "./orders.utils";
 import { OrderStatus, Prisma } from "../../../prisma/generated/client";
+import { sendPurchaseEmail } from "@/lib/email";
 
 const D = (n: number | string | Prisma.Decimal) => new Prisma.Decimal(n);
 
@@ -428,6 +429,7 @@ export const getOrderByReferenceService = async (reference: string) => {
   const payment = await prisma.payment.findUnique({
     where: { reference },
     include: {
+      user: true,
       order: {
         include: {
           items: {
@@ -446,6 +448,35 @@ export const getOrderByReferenceService = async (reference: string) => {
 
   if (!payment || !payment.order) {
     throw new ApiError("Order not found", StatusCodes.NOT_FOUND);
+  }
+
+  if (payment.order.status === "PENDING") {
+    await prisma.$transaction([
+      prisma.order.update({
+        where: { id: payment.order.id },
+        data: { status: "PAID" }
+      }),
+      prisma.payment.update({
+        where: { id: payment.id },
+        data: { status: "SUCCEEDED" }
+      })
+    ]);
+
+    payment.order.status = "PAID";
+
+    try {
+      let email = payment.user?.email;
+      if (!email && payment.metadata) {
+        const meta = typeof payment.metadata === 'string' ? JSON.parse(payment.metadata) : payment.metadata;
+        email = (meta as any).email;
+      }
+
+      if (email) {
+        await sendPurchaseEmail(email, payment.order);
+      }
+    } catch (err) {
+      console.error("Could not send purchase email:", err);
+    }
   }
 
   return apiResponse("Order fetched successfully", payment.order);
@@ -491,4 +522,35 @@ export const getUserOrderDetailService = async (
   }
 
   return apiResponse("Order detail fetched successfully", order);
+};
+export const adminGetOrderService = async (orderId: string) => {
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    include: {
+      items: {
+        include: {
+          variant: {
+            include: {
+              product: true,
+            },
+          },
+        },
+      },
+      payments: true,
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+      coupon: true,
+    },
+  });
+
+  if (!order) {
+    throw new ApiError("Order not found", StatusCodes.NOT_FOUND);
+  }
+
+  return apiResponse("Order fetched successfully", order);
 };

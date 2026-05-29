@@ -57,6 +57,7 @@ export const POST = async (req: Request) => {
     const defaultStock = formData.get("defaultStock")
       ? Number(formData.get("defaultStock"))
       : undefined;
+    const categoryId = (formData.get("categoryId") as string) || undefined;
 
     // Variants might be passed as a JSON string in FormData
     let variants = [];
@@ -78,6 +79,7 @@ export const POST = async (req: Request) => {
       defaultSalePrice,
       defaultStock,
       variants,
+      categoryId,
     };
 
     const valid = validateOrThrow(createProductSchema, payload);

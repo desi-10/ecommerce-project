@@ -13,8 +13,9 @@ export const handleApiError = (error: unknown) => {
     return error;
   }
 
+  console.error("API Error caught:", error);
   return NextResponse.json(
-    { message: "Internal server error" },
+    { message: "Internal server error", error: error instanceof Error ? error.message : "Unknown" },
     { status: 500 },
   );
 };

@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Edit, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { EditProductDialog } from "@/components/product/edit-product";
+import Link from "next/link";
 import { DeleteProductDialog } from "@/components/product/delete-product";
 
 // Simple checkbox component (swap with shadcn Checkbox if you want)
@@ -51,9 +51,11 @@ function ProductActions({ product }: { product: Product }) {
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => setEditOpen(true)}>
-                        <Edit className="h-4 w-4 mr-2" />
-                        Edit
+                    <DropdownMenuItem asChild>
+                        <Link href={`/dashboard/products/${product.id}`}>
+                            <Edit className="h-4 w-4 mr-2" />
+                            Edit Page
+                        </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem
                         onClick={() => setDeleteOpen(true)}
@@ -65,11 +67,6 @@ function ProductActions({ product }: { product: Product }) {
                 </DropdownMenuContent>
             </DropdownMenu>
 
-            <EditProductDialog
-                product={product}
-                open={editOpen}
-                onOpenChange={setEditOpen}
-            />
             <DeleteProductDialog
                 product={product}
                 open={deleteOpen}

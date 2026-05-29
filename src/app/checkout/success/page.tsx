@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import axios from "axios";
 import Wrapper from "@/components/wrapper";
 import { Button } from "@/components/ui/button";
+import { useCartStore } from "@/stores/cart.store";
 import {
   CheckCircle2,
   ChevronRight,
@@ -23,6 +24,7 @@ export default function SuccessPage() {
   const [order, setOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const clearCart = useCartStore((state) => state.clearCart);
 
   useEffect(() => {
     if (!reference) {
@@ -34,6 +36,7 @@ export default function SuccessPage() {
       try {
         const res = await axios.get(`/api/orders/reference/${reference}`);
         setOrder(res.data.data);
+        clearCart();
       } catch (err: any) {
         setError(
           err.response?.data?.message || "Failed to fetch order details",

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ReactQuery } from "@/components/react-query";
+import { FloatingAssistant } from "@/components/ai/floating-assistant";
 
 export const metadata: Metadata = {
   title: "MartFury",
@@ -17,7 +18,10 @@ export default function RootLayout({
     <html lang="en">
       <body className="antialiased font-sans">
         <ReactQuery>
-          <TooltipProvider>{children}</TooltipProvider>
+          <TooltipProvider>
+            {children}
+            <FloatingAssistant />
+          </TooltipProvider>
         </ReactQuery>
       </body>
     </html>

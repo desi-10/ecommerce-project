@@ -60,9 +60,12 @@ export type CreateProductDto = {
   name: string;
   description?: string;
   status: ProductStatus;
-  defaultPrice: number;
-  defaultSalePrice: number;
-  defaultStockPrice: number; // (your naming) – looks like you meant stock, but keeping as-is
+  defaultPrice?: number;
+  defaultSalePrice?: number;
+  defaultStock?: number;
+  categoryIds?: string[];
+  images?: { id: string; url: string }[];
+  variants?: any[];
 };
 
-export type UpdateProductDto = Partial<CreateProductDto>;
+export type UpdateProductDto = Partial<CreateProductDto> & { id?: string };

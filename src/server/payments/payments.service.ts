@@ -1,4 +1,5 @@
 import { paystack } from "@/cofigs/voltex";
+import { stripe } from "@/cofigs/stripe";
 import { apiResponse } from "@/lib/api-response";
 import { ApiError } from "@/lib/api-error";
 import prisma from "@/lib/db";
@@ -16,12 +17,59 @@ export const initiateOrderService = async (
   data: createOrderPaymentInput,
   userId: string,
 ) => {
-  const payment = await paystack.initiatePayment({
-    amount: Math.round(Number(data.amount) * 100),
-    email: data.email,
-    currency: Currency.GHS,
-    callbackUrl: `${process.env.BETTER_AUTH_BASE_URL}/checkout/success`,
-  });
+  let authorizationUrl: string;
+  let reference: string;
+  let provider: "STRIPE" | "PAYSTACK";
+
+  if (data.gateway === "stripe") {
+    if (!process.env.STRIPE_SECRET_KEY) {
+      throw new ApiError("Stripe is not configured", StatusCodes.NOT_IMPLEMENTED);
+    }
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      line_items: [
+        {
+          price_data: {
+            currency: "GHS",
+            product_data: {
+              name: "Order Checkout",
+            },
+            unit_amount: Math.round(Number(data.amount) * 100),
+          },
+          quantity: 1,
+        },
+      ],
+      mode: "payment",
+      success_url: `${process.env.BETTER_AUTH_BASE_URL}/checkout/success`,
+      cancel_url: `${process.env.BETTER_AUTH_BASE_URL}/checkout`,
+      customer_email: data.email,
+    });
+
+    if (!session.url || !session.id) {
+      throw new Error("Failed to create Stripe session");
+    }
+
+    authorizationUrl = session.url;
+    reference = session.id;
+    provider = "STRIPE";
+  } else {
+    // Default to Paystack
+    const payment = await paystack.initiatePayment({
+      amount: Math.round(Number(data.amount) * 100),
+      email: data.email,
+      currency: Currency.GHS,
+      callbackUrl: `${process.env.BETTER_AUTH_BASE_URL}/checkout/success`,
+    });
+
+    if (!payment.authorizationUrl || !payment.reference) {
+      throw new Error("Failed to initiate Paystack payment");
+    }
+
+    authorizationUrl = payment.authorizationUrl;
+    reference = payment.reference;
+    provider = "PAYSTACK";
+  }
 
   console.log("Initiating order");
   console.log(data, "data");
@@ -35,19 +83,19 @@ export const initiateOrderService = async (
 
   await prisma.payment.create({
     data: {
-      provider: "PAYSTACK",
+      provider: provider,
       amount: data.amount,
       metadata: data.metadata,
       orderId: order.data.id,
       userId: order.data.userId || null,
-      reference: payment.reference,
+      reference: reference,
       status: "PENDING",
     },
   });
 
   return apiResponse("Payment initiated", {
-    authorizationUrl: payment.authorizationUrl,
-    reference: payment.reference,
+    authorizationUrl: authorizationUrl,
+    reference: reference,
   });
 };
 
@@ -75,6 +123,13 @@ export const listPaymentsService = async (
             email: true,
           },
         },
+        order: {
+          select: {
+            id: true,
+            status: true,
+            total: true,
+          },
+        },
       },
     }),
   ]);
@@ -82,6 +137,53 @@ export const listPaymentsService = async (
   const totalPages = Math.max(1, Math.ceil(total / query.limit));
 
   return apiResponse("Payments fetched successfully", {
+    payments: items,
+    pagination: {
+      page: query.page,
+      limit: query.limit,
+      total,
+      totalPages,
+      hasNextPage: query.page < totalPages,
+      hasPrevPage: query.page > 1,
+    },
+  });
+};
+
+export const adminListPaymentsService = async (query: ListPaymentsInput) => {
+  const where = {
+    ...(query.status ? { status: query.status } : {}),
+  };
+
+  const [total, items] = await prisma.$transaction([
+    prisma.payment.count({ where }),
+    prisma.payment.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      skip: (query.page - 1) * query.limit,
+      take: query.limit,
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        order: {
+          select: {
+            id: true,
+            status: true,
+            total: true,
+            createdAt: true,
+          },
+        },
+      },
+    }),
+  ]);
+
+  const totalPages = Math.max(1, Math.ceil(total / query.limit));
+
+  return apiResponse("All payments fetched successfully", {
     payments: items,
     pagination: {
       page: query.page,
@@ -135,31 +237,24 @@ export const getPaymentByIdService = async (id: string, userId: string) => {
   return apiResponse("Payment fetched successfully", payment);
 };
 
-export const updatePaymentService = async (
+export const updatePaymentStatusService = async (
   id: string,
-  data: UpdatePaymentRecordInput,
-  userId: string,
+  status: "PENDING" | "SUCCEEDED" | "FAILED" | "CANCELLED" | "REFUNDED",
 ) => {
-  const existing = await prisma.payment.findFirst({
-    where: { id, userId },
-    select: { id: true },
+  const existing = await prisma.payment.findUnique({
+    where: { id },
   });
 
   if (!existing) {
     throw new ApiError("Payment not found", StatusCodes.NOT_FOUND);
   }
 
-  // const updated = await prisma.payment.update({
-  //   where: { id },
-  //   data: {
-  //     ...(data.status !== undefined ? { status: data.status } : {}),
-  //     ...(data.reference !== undefined ? { reference: data.reference } : {}),
-  //     ...(data.orderId !== undefined ? { orderId: data.orderId } : {}),
-  //     ...(data.metadata !== undefined ? { metadata: data.metadata } : {}),
-  //   },
-  // });
+  const updated = await prisma.payment.update({
+    where: { id },
+    data: { status },
+  });
 
-  return apiResponse("Payment updated successfully", null);
+  return apiResponse("Payment status updated successfully", updated);
 };
 
 export const deletePaymentService = async (id: string, userId: string) => {

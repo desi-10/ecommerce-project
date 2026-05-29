@@ -41,10 +41,16 @@ export async function createProduct(payload: FormData) {
   return res.data;
 }
 
-export async function updateProduct(id: string, payload: UpdateProductDto) {
+export async function updateProduct(id: string, payload: UpdateProductDto | FormData) {
+  const isFormData = payload instanceof FormData;
   const res = await axios.patch<ApiResponse<Product>>(
     `/api/products/${id}`,
     payload,
+    {
+      headers: isFormData
+        ? { "Content-Type": "multipart/form-data" }
+        : { "Content-Type": "application/json" },
+    }
   );
   return res.data;
 }

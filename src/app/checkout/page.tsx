@@ -2,7 +2,7 @@
 
 import { Checkbox } from "@/components/ui/checkbox";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ShoppingBag } from "lucide-react";
+import { ShoppingBag, Loader2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
@@ -10,6 +10,9 @@ import { useForm } from "react-hook-form";
 import z from "zod";
 import { useCartStore } from "@/stores/cart.store";
 import axios from "axios";
+import { useValidateCoupon } from "@/hooks/use-coupon";
+import { toast } from "sonner";
+import { useSession } from "@/lib/auth-client";
 
 const checkoutSchema = z.object({
   email: z.string().email("Enter a valid email"),
@@ -28,24 +31,36 @@ const checkoutSchema = z.object({
 type CheckoutType = z.infer<typeof checkoutSchema>;
 
 export default function CheckoutPage() {
-  const [gateway, setGateway] = useState<"stripe" | "paystack">("stripe");
+  const cartItems = useCartStore((state) => state.items);
+  const cartSubtotal = useCartStore((state) => state.getTotal());
+  const [gateway, setGateway] = useState("stripe");
+  
+  const [coupon, setCoupon] = useState<{ id: string; code: string; type: string; value: number } | null>(null);
+  const [couponInput, setCouponInput] = useState("");
+  const { mutate: validateCoupon, isPending: isValidating } = useValidateCoupon();
+  const { data: session } = useSession();
+  const user = session?.user;
 
-  const cartItems = useCartStore((s) => s.items);
-  const cartSubtotal = useMemo(
-    () => cartItems.reduce((acc, it) => acc + it.price * it.qty, 0),
-    [cartItems],
-  );
-
-  // Demo shipping/tax (replace later with real logic)
+  // Demo shipping/tax
   const shipping = 0;
-  const shippingText =
-    shipping === 0 ? "Calculated at next step" : `$${shipping}`;
+  const shippingText = shipping === 0 ? "Free" : `$${shipping}`;
   const tax = 0;
-  const total = cartSubtotal + shipping + tax;
+
+  const discountAmount = useMemo(() => {
+    if (!coupon) return 0;
+    if (coupon.type === "PERCENT") {
+      return (cartSubtotal * coupon.value) / 100;
+    }
+    return Math.min(cartSubtotal, coupon.value);
+  }, [cartSubtotal, coupon]);
+
+  const total = cartSubtotal - discountAmount + shipping + tax;
 
   const {
     register,
     handleSubmit,
+    setValue,
+    getValues,
     formState: { errors, isSubmitting },
   } = useForm<CheckoutType>({
     resolver: zodResolver(checkoutSchema),
@@ -54,17 +69,30 @@ export default function CheckoutPage() {
     },
   });
 
+  useEffect(() => {
+    if (user) {
+      if (!getValues("email")) setValue("email", user.email);
+      if (user.name) {
+        const parts = user.name.split(" ");
+        if (!getValues("firstName")) setValue("firstName", parts[0] || "");
+        if (!getValues("lastName")) setValue("lastName", parts.slice(1).join(" ") || "");
+      }
+    }
+  }, [user, setValue, getValues]);
+
   const onSubmit = async (data: CheckoutType) => {
     try {
       const res = await axios.post("/api/order-payment", {
         email: data.email,
         amount: total,
         gateway,
+        couponCode: coupon?.code,
         items: cartItems.map((item) => ({
           variantId: item.id,
           quantity: item.qty,
         })),
         metadata: JSON.stringify({
+          email: data.email,
           firstName: data.firstName,
           lastName: data.lastName,
           address: data.address,
@@ -114,15 +142,17 @@ export default function CheckoutPage() {
                 <h2 className="text-lg font-semibold text-neutral-900">
                   Contact information
                 </h2>
-                <p className="text-sm text-neutral-600">
-                  Already have an account?{" "}
-                  <Link
-                    href="/auth/sign-in"
-                    className="text-blue-600 hover:underline"
-                  >
-                    Log in
-                  </Link>
-                </p>
+                {!user && (
+                  <p className="text-sm text-neutral-600">
+                    Already have an account?{" "}
+                    <Link
+                      href="/auth/sign-in"
+                      className="text-blue-600 hover:underline"
+                    >
+                      Log in
+                    </Link>
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -351,27 +381,65 @@ export default function CheckoutPage() {
               {/* Discount */}
               <div className="flex gap-3">
                 <input
-                  {...register("discount")}
+                  value={couponInput}
+                  onChange={(e) => setCouponInput(e.target.value)}
                   placeholder="Gift card or discount code"
-                  className="h-11 flex-1 rounded-md border border-neutral-200 px-3 text-sm outline-none focus:border-neutral-400"
+                  className="h-11 flex-1 rounded-md border border-neutral-200 px-3 text-sm outline-none focus:border-neutral-400 font-mono"
                 />
                 <button
                   type="button"
-                  onClick={() => alert("Apply discount (demo)")}
-                  className="h-11 rounded-md bg-neutral-300 px-5 text-sm font-semibold text-neutral-700 hover:brightness-95"
+                  disabled={isValidating || !couponInput}
+                  onClick={() => {
+                    validateCoupon(
+                      { code: couponInput, subtotal: cartSubtotal },
+                      {
+                        onSuccess: (res) => {
+                          setCoupon({
+                            id: res.data.coupon.id,
+                            code: res.data.coupon.code,
+                            type: res.data.coupon.type,
+                            value: Number(res.data.coupon.value),
+                          });
+                          toast.success("Coupon applied!");
+                        },
+                        onError: (err: any) => {
+                          toast.error(err.response?.data?.message || "Invalid coupon");
+                          setCoupon(null);
+                        },
+                      }
+                    );
+                  }}
+                  className="h-11 rounded-md bg-neutral-900 px-5 text-sm font-semibold text-white hover:brightness-110 disabled:opacity-50 transition-all"
                 >
-                  Apply
+                  {isValidating ? <Loader2 className="h-4 w-4 animate-spin" /> : "Apply"}
                 </button>
               </div>
+
+              {coupon && (
+                <div className="mt-2 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100 uppercase font-mono tracking-wider">{coupon.code}</span>
+                        <button onClick={() => { setCoupon(null); setCouponInput(""); }} className="text-xs text-neutral-400 hover:text-red-500 underline">Remove</button>
+                    </div>
+                    <span className="text-sm font-medium text-emerald-600">-${discountAmount.toFixed(2)}</span>
+                </div>
+              )}
 
               <div className="my-5 border-t border-neutral-200" />
 
               {/* Totals */}
               <div className="space-y-2 text-sm">
-                <div className="flex items-center justify-between text-neutral-700">
+                <div className="flex items-center justify-between text-neutral-700 font-medium">
                   <span>Subtotal</span>
                   <span>${cartSubtotal.toFixed(2)}</span>
                 </div>
+
+                {coupon && (
+                    <div className="flex items-center justify-between text-emerald-600">
+                        <span>Discount ({coupon.code})</span>
+                        <span>-${discountAmount.toFixed(2)}</span>
+                    </div>
+                )}
 
                 <div className="flex items-center justify-between text-neutral-700">
                   <span>Shipping</span>
