@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { requireAdminServerSession } from "@/lib/auth-guards";
 
-export const PATCH = async (req: Request, { params }: { params: { id: string } }) => {
+export const PATCH = async (req: Request, { params }: { params: Promise<{ id: string }> }) => {
   try {
     await requireAdminServerSession();
     const { id } = await params;
@@ -21,7 +21,7 @@ export const PATCH = async (req: Request, { params }: { params: { id: string } }
   }
 };
 
-export const DELETE = async (req: Request, { params }: { params: { id: string } }) => {
+export const DELETE = async (req: Request, { params }: { params: Promise<{ id: string }> }) => {
   try {
     await requireAdminServerSession();
     const { id } = await params;

@@ -53,7 +53,7 @@ export const listProductDiscountsService = async (params?: {
   const limit = Math.min(50, Math.max(1, params?.limit ?? 20));
   const skip = (page - 1) * limit;
 
-  const where = {};
+  const where: any = {};
   if (params?.productId) where.productId = params.productId;
   if (params?.status) where.status = params.status;
 

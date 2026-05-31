@@ -46,7 +46,7 @@ export function CreateCategoryDialog() {
     const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
 
     const form = useForm<CreateCategoryForm>({
-        resolver: zodResolver(createCategorySchema),
+        resolver: zodResolver(createCategorySchema) as any,
         defaultValues: { name: "", description: "", image: "", status: "ACTIVE" },
         mode: "onTouched",
     });

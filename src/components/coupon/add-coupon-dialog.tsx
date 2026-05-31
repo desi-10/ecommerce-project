@@ -11,14 +11,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -53,8 +46,15 @@ interface AddCouponDialogProps {
 export function AddCouponDialog({ open, onOpenChange }: AddCouponDialogProps) {
   const { mutate: createCoupon, isPending } = useCreateCoupon();
 
-  const form = useForm<CreateCouponValues>({
-    resolver: zodResolver(createCouponSchema),
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    reset,
+    formState: { errors },
+  } = useForm<CreateCouponValues>({
+    resolver: zodResolver(createCouponSchema) as any,
     defaultValues: {
       code: "",
       type: "PERCENT",
@@ -67,7 +67,7 @@ export function AddCouponDialog({ open, onOpenChange }: AddCouponDialogProps) {
     createCoupon(values, {
       onSuccess: () => {
         toast.success("Coupon created successfully");
-        form.reset();
+        reset();
         onOpenChange(false);
       },
       onError: (error: any) => {
@@ -75,6 +75,8 @@ export function AddCouponDialog({ open, onOpenChange }: AddCouponDialogProps) {
       },
     });
   };
+
+  const selectedType = watch("type");
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -89,139 +91,85 @@ export function AddCouponDialog({ open, onOpenChange }: AddCouponDialogProps) {
             </DialogHeader>
         </div>
         
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="p-8 space-y-6 bg-white">
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="code"
-                render={({ field }) => (
-                  <FormItem className="col-span-2">
-                    <FormLabel className="text-xs font-bold uppercase tracking-widest text-gray-500">Coupon Code</FormLabel>
-                    <FormControl>
-                      <Input placeholder="E.G. SAVE20" {...field} className="h-12 rounded-xl border-gray-100 bg-gray-50 focus:bg-white transition-all font-mono font-bold text-blue-600 uppercase" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+        <form onSubmit={handleSubmit(onSubmit)} className="p-8 space-y-6 bg-white">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="col-span-2 space-y-2">
+              <Label className="text-xs font-bold uppercase tracking-widest text-gray-500">Coupon Code</Label>
+              <Input 
+                placeholder="E.G. SAVE20" 
+                {...register("code")} 
+                className="h-12 rounded-xl border-gray-100 bg-gray-50 focus:bg-white transition-all font-mono font-bold text-blue-600 uppercase" 
               />
-
-              <FormField
-                control={form.control}
-                name="type"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-xs font-bold uppercase tracking-widest text-gray-500">Discount Type</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="h-12 rounded-xl border-gray-100 bg-gray-50">
-                          <SelectValue placeholder="Select type" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent className="bg-white rounded-xl shadow-xl border-gray-100">
-                        <SelectItem value="PERCENT">Percentage (%)</SelectItem>
-                        <SelectItem value="AMOUNT">Fixed Amount (GHS)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="value"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-xs font-bold uppercase tracking-widest text-gray-500">Value</FormLabel>
-                    <FormControl>
-                      <Input type="number" step="0.01" {...field} className="h-12 rounded-xl border-gray-100 bg-gray-50" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="minOrderValue"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-xs font-bold uppercase tracking-widest text-gray-500">Min. Spend (Optional)</FormLabel>
-                    <FormControl>
-                      <Input type="number" step="0.01" placeholder="0.00" {...field} value={field.value || ''} className="h-12 rounded-xl border-gray-100 bg-gray-50" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="maxUses"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-xs font-bold uppercase tracking-widest text-gray-500">Max Uses (Optional)</FormLabel>
-                    <FormControl>
-                      <Input type="number" placeholder="Unlimited" {...field} value={field.value || ''} className="h-12 rounded-xl border-gray-100 bg-gray-50" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="startsAt"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-xs font-bold uppercase tracking-widest text-gray-500">Start Date</FormLabel>
-                    <FormControl>
-                      <Input type="datetime-local" {...field} className="h-12 rounded-xl border-gray-100 bg-gray-50" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="endsAt"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-xs font-bold uppercase tracking-widest text-gray-500">End Date</FormLabel>
-                    <FormControl>
-                      <Input type="datetime-local" {...field} className="h-12 rounded-xl border-gray-100 bg-gray-50" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {errors.code && <p className="text-xs text-red-500 font-semibold">{errors.code.message}</p>}
             </div>
 
-            <DialogFooter className="pt-4">
-              <Button 
-                type="button" 
-                variant="ghost" 
-                onClick={() => onOpenChange(false)}
-                className="rounded-xl h-12 font-bold text-gray-400 hover:text-gray-900"
-              >
-                Cancel
-              </Button>
-              <Button 
-                type="submit" 
-                disabled={isPending}
-                className="bg-blue-600 text-white hover:bg-blue-700 h-12 px-8 rounded-xl shadow-lg shadow-blue-100 transition-all font-bold min-w-[140px]"
-              >
-                {isPending ? (
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
-                    "Create Coupon"
-                )}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
+            <div className="space-y-2">
+              <Label className="text-xs font-bold uppercase tracking-widest text-gray-500">Discount Type</Label>
+              <Select onValueChange={(val: any) => setValue("type", val)} value={selectedType}>
+                <SelectTrigger className="h-12 rounded-xl border-gray-100 bg-gray-50">
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
+                <SelectContent className="bg-white rounded-xl shadow-xl border-gray-100">
+                  <SelectItem value="PERCENT">Percentage (%)</SelectItem>
+                  <SelectItem value="AMOUNT">Fixed Amount (GHS)</SelectItem>
+                </SelectContent>
+              </Select>
+              {errors.type && <p className="text-xs text-red-500 font-semibold">{errors.type.message}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs font-bold uppercase tracking-widest text-gray-500">Value</Label>
+              <Input type="number" step="0.01" {...register("value")} className="h-12 rounded-xl border-gray-100 bg-gray-50" />
+              {errors.value && <p className="text-xs text-red-500 font-semibold">{errors.value.message}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs font-bold uppercase tracking-widest text-gray-500">Min. Spend (Optional)</Label>
+              <Input type="number" step="0.01" placeholder="0.00" {...register("minOrderValue")} className="h-12 rounded-xl border-gray-100 bg-gray-50" />
+              {errors.minOrderValue && <p className="text-xs text-red-500 font-semibold">{errors.minOrderValue.message}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs font-bold uppercase tracking-widest text-gray-500">Max Uses (Optional)</Label>
+              <Input type="number" placeholder="Unlimited" {...register("maxUses")} className="h-12 rounded-xl border-gray-100 bg-gray-50" />
+              {errors.maxUses && <p className="text-xs text-red-500 font-semibold">{errors.maxUses.message}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs font-bold uppercase tracking-widest text-gray-500">Start Date</Label>
+              <Input type="datetime-local" {...register("startsAt")} className="h-12 rounded-xl border-gray-100 bg-gray-50" />
+              {errors.startsAt && <p className="text-xs text-red-500 font-semibold">{errors.startsAt.message}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs font-bold uppercase tracking-widest text-gray-500">End Date</Label>
+              <Input type="datetime-local" {...register("endsAt")} className="h-12 rounded-xl border-gray-100 bg-gray-50" />
+              {errors.endsAt && <p className="text-xs text-red-500 font-semibold">{errors.endsAt.message}</p>}
+            </div>
+          </div>
+
+          <DialogFooter className="pt-4">
+            <Button 
+              type="button" 
+              variant="ghost" 
+              onClick={() => onOpenChange(false)}
+              className="rounded-xl h-12 font-bold text-gray-400 hover:text-gray-900"
+            >
+              Cancel
+            </Button>
+            <Button 
+              type="submit" 
+              disabled={isPending}
+              className="bg-blue-600 text-white hover:bg-blue-700 h-12 px-8 rounded-xl shadow-lg shadow-blue-100 transition-all font-bold min-w-[140px]"
+            >
+              {isPending ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                  "Create Coupon"
+              )}
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );

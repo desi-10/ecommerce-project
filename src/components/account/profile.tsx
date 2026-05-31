@@ -51,11 +51,11 @@ export default function ProfilePage() {
 
         try {
             setIsUploading(true);
-            const res = await uploadToCloudinary(file);
-            setAvatarUrl(res.secure_url);
+            const url = await uploadToCloudinary(file);
+            setAvatarUrl(url);
             
             // Auto update image in DB
-            await updateProfile.mutateAsync({ image: res.secure_url });
+            await updateProfile.mutateAsync({ image: url });
             alert("Avatar updated successfully");
         } catch (error) {
             alert("Failed to upload image");

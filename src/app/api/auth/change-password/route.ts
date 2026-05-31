@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import prisma from "@/lib/db";
+// @ts-ignore
 import * as bcrypt from "bcrypt";
 
 export async function POST(req: Request) {
@@ -22,11 +23,11 @@ export async function POST(req: Request) {
     );
   }
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
+  const account = await prisma.account.findFirst({
+    where: { userId: session.user.id, providerId: "credential" },
   });
 
-  if (!user || !user.password) {
+  if (!account || !account.password) {
     return Response.json(
       { error: "User password not found" },
       { status: 404 }
@@ -34,7 +35,7 @@ export async function POST(req: Request) {
   }
 
   // Verify current password
-  const passwordMatch = await bcrypt.compare(currentPassword, user.password);
+  const passwordMatch = await bcrypt.compare(currentPassword, account.password);
   if (!passwordMatch) {
     return Response.json(
       { error: "Current password is incorrect" },
@@ -45,8 +46,8 @@ export async function POST(req: Request) {
   // Hash new password
   const hashedPassword = await bcrypt.hash(newPassword, 12);
 
-  await prisma.user.update({
-    where: { id: session.user.id },
+  await prisma.account.update({
+    where: { id: account.id },
     data: { password: hashedPassword },
   });
 

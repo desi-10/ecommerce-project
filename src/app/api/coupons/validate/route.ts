@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { handleApiError } from "@/lib/api-handler";
 import { applyCouponToSubtotalService } from "@/server/discount/coupon.service";
-import { Prisma } from "../../../../prisma/generated/client";
+import { Prisma } from "../../../../../prisma/generated/client";
 
 export const POST = async (req: Request) => {
   try {

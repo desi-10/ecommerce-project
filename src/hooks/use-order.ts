@@ -31,7 +31,10 @@ export function useUpdateOrderStatus() {
     mutationFn: ({ id, status }: { id: string; status: string }) =>
       updateOrderStatus(id, status),
     onSuccess: async () => {
-      await qc.invalidateQueries({ queryKey: ordersKeys.all });
+      await Promise.all([
+        qc.invalidateQueries({ queryKey: ordersKeys.all }),
+        qc.invalidateQueries({ queryKey: ["dashboard", "stats"] }),
+      ]);
     },
   });
 }

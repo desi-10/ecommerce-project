@@ -1,30 +1,35 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Bot, User, Send, Sparkles, Loader2, X } from "lucide-react";
+import { Avatar, } from "@/components/ui/avatar";
+import { Bot, User, Send, Sparkles, Loader2, X, Mic } from "lucide-react";
 import { chatWithAssistant } from "@/server/ai/ai.actions";
 import { cn } from "@/lib/utils";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { useSession } from "@/lib/auth-client";
+import { useCartStore } from "@/stores/cart.store";
 
 interface Message {
   role: "user" | "model";
   parts: { text: string }[];
   products?: any[];
+  checkoutUrl?: string;
+  checkoutAmount?: number;
 }
 
 export function AssistantChatDialog({ open, onOpenChange }: { open: boolean, onOpenChange: (open: boolean) => void }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isListening, setIsListening] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
-  
+  const recognitionRef = useRef<any>(null);
+
   const { data: session } = useSession();
   const isAdmin = session?.user?.role === "admin";
 
@@ -33,6 +38,56 @@ export function AssistantChatDialog({ open, onOpenChange }: { open: boolean, onO
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages, isLoading]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        const rec = new SpeechRecognition();
+        rec.continuous = false;
+        rec.interimResults = false;
+        rec.lang = "en-US";
+
+        rec.onstart = () => {
+          setIsListening(true);
+        };
+
+        rec.onresult = (event: any) => {
+          const transcript = event.results[0][0].transcript;
+          setInput((prev) => prev ? prev + " " + transcript : transcript);
+        };
+
+        rec.onerror = (event: any) => {
+          console.error("Speech recognition error", event);
+          setIsListening(false);
+        };
+
+        rec.onend = () => {
+          setIsListening(false);
+        };
+
+        recognitionRef.current = rec;
+      }
+    }
+  }, []);
+
+  const toggleListening = () => {
+    if (!recognitionRef.current) {
+      alert("Speech recognition is not supported in this browser. Please try using Chrome or Safari.");
+      return;
+    }
+
+    if (isListening) {
+      recognitionRef.current.stop();
+    } else {
+      try {
+        localStorage.setItem("assistant-mic-used", "true");
+        recognitionRef.current.start();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  };
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
@@ -43,20 +98,27 @@ export function AssistantChatDialog({ open, onOpenChange }: { open: boolean, onO
     setIsLoading(true);
 
     try {
-      const result = await chatWithAssistant(messages, input, isAdmin);
+      const cartItems = useCartStore.getState().items;
+      const result = await chatWithAssistant(messages, input, isAdmin, cartItems);
       console.log("AI Chat Result:", result);
 
       if (result.error) {
         setMessages((prev) => [...prev, { role: "model", parts: [{ text: `Error: ${result.error}` }] }]);
       } else {
         setMessages((prev) => [
-          ...prev, 
-          { 
-            role: "model", 
-            parts: [{ text: result.text || "" }], 
-            products: result.products 
+          ...prev,
+          {
+            role: "model",
+            parts: [{ text: result.text || "" }],
+            products: result.products,
+            checkoutUrl: result.checkoutUrl,
+            checkoutAmount: result.checkoutAmount,
           }
         ]);
+
+        if (result.checkoutUrl) {
+          useCartStore.getState().clearCart();
+        }
       }
     } catch (error) {
       setMessages((prev) => [...prev, { role: "model", parts: [{ text: "Sorry, I encountered an error. Please try again." }] }]);
@@ -78,9 +140,9 @@ export function AssistantChatDialog({ open, onOpenChange }: { open: boolean, onO
               <p className="text-xs text-primary-foreground/70 font-medium">Always here to help you shop or manage</p>
             </div>
           </div>
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             className="text-primary-foreground hover:bg-white/10"
             onClick={() => onOpenChange(false)}
           >
@@ -131,19 +193,45 @@ export function AssistantChatDialog({ open, onOpenChange }: { open: boolean, onO
                   )}>
                     <div className={cn(
                       "rounded-2xl px-4 py-3 text-sm shadow-sm",
-                      m.role === "user" 
-                        ? "bg-primary text-primary-foreground rounded-tr-none" 
+                      m.role === "user"
+                        ? "bg-primary text-primary-foreground rounded-tr-none"
                         : "bg-card border rounded-tl-none"
                     )}>
                       {m.parts[0].text}
                     </div>
 
+                    {m.checkoutUrl && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 p-4 rounded-xl shadow-sm space-y-3"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider">Checkout Ready</span>
+                          <span className="text-sm font-bold text-emerald-700 dark:text-emerald-400 font-mono">
+                            ${m.checkoutAmount ? m.checkoutAmount.toFixed(2) : "0.00"}
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Your order has been prepared. Click the button below to proceed to the payment page.
+                        </p>
+                        <Button
+                          asChild
+                          className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg h-9 text-xs transition-colors cursor-pointer"
+                        >
+                          <a href={m.checkoutUrl} target="_blank" rel="noopener noreferrer">
+                            Pay Now with Stripe/Paystack
+                          </a>
+                        </Button>
+                      </motion.div>
+                    )}
+
                     {m.products && m.products.length > 0 && (
                       <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide -mx-2 px-2">
                         {m.products.map((product: any) => (
-                          <Link 
-                            key={product.id} 
-                            href={`/products/${product.id}`}
+                          <Link
+                            key={product.id}
+                            href={`/shop/${product.id}`}
                             className="flex-shrink-0 w-[180px] bg-card border rounded-xl overflow-hidden hover:border-primary/50 transition-colors shadow-sm group"
                           >
                             <div className="relative h-[120px] w-full bg-secondary/20">
@@ -200,20 +288,33 @@ export function AssistantChatDialog({ open, onOpenChange }: { open: boolean, onO
         </div>
 
         <div className="p-4 bg-background border-t">
-          <form 
+          <form
             onSubmit={(e) => { e.preventDefault(); handleSend(); }}
             className="flex items-center gap-2 bg-secondary/30 p-1 rounded-full border focus-within:border-primary/50 transition-colors"
           >
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask anything..."
+              placeholder={isListening ? "Listening..." : "Ask anything..."}
               className="flex-1 bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 px-4"
+              disabled={isListening}
             />
-            <Button 
-              type="submit" 
-              size="icon" 
-              disabled={isLoading || !input.trim()}
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={toggleListening}
+              className={cn(
+                "rounded-full h-9 w-9 shrink-0 transition-all",
+                isListening ? "text-red-500 bg-red-50 hover:bg-red-100 animate-pulse" : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <Mic className="w-4 h-4" />
+            </Button>
+            <Button
+              type="submit"
+              size="icon"
+              disabled={isLoading || !input.trim() || isListening}
               className="rounded-full h-9 w-9 shrink-0 transition-transform active:scale-95"
             >
               <Send className="w-4 h-4" />

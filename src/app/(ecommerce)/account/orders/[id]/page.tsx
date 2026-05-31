@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import { useGetUserOrderDetail } from "@/hooks/use-account";
 import { Loader2, Package, ArrowLeft, Calendar, Tag, CreditCard, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Wrapper from "@/components/wrapper";
 
 export default function OrderDetailPage() {
     const { id } = useParams() as { id: string };
@@ -43,8 +44,9 @@ export default function OrderDetailPage() {
     const total = parseFloat(order.total);
 
     return (
-        <main className="bg-white">
-            <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-8">
+        <main className="bg-white py-8 md:py-12">
+            <Wrapper>
+                <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-8">
                 <div>
                     <Button variant="ghost" asChild className="p-0 h-auto hover:bg-transparent text-blue-600 hover:text-blue-700 font-medium mb-4">
                         <Link href="/account/orders" className="flex items-center gap-1.5">
@@ -204,6 +206,7 @@ export default function OrderDetailPage() {
                     </div>
                 </aside>
             </div>
+            </Wrapper>
         </main>
     );
 }

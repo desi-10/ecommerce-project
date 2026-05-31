@@ -38,9 +38,7 @@ export default function ProductGridCard({ p }: { p: Product }) {
   // Resolve product image from API data
   const imageSrc =
     p.image ??
-    (p.images?.[0] && typeof p.images[0] === "object"
-      ? p.images[0].url
-      : p.images?.[0]) ??
+    p.images?.[0]?.url ??
     "/martfury/product.png";
   const brand = ""; // or p.brand ?? "" if you add later
   const reviews = 0;

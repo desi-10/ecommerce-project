@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ShoppingBag, Loader2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import z from "zod";
 import { useCartStore } from "@/stores/cart.store";
@@ -34,7 +34,7 @@ export default function CheckoutPage() {
   const cartItems = useCartStore((state) => state.items);
   const cartSubtotal = useCartStore((state) => state.getTotal());
   const [gateway, setGateway] = useState("stripe");
-  
+
   const [coupon, setCoupon] = useState<{ id: string; code: string; type: string; value: number } | null>(null);
   const [couponInput, setCouponInput] = useState("");
   const { mutate: validateCoupon, isPending: isValidating } = useValidateCoupon();
@@ -417,11 +417,11 @@ export default function CheckoutPage() {
 
               {coupon && (
                 <div className="mt-2 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100 uppercase font-mono tracking-wider">{coupon.code}</span>
-                        <button onClick={() => { setCoupon(null); setCouponInput(""); }} className="text-xs text-neutral-400 hover:text-red-500 underline">Remove</button>
-                    </div>
-                    <span className="text-sm font-medium text-emerald-600">-${discountAmount.toFixed(2)}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100 uppercase font-mono tracking-wider">{coupon.code}</span>
+                    <button onClick={() => { setCoupon(null); setCouponInput(""); }} className="text-xs text-neutral-400 hover:text-red-500 underline">Remove</button>
+                  </div>
+                  <span className="text-sm font-medium text-emerald-600">-${discountAmount.toFixed(2)}</span>
                 </div>
               )}
 
@@ -435,10 +435,10 @@ export default function CheckoutPage() {
                 </div>
 
                 {coupon && (
-                    <div className="flex items-center justify-between text-emerald-600">
-                        <span>Discount ({coupon.code})</span>
-                        <span>-${discountAmount.toFixed(2)}</span>
-                    </div>
+                  <div className="flex items-center justify-between text-emerald-600">
+                    <span>Discount ({coupon.code})</span>
+                    <span>-${discountAmount.toFixed(2)}</span>
+                  </div>
                 )}
 
                 <div className="flex items-center justify-between text-neutral-700">

@@ -27,9 +27,9 @@ export async function GET(req: Request) {
     const rawQuery = Object.fromEntries(url.searchParams.entries());
     const query = validateOrThrow(listDiscountsSchema, rawQuery);
 
-    const [total, discounts] = await prisma.$transaction([
-      prisma.discount.count(),
-      prisma.discount.findMany({
+    const [total, productDiscounts] = await prisma.$transaction([
+      prisma.productDiscount.count(),
+      prisma.productDiscount.findMany({
         skip: (query.page - 1) * query.limit,
         take: query.limit,
         include: {
@@ -38,6 +38,18 @@ export async function GET(req: Request) {
         orderBy: { createdAt: "desc" },
       }),
     ]);
+
+    const discounts = productDiscounts.map((d) => ({
+      id: d.id,
+      productId: d.productId,
+      discountPercent: Number(d.value),
+      startDate: d.startsAt,
+      endDate: d.endsAt,
+      status: d.status,
+      createdAt: d.createdAt,
+      updatedAt: d.updatedAt,
+      product: d.product,
+    }));
 
     const totalPages = Math.max(1, Math.ceil(total / query.limit));
 
@@ -78,18 +90,31 @@ export async function POST(req: Request) {
       );
     }
 
-    const discount = await prisma.discount.create({
+    const createdDiscount = await prisma.productDiscount.create({
       data: {
         productId: valid.productId,
-        discountPercent: valid.discountPercent,
-        startDate: new Date(valid.startDate),
-        endDate: new Date(valid.endDate),
+        type: "PERCENT",
+        value: valid.discountPercent,
+        startsAt: new Date(valid.startDate),
+        endsAt: new Date(valid.endDate),
         status: valid.status,
       },
       include: {
         product: true,
       },
     });
+
+    const discount = {
+      id: createdDiscount.id,
+      productId: createdDiscount.productId,
+      discountPercent: Number(createdDiscount.value),
+      startDate: createdDiscount.startsAt,
+      endDate: createdDiscount.endsAt,
+      status: createdDiscount.status,
+      createdAt: createdDiscount.createdAt,
+      updatedAt: createdDiscount.updatedAt,
+      product: createdDiscount.product,
+    };
 
     return NextResponse.json(
       {

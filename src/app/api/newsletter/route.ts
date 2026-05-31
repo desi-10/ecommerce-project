@@ -12,23 +12,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { email } = newsletterSchema.parse(body);
 
-    // Check if already subscribed
-    const existing = await prisma.newsletter.findUnique({
-      where: { email },
-    });
-
-    if (existing) {
-      return NextResponse.json(
-        { success: false, message: "Email already subscribed" },
-        { status: 400 },
-      );
-    }
-
-    // Subscribe to newsletter
-    await prisma.newsletter.create({
-      data: { email },
-    });
-
     // Send confirmation email
     await sendNewsletterEmail(email);
 
@@ -39,7 +22,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { success: false, errors: error.errors },
+        { success: false, errors: error.issues },
         { status: 400 },
       );
     }

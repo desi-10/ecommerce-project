@@ -12,7 +12,7 @@ export type Variant = {
   sku: string | null;
   price: string; // your API returns "1000" as string
   salePrice: string; // string
-  options: unknown | null;
+  options: any;
   inventory: Inventory;
 };
 
@@ -35,6 +35,25 @@ export type Product = {
   images?: ProductImage[]; // Gallery images
   brand?: string | null;
   variants: Variant[];
+  price?: number;
+  salePrice?: number;
+  oldPrice?: number | null;
+  stock?: number;
+  categories?: {
+    category: {
+      id: string;
+      name: string;
+      slug: string;
+    };
+  }[];
+  discounts?: {
+    id: string;
+    type: "PERCENT" | "AMOUNT";
+    value: string | number;
+    status: "ACTIVE" | "INACTIVE";
+    startsAt: string | null;
+    endsAt: string | null;
+  }[];
 };
 
 export type ApiResponse<T> = {

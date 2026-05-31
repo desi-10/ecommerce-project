@@ -37,7 +37,7 @@ export function AddProductForm() {
     const [showSuccess, setShowSuccess] = React.useState(false);
 
     const form = useForm<CreateProductInput>({
-        resolver: zodResolver(createProductSchema),
+        resolver: zodResolver(createProductSchema) as any,
         defaultValues: {
             variants: [],
             status: "ACTIVE",

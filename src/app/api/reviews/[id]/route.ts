@@ -3,7 +3,7 @@ import prisma from "@/lib/db";
 import { requireAdminServerSession } from "@/lib/auth-guards";
 import { handleApiError } from "@/lib/api-handler";
 
-export const DELETE = async (req: Request, { params }: { params: { id: string } }) => {
+export const DELETE = async (req: Request, { params }: { params: Promise<{ id: string }> }) => {
   try {
     await requireAdminServerSession();
     const { id } = await params;

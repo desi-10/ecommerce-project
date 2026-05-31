@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Bot, Sparkles } from "lucide-react";
 import { AssistantChatDialog } from "./assistant-chat-dialog";
@@ -8,6 +8,13 @@ import { motion, AnimatePresence } from "framer-motion";
 
 export function FloatingAssistant() {
   const [open, setOpen] = useState(false);
+
+  // Listen for global open event
+  useEffect(() => {
+    const handleOpen = () => setOpen(true);
+    window.addEventListener("open-ai-assistant", handleOpen);
+    return () => window.removeEventListener("open-ai-assistant", handleOpen);
+  }, []);
 
   return (
     <>

@@ -71,6 +71,16 @@ const productSelect = {
     },
     orderBy: { createdAt: "asc" as const },
   },
+  discounts: {
+    select: {
+      id: true,
+      type: true,
+      value: true,
+      status: true,
+      startsAt: true,
+      endsAt: true,
+    },
+  },
 };
 
 // --------------------------
@@ -199,6 +209,43 @@ export const createProductService = async (data: CreateProductInput) => {
   return apiResponse("Product created successfully", result);
 };
 
+const applyDynamicDiscounts = (product: any) => {
+  if (!product) return product;
+
+  // Find active discount if any
+  const activeDiscount = product.discounts?.find((d: any) => {
+    const now = new Date();
+    if (d.status !== "ACTIVE") return false;
+    if (d.startsAt && now < new Date(d.startsAt)) return false;
+    if (d.endsAt && now > new Date(d.endsAt)) return false;
+    return true;
+  });
+
+  if (activeDiscount) {
+    const value = Number(activeDiscount.value);
+    const type = activeDiscount.type;
+
+    product.variants = product.variants.map((variant: any) => {
+      const price = Number(variant.price);
+      const currentSalePrice = variant.salePrice ? Number(variant.salePrice) : 0;
+
+      // Only apply discount if salePrice is not already set manually
+      if (currentSalePrice <= 0) {
+        let computedSalePrice = 0;
+        if (type === "PERCENT") {
+          computedSalePrice = price * (1 - value / 100);
+        } else if (type === "AMOUNT") {
+          computedSalePrice = Math.max(0, price - value);
+        }
+        variant.salePrice = new Prisma.Decimal(computedSalePrice.toFixed(2));
+      }
+      return variant;
+    });
+  }
+
+  return product;
+};
+
 export const getProductsService = async (data: ListProductsInput) => {
   const {
     page,
@@ -235,13 +282,28 @@ export const getProductsService = async (data: ListProductsInput) => {
       },
     }),
     ...(onDiscount && {
-      variants: {
-        some: {
-          salePrice: {
-            gt: 0,
+      OR: [
+        {
+          variants: {
+            some: {
+              salePrice: {
+                gt: 0,
+              },
+            },
           },
         },
-      },
+        {
+          discounts: {
+            some: {
+              status: "ACTIVE",
+              AND: [
+                { OR: [{ startsAt: null }, { startsAt: { lte: new Date() } }] },
+                { OR: [{ endsAt: null }, { endsAt: { gte: new Date() } }] },
+              ],
+            },
+          },
+        },
+      ],
     }),
     ...((minPrice !== undefined || maxPrice !== undefined) && {
       variants: {
@@ -290,9 +352,10 @@ export const getProductsService = async (data: ListProductsInput) => {
     ]);
 
     const totalPages = Math.max(1, Math.ceil(total / limit));
+    const processedProducts = products.map(applyDynamicDiscounts);
 
     return apiResponse("Products fetched successfully", {
-      products,
+      products: processedProducts,
       pagination: {
         page,
         limit,
@@ -318,9 +381,10 @@ export const getProductsService = async (data: ListProductsInput) => {
     ]);
 
     const totalPages = Math.max(1, Math.ceil(total / limit));
+    const processedProducts = products.map(applyDynamicDiscounts);
 
     return apiResponse("Products fetched successfully (safe mode)", {
-      products,
+      products: processedProducts,
       pagination: {
         page,
         limit,
@@ -341,7 +405,7 @@ export const getProductByIdService = async (id: string) => {
 
   if (!product) throw new ApiError("Product not found", StatusCodes.NOT_FOUND);
 
-  return apiResponse("Product fetched successfully", product);
+  return apiResponse("Product fetched successfully", applyDynamicDiscounts(product));
 };
 
 export const updateProductService = async (
@@ -588,7 +652,7 @@ export const deleteProductService = async (
   // Remove from Pinecone
   try {
     const index = getPineconeIndex();
-    await index.deleteOne(id);
+    await index.deleteOne({ id });
   } catch (error) {
     console.error("Failed to delete from Pinecone:", error);
   }

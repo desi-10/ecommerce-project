@@ -35,14 +35,18 @@ export default function SecuritySection() {
 
     try {
       setIsLoading(true);
-      // const { error } = await authClient.changePassword({
-      //     currentPassword,
-      //     newPassword,
-      //     revokeOtherSessions: true,
-      // });
+      const response = await fetch("/api/auth/change-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
 
-      if (error) {
-        alert(error.message || "Failed to update password");
+      const result = await response.json();
+
+      if (!response.ok) {
+        alert(result.error || "Failed to update password");
       } else {
         alert("Password updated successfully");
         setCurrentPassword("");

@@ -115,12 +115,12 @@ export default function ShopResultsWithSidebar() {
                     </Sheet>
 
                     <div className="text-xs text-muted-foreground">
-                        {productsData?.data?.pagination?.total ?? products.length} products found
+                        {productsData?.data?.pagination?.totalProducts ?? products.length} products found
                     </div>
                 </div>
 
                 <ShopToolbar
-                    count={productsData?.data?.pagination?.total ?? products.length}
+                    count={productsData?.data?.pagination?.totalProducts ?? products.length}
                     view={view}
                     onViewChange={setView}
                     sort={sort}

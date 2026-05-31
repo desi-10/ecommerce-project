@@ -43,11 +43,30 @@ export default function OrderManagementPage() {
 
     const order = orderResponse?.data;
 
+    const getAllowedTransitions = (currentStatus: string): string[] => {
+        switch (currentStatus) {
+            case "PENDING":
+                return ["PAID", "CANCELLED"];
+            case "PAID":
+                return ["SHIPPED", "FULFILLED", "CANCELLED"];
+            case "SHIPPED":
+                return ["FULFILLED", "CANCELLED"];
+            case "FULFILLED":
+            case "CANCELLED":
+            default:
+                return [];
+        }
+    };
+
     const handleUpdatePaymentStatus = async (paymentId: string, status: string) => {
         try {
             setIsUpdatingPayment(true);
             await axios.patch(`/api/payments/${paymentId}`, { status });
-            await queryClient.invalidateQueries({ queryKey: ["orders", "detail", id] });
+            await Promise.all([
+                queryClient.invalidateQueries({ queryKey: ["orders"] }),
+                queryClient.invalidateQueries({ queryKey: ["payments"] }),
+                queryClient.invalidateQueries({ queryKey: ["dashboard", "stats"] }),
+            ]);
         } catch (error) {
             console.error("Failed to update payment status", error);
         } finally {
@@ -115,28 +134,29 @@ export default function OrderManagementPage() {
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-3">
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button className="bg-blue-600 text-white hover:bg-blue-700 rounded-xl px-5 transition-all">
-                                    {isUpdatingStatus ? "Updating..." : "Update Order Status"}
-                                    <MoreHorizontal className="ml-2 h-4 w-4" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-48 bg-white border border-gray-100 shadow-xl rounded-xl p-1">
-                                {["PENDING", "PAID", "SHIPPED", "FULFILLED", "CANCELLED"].map((status) => (
-                                    <DropdownMenuItem 
-                                        key={status}
-                                        onClick={() => updateStatus({ id: order.id, status })}
-                                        disabled={order.status === status}
-                                        className="rounded-lg cursor-pointer text-sm py-2"
-                                    >
-                                        Mark as {status}
-                                    </DropdownMenuItem>
-                                ))}
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div>
+                    {getAllowedTransitions(order.status).length > 0 && (
+                        <div className="flex items-center gap-3">
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button className="bg-blue-600 text-white hover:bg-blue-700 rounded-xl px-5 transition-all">
+                                        {isUpdatingStatus ? "Updating..." : "Update Order Status"}
+                                        <MoreHorizontal className="ml-2 h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-48 bg-white border border-gray-100 shadow-xl rounded-xl p-1">
+                                    {getAllowedTransitions(order.status).map((status) => (
+                                        <DropdownMenuItem 
+                                            key={status}
+                                            onClick={() => updateStatus({ id: order.id, status })}
+                                            className="rounded-lg cursor-pointer text-sm py-2"
+                                        >
+                                            Mark as {status}
+                                        </DropdownMenuItem>
+                                    ))}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+                    )}
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -225,23 +245,25 @@ export default function OrderManagementPage() {
                                                         {new Date(payment.createdAt).toLocaleString()}
                                                     </p>
                                                 </div>
-                                                <div className="flex items-center gap-3">
-                                                    <DropdownMenu>
-                                                        <DropdownMenuTrigger asChild>
-                                                            <Button variant="outline" size="sm" className="h-8 rounded-lg text-xs font-bold border-gray-200">
-                                                                {isUpdatingPayment ? "Processing..." : "Update Payment"}
-                                                            </Button>
-                                                        </DropdownMenuTrigger>
-                                                        <DropdownMenuContent align="end" className="bg-white border rounded-xl shadow-lg p-1">
-                                                            <DropdownMenuItem onClick={() => handleUpdatePaymentStatus(payment.id, "SUCCESS")} className="rounded-lg cursor-pointer">
-                                                                Mark as Completed
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuItem onClick={() => handleUpdatePaymentStatus(payment.id, "FAILED")} className="rounded-lg cursor-pointer text-red-600 hover:text-red-700">
-                                                                Mark as Failed
-                                                            </DropdownMenuItem>
-                                                        </DropdownMenuContent>
-                                                    </DropdownMenu>
-                                                </div>
+                                                {payment.status !== "SUCCESS" && payment.status !== "SUCCEEDED" && (
+                                                    <div className="flex items-center gap-3">
+                                                        <DropdownMenu>
+                                                            <DropdownMenuTrigger asChild>
+                                                                <Button variant="outline" size="sm" className="h-8 rounded-lg text-xs font-bold border-gray-200">
+                                                                    {isUpdatingPayment ? "Processing..." : "Update Payment"}
+                                                                </Button>
+                                                            </DropdownMenuTrigger>
+                                                            <DropdownMenuContent align="end" className="bg-white border rounded-xl shadow-lg p-1">
+                                                                <DropdownMenuItem onClick={() => handleUpdatePaymentStatus(payment.id, "SUCCESS")} className="rounded-lg cursor-pointer">
+                                                                    Mark as Completed
+                                                                </DropdownMenuItem>
+                                                                <DropdownMenuItem onClick={() => handleUpdatePaymentStatus(payment.id, "FAILED")} className="rounded-lg cursor-pointer text-red-600 hover:text-red-700">
+                                                                    Mark as Failed
+                                                                </DropdownMenuItem>
+                                                            </DropdownMenuContent>
+                                                        </DropdownMenu>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     ))}
@@ -278,10 +300,6 @@ export default function OrderManagementPage() {
                                             <p className="text-gray-400 font-bold uppercase tracking-wider mb-1 text-[9px]">Customer ID</p>
                                             <p className="font-mono text-gray-600 bg-gray-50 p-1 rounded border border-gray-100 truncate">{order.user.id}</p>
                                         </div>
-                                        <Button variant="outline" size="sm" className="w-full mt-2 border-gray-200 text-gray-700 bg-white shadow-sm" onClick={() => router.push(`/dashboard/users?q=${order.user.email}`)}>
-                                            View Customer History
-                                            <ExternalLink className="h-3 w-3 ml-2" />
-                                        </Button>
                                     </div>
                                 </div>
                             ) : (
@@ -299,10 +317,10 @@ export default function OrderManagementPage() {
                                 Quick Actions
                             </h3>
                             <div className="space-y-2">
-                                <Button variant="secondary" className="w-full bg-white/10 hover:bg-white/20 border-white/20 text-white font-bold h-10 rounded-xl transition-all shadow-lg hover:shadow-xl">
+                                <Button onClick={() => window.print()} variant="secondary" className="w-full bg-white/10 hover:bg-white/20 border-white/20 text-white font-bold h-10 rounded-xl transition-all shadow-lg hover:shadow-xl">
                                     Print Invoice
                                 </Button>
-                                <Button variant="secondary" className="w-full bg-white/10 hover:bg-white/20 border-white/20 text-white font-bold h-10 rounded-xl transition-all shadow-lg hover:shadow-xl">
+                                <Button onClick={() => window.print()} variant="secondary" className="w-full bg-white/10 hover:bg-white/20 border-white/20 text-white font-bold h-10 rounded-xl transition-all shadow-lg hover:shadow-xl">
                                     Download Packing Slip
                                 </Button>
                             </div>

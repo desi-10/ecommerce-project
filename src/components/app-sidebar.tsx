@@ -28,18 +28,20 @@ import {
   MessageSquare,
   LogOut,
   Home,
+  Users,
 } from "lucide-react";
 
 type NavItem = {
   title: string;
   url: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
 };
 
 const navItems: NavItem[] = [
   { title: "Overview", url: "/dashboard", icon: LayoutDashboard },
   { title: "Products", url: "/dashboard/products", icon: Package },
   { title: "Orders", url: "/dashboard/orders", icon: ShoppingBag },
+  { title: "Customers", url: "/dashboard/customers", icon: Users },
   { title: "Categories", url: "/dashboard/categories", icon: Tags },
   { title: "Inventory", url: "/dashboard/inventory", icon: Package },
   { title: "Coupons", url: "/dashboard/coupons", icon: BadgePercent },

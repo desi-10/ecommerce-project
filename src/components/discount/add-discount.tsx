@@ -50,7 +50,7 @@ export function AddDiscountDialog({ onSuccess }: { onSuccess?: () => void }) {
     reset,
     formState: { errors },
   } = useForm<CreateDiscountInput>({
-    resolver: zodResolver(createDiscountSchema),
+    resolver: zodResolver(createDiscountSchema) as any,
     defaultValues: {
       status: "ACTIVE",
     },

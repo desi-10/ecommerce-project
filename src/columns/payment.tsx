@@ -7,6 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { PaymentActions } from "@/components/payment/payment-actions";
 import { Badge } from "@/components/ui/badge";
 import { User, Receipt } from "lucide-react";
+import Link from "next/link";
 
 function IndeterminateCheckbox({
   checked,
@@ -81,15 +82,15 @@ export const paymentColumns: ColumnDef<Payment>[] = [
       if (!user) return <span className="text-gray-400 text-xs italic">Guest</span>;
       
       return (
-        <div className="flex items-center gap-2">
+        <Link href={`/dashboard/customers/${user.id}`} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
           <div className="h-7 w-7 rounded-full bg-blue-50 flex items-center justify-center border border-blue-100">
             <User className="h-3.5 w-3.5 text-blue-600" />
           </div>
           <div className="flex flex-col">
-            <span className="font-medium text-xs text-gray-900 leading-none">{user.name || "Unnamed User"}</span>
+            <span className="font-medium text-xs text-gray-900 leading-none hover:underline">{user.name || "Unnamed User"}</span>
             <span className="text-[10px] text-gray-500 mt-1">{user.email}</span>
           </div>
-        </div>
+        </Link>
       );
     },
   },
@@ -102,15 +103,15 @@ export const paymentColumns: ColumnDef<Payment>[] = [
       const shortId = orderId.slice(0, 8).toUpperCase();
       
       return (
-        <div className="flex items-center gap-2">
+        <Link href={`/dashboard/orders/${orderId}`} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
             <Receipt className="h-3.5 w-3.5 text-gray-400" />
             <div className="flex flex-col">
-                <span className="font-mono text-[10px] font-bold text-blue-600 tracking-tight">#{shortId}</span>
+                <span className="font-mono text-[10px] font-bold text-blue-600 tracking-tight hover:underline">#{shortId}</span>
                 {row.original.order?.status && (
                     <span className="text-[9px] text-gray-400 uppercase font-semibold">{row.original.order.status}</span>
                 )}
             </div>
-        </div>
+        </Link>
       );
     },
   },

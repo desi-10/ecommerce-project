@@ -73,16 +73,20 @@ export default function DashboardOverviewPage() {
   const recentOrders = data?.recentOrders || [];
   const allProducts = productsData?.data?.products || [];
 
+  const getProductStock = (p: any) => {
+    return p.variants?.reduce((sum: number, v: any) => sum + (v.inventory?.stock ?? 0), 0) ?? 0;
+  };
+
   // Calculate top products
   const topProducts = allProducts
-    .sort((a, b) => (b.inventory?.stock ?? 0) - (a.inventory?.stock ?? 0))
+    .sort((a, b) => getProductStock(b) - getProductStock(a))
     .slice(0, 5);
 
   // Calculate order status breakdown
   const orderStats = {
-    completed: recentOrders.filter((o: any) => o.status === "COMPLETED").length,
-    pending: recentOrders.filter((o: any) => o.status === "PENDING").length,
-    cancelled: recentOrders.filter((o: any) => o.status === "CANCELLED").length,
+    completed: data?.totalSales || 0,
+    pending: data?.pendingOrders || 0,
+    cancelled: data?.cancelledOrders || 0,
   };
 
   return (
@@ -116,30 +120,28 @@ export default function DashboardOverviewPage() {
             <MetricCard
               icon={DollarSign}
               label="Total Revenue"
-              value={formatGHS(metrics[0]?.value || 0)}
+              value={formatGHS(data?.totalRevenue || 0)}
               trend={metrics[0]?.trend === "up" ? "up" : "down"}
               trendValue={metrics[0]?.change || "0%"}
             />
             <MetricCard
               icon={ShoppingCart}
               label="Total Orders"
-              value={recentOrders.length}
-              trend="up"
-              trendValue={metrics[1]?.change || "0%"}
+              value={data?.totalOrders || 0}
+              trend={metrics[2]?.trend === "up" ? "up" : "down"}
+              trendValue={metrics[2]?.change || "0%"}
             />
             <MetricCard
               icon={Package}
               label="Total Products"
               value={allProducts.length}
-              trend={metrics[2]?.trend === "up" ? "up" : "down"}
-              trendValue={metrics[2]?.change || "0%"}
             />
             <MetricCard
               icon={Users}
               label="Active Customers"
-              value={metrics[3]?.value || 0}
-              trend={metrics[3]?.trend === "up" ? "up" : "down"}
-              trendValue={metrics[3]?.change || "0%"}
+              value={data?.activeUsers || 0}
+              trend={metrics[1]?.trend === "up" ? "up" : "down"}
+              trendValue={metrics[1]?.change || "0%"}
             />
           </>
         )}
@@ -210,10 +212,14 @@ export default function DashboardOverviewPage() {
                     </p>
                     <span
                       className={`inline-block text-xs font-bold mt-1 px-2.5 py-1 rounded-full ${
-                        order.status === "COMPLETED"
+                        order.status === "FULFILLED"
                           ? "bg-emerald-100 text-emerald-700"
-                          : order.status === "PENDING"
+                          : order.status === "SHIPPED"
+                          ? "bg-indigo-100 text-indigo-700"
+                          : order.status === "PAID"
                           ? "bg-blue-100 text-blue-700"
+                          : order.status === "PENDING"
+                          ? "bg-amber-100 text-amber-700"
                           : "bg-red-100 text-red-700"
                       }`}
                     >
@@ -308,7 +314,7 @@ export default function DashboardOverviewPage() {
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-gray-900 truncate">{product.name}</p>
                       <p className="text-xs text-gray-500 mt-0.5">
-                        {product.inventory?.stock ?? 0} in stock
+                        {getProductStock(product)} in stock
                       </p>
                     </div>
                   </div>

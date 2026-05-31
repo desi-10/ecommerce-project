@@ -44,6 +44,14 @@ export default function Header() {
 
     const handleSearch = (e?: React.FormEvent) => {
         if (e) e.preventDefault();
+        
+        const trimmed = query.trim().toLowerCase();
+        if (trimmed === "assistant" || trimmed === "martfury" || trimmed === "chat" || trimmed === "ai") {
+            window.dispatchEvent(new CustomEvent("open-ai-assistant"));
+            setQuery("");
+            return;
+        }
+
         const params = new URLSearchParams();
         if (query) params.set("q", query);
         if (category !== "all") params.set("category", category);
@@ -117,11 +125,9 @@ export default function Header() {
                                         className="w-full h-full"
                                     />
 
-                                    {wishlistCount > 0 && (
-                                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center">
-                                            {wishlistCount}
-                                        </span>
-                                    )}
+                                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center">
+                                        {wishlistCount}
+                                    </span>
                                 </button>
 
                                 {/* Cart */}
@@ -134,11 +140,9 @@ export default function Header() {
                                         className="w-full h-full"
                                     />
 
-                                    {cartCount > 0 && (
-                                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center">
-                                            {cartCount}
-                                        </span>
-                                    )}
+                                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center">
+                                        {cartCount}
+                                    </span>
                                 </button>
 
                                 {/* Auth */}

@@ -31,7 +31,7 @@ function toCard(p: Product) {
 
     // Resolve product image from API data
     const image = p.image
-        ?? (p.images?.[0] && typeof p.images[0] === 'object' ? p.images[0].url : p.images?.[0])
+        ?? p.images?.[0]?.url
         ?? "/martfury/product.png";
     const brand = ""; // add p.brand later if your API returns it
 

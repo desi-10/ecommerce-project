@@ -53,6 +53,7 @@ export type Order = {
   items: OrderItem[];
   payments: OrderPayment[];
   user: OrderUser | null;
+  shippingAddress?: any;
 };
 
 export type OrdersPagination = {

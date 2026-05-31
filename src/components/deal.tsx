@@ -16,7 +16,6 @@ import { useMemo, useState } from "react";
 import { useCartStore } from "@/stores/cart.store";
 import { useWishlistStore } from "@/stores/wishlist.store";
 import { useGetProducts } from "@/hooks/use-product";
-import type { Product } from "@/types/product";
 import { CountdownTimer } from "./countdown-timer";
 
 const toNumberPrice = (value: string | number) => {
@@ -50,14 +49,18 @@ export default function DealOfDay() {
     // Get the earliest discount end time from products
     const earliestEndTime = products.reduce((earliest, product) => {
         const discount = product.discounts?.[0];
-        if (discount?.endDate) {
-            const discountEnd = new Date(discount.endDate);
+        if (discount?.endsAt) {
+            const discountEnd = new Date(discount.endsAt);
             if (!earliest || discountEnd < earliest) {
                 return discountEnd;
             }
         }
         return earliest;
     }, null as Date | null);
+
+    if (products.length === 0) {
+        return null;
+    }
 
     const dealEndTime = earliestEndTime || new Date(Date.now() + 24 * 60 * 60 * 1000); // Default to 24 hours from now
 
@@ -82,8 +85,8 @@ export default function DealOfDay() {
                             const variant = p.variants?.[0];
                             const id = variant?.id || p.id;
                             const priceNum = toNumberPrice(variant?.salePrice || variant?.price || 0);
-                            const oldPrice = variant && Number(variant.salePrice) > 0 
-                                ? toNumberPrice(variant.price) 
+                            const oldPrice = variant && Number(variant.salePrice) > 0
+                                ? toNumberPrice(variant.price)
                                 : null;
                             const isInCart = cartSet.has(id);
                             const isInWish = wishSet.has(id);

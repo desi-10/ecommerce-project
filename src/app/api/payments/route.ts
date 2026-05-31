@@ -9,6 +9,7 @@ import {
 import {
   createPaymentRecordService,
   listPaymentsService,
+  adminListPaymentsService,
 } from "@/server/payments/payments.service";
 
 export const GET = async (req: Request) => {
@@ -19,7 +20,9 @@ export const GET = async (req: Request) => {
     );
     const query = validateOrThrow(listPaymentsSchema, rawQuery);
 
-    const result = await listPaymentsService(query, session.user.id);
+    const result = session.user.role === "admin"
+      ? await adminListPaymentsService(query)
+      : await listPaymentsService(query, session.user.id);
     return NextResponse.json(result);
   } catch (error) {
     return handleApiError(error);

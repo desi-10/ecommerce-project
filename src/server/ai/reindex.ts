@@ -1,13 +1,9 @@
-import { PrismaClient } from "@prisma/client";
+import prisma from "../../lib/db";
 import { generateEmbedding } from "./embedding";
 import { getPineconeIndex } from "../../lib/pinecone";
 import { config } from "dotenv";
 
 config();
-
-const prisma = new PrismaClient({
-  datasourceUrl: process.env.DATABASE_URL,
-});
 
 async function main() {
   console.log("Starting product re-indexing with Pinecone...");
@@ -26,7 +22,7 @@ async function main() {
     console.log(`Processing batch ${i / batchSize + 1}...`);
 
     const vectors = await Promise.all(
-      batch.map(async (product) => {
+      batch.map(async (product: any) => {
         const embeddingText = `${product.name} ${product.description || ""}`;
         const embedding = await generateEmbedding(embeddingText);
         return {
@@ -37,7 +33,7 @@ async function main() {
       })
     );
 
-    await index.upsert(vectors.filter((v) => v.values.length > 0));
+    await index.upsert({ records: vectors.filter((v: any) => v.values.length > 0) });
   }
 
   console.log("Re-indexing complete!");

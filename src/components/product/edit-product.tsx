@@ -50,7 +50,7 @@ export function EditProductDialog({
   const [showSuccess, setShowSuccess] = React.useState(false);
 
   const form = useForm<UpdateProductInput>({
-    resolver: zodResolver(updateProductSchema),
+    resolver: zodResolver(updateProductSchema) as any,
     defaultValues: {
       name: product.name,
       description: product.description || "",
@@ -62,7 +62,7 @@ export function EditProductDialog({
         price: Number(v.price),
         salePrice: v.salePrice ? Number(v.salePrice) : undefined,
         stock: v.inventory?.stock ?? 0,
-        options: v.options,
+        options: v.options as any,
       })),
     },
   });

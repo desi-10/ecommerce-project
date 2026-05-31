@@ -52,7 +52,7 @@ export function AdjustStockDialog({
   const [isPending, setIsPending] = useState(false);
   const { register, handleSubmit, watch, formState, setValue, reset } =
     useForm<AdjustStockInput>({
-      resolver: zodResolver(adjustStockSchema),
+      resolver: zodResolver(adjustStockSchema) as any,
       defaultValues: {
         qty: 1,
         direction: "increase",
