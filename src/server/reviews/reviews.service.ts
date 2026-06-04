@@ -58,7 +58,7 @@ export const createReviewService = async (
 };
 
 export const getReviewsService = async (page: number = 1, limit: number = 20) => {
-  const [total, reviews] = await prisma.$transaction([
+  const [total, reviews] = await Promise.all([
     prisma.review.count(),
     prisma.review.findMany({
       orderBy: { createdAt: "desc" },

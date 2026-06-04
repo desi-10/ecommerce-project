@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { headers } from "next/headers";
+import { auth } from "@/lib/auth";
 import {
   createProductService,
   getProductsService,
@@ -17,6 +19,17 @@ export const GET = async (req: Request) => {
     const rawQuery = Object.fromEntries(searchParams.entries());
 
     const query = validateOrThrow(listProductsSchema, rawQuery);
+    
+    const requestHeaders = await headers();
+    const session = await auth.api.getSession({
+      headers: requestHeaders,
+    });
+    const isAdmin = session?.user?.role === "admin";
+
+    if (!isAdmin) {
+      query.status = "ACTIVE";
+    }
+
     const result = await getProductsService(query);
 
     return NextResponse.json(result);

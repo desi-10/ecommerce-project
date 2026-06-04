@@ -111,9 +111,10 @@ export default function CheckoutPage() {
 
       // ✅ Redirect properly
       window.location.href = url;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Payment error:", error);
-      alert("Something went wrong while processing payment.");
+      const msg = error.response?.data?.message || "Something went wrong while processing payment. Please try again.";
+      toast.error(msg);
     }
   };
 
@@ -125,7 +126,7 @@ export default function CheckoutPage() {
       >
         <div className="pt-10 flex justify-between items-center">
           <h1 className="text-2xl font-semibold text-neutral-900">
-            Example Shopify Store
+            MartFury
           </h1>
           <div className="flex items-center space-x-3">
             <ShoppingBag />

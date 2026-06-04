@@ -9,6 +9,7 @@ async function main() {
   console.log("Starting product re-indexing with Pinecone...");
 
   const products = await prisma.product.findMany({
+    where: { status: "ACTIVE" },
     select: { id: true, name: true, description: true },
   });
 

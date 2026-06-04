@@ -77,3 +77,26 @@ Welcome to MartFury. By accessing or using our website, you agree to comply with
 ## 5. Governing Law
 - These Terms of Service shall be governed by and construed in accordance with local ecommerce regulations and laws.
 `;
+
+export const RETURN_POLICY = `
+# Return Policy
+
+**Last Updated: May 2026**
+
+We offer a flexible **30-day return policy** on most items. If you would like to return an item, please read the conditions below:
+
+## Conditions for Returns
+- Items must be returned within **30 calendar days** of delivery.
+- Items must be unused, in the same condition you received them, and in their original packaging.
+- You must provide a valid receipt or proof of purchase.
+
+## How to Initiate a Return
+1. Contact our customer service team at support@martfury.com.
+2. Provide your order number and details about the product you wish to return.
+3. Our team will provide shipping instructions.
+
+## Return Shipping Costs
+- Customers are responsible for their own return shipping fees. Shipping fees are non-refundable.
+- If you receive a refund, the cost of return shipping will be deducted from your final refund amount.
+`;
+

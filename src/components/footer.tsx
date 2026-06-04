@@ -44,11 +44,11 @@ export default function Footer() {
                     <div>
                         <div className="font-semibold mb-3">Quick links</div>
                         <ul className="space-y-2 text-sm text-muted-foreground">
-                            <li><Link href="/shop" className="hover:text-primary">Policy</Link></li>
-                            <li><Link href="/shop" className="hover:text-primary">Terms & Conditions</Link></li>
-                            <li><Link href="/shop" className="hover:text-primary">Shipping</Link></li>
-                            <li><Link href="/shop" className="hover:text-primary">Returns</Link></li>
-                            <li><Link href="/shop" className="hover:text-primary">FAQs</Link></li>
+                            <li><Link href="/privacy-policy" className="hover:text-primary">Policy</Link></li>
+                            <li><Link href="/terms" className="hover:text-primary">Terms & Conditions</Link></li>
+                            <li><Link href="/refund-policy" className="hover:text-primary">Shipping</Link></li>
+                            <li><Link href="/refund-policy" className="hover:text-primary">Returns</Link></li>
+                            <li><Link href="/contact" className="hover:text-primary">FAQs</Link></li>
                         </ul>
                     </div>
 
@@ -56,8 +56,8 @@ export default function Footer() {
                         <div className="font-semibold mb-3">Company</div>
                         <ul className="space-y-2 text-sm text-muted-foreground">
                             <li><Link href="/about" className="hover:text-primary">About Us</Link></li>
-                            <li><Link href="/shop" className="hover:text-primary">Affiliate</Link></li>
-                            <li><Link href="/contact" className="hover:text-primary">Careers</Link></li>
+                            <li><Link href="/about" className="hover:text-primary">Affiliate</Link></li>
+                            <li><Link href="/about" className="hover:text-primary">Careers</Link></li>
                             <li><Link href="/contact" className="hover:text-primary">Contact</Link></li>
                         </ul>
                     </div>
@@ -65,8 +65,8 @@ export default function Footer() {
                     <div>
                         <div className="font-semibold mb-3">Business</div>
                         <ul className="space-y-2 text-sm text-muted-foreground">
-                            <li><Link href="/shop" className="hover:text-primary">Our Press</Link></li>
-                            <li><Link href="/cart" className="hover:text-primary">Checkout</Link></li>
+                            <li><Link href="/blog" className="hover:text-primary">Our Press</Link></li>
+                            <li><Link href="/checkout" className="hover:text-primary">Checkout</Link></li>
                             <li><Link href="/account" className="hover:text-primary">My account</Link></li>
                             <li><Link href="/shop" className="hover:text-primary">Shop</Link></li>
                         </ul>

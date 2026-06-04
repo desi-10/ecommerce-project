@@ -3,6 +3,7 @@ import "./globals.css";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ReactQuery } from "@/components/react-query";
 import { FloatingAssistant } from "@/components/ai/floating-assistant";
+import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
   title: "MartFury",
@@ -21,6 +22,7 @@ export default function RootLayout({
           <TooltipProvider>
             {children}
             <FloatingAssistant />
+            <Toaster richColors closeButton position="top-center" />
           </TooltipProvider>
         </ReactQuery>
       </body>

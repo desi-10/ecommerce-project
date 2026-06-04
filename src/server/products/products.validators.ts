@@ -42,6 +42,12 @@ export const updateProductSchema = z.object({
   status: productStatusSchema.optional(),
   variants: z.array(variantUpdateSchema).optional(),
   categoryId: z.string().optional(),
+  defaultPrice: z.preprocess(toNumber, z.number().nonnegative().optional()),
+  defaultSalePrice: z.preprocess((v) => {
+    if (v === "" || v === "null") return null;
+    return toNumber(v);
+  }, z.number().nonnegative().nullish()),
+  defaultStock: z.preprocess(toInt, z.number().int().nonnegative().optional()),
 });
 
 export const listProductsSchema = z.object({
@@ -64,6 +70,7 @@ export const listProductsSchema = z.object({
   }, z.boolean().optional()),
   sort: z.enum(["newest", "oldest", "name_asc", "name_desc", "price_asc", "price_desc"]).default("newest"),
   ids: z.array(z.string()).optional(),
+  rating: z.preprocess(toNumber, z.number().min(1).max(5).optional()),
 });
 
 export type CreateProductInput = z.infer<typeof createProductSchema>;
@@ -82,4 +89,5 @@ export type ListProductsParams = {
   maxPrice?: number;
   onDiscount?: boolean;
   sort?: "newest" | "oldest" | "name_asc" | "name_desc" | "price_asc" | "price_desc";
+  rating?: number;
 };

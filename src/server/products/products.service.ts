@@ -117,19 +117,6 @@ export const createProductService = async (data: CreateProductInput) => {
       select: { id: true },
     });
 
-    if (embedding.length > 0) {
-      const index = getPineconeIndex();
-      await index.upsert({
-        records: [
-          {
-            id: product.id,
-            values: embedding,
-            metadata: { name: data.name, description: data.description || "" },
-          },
-        ]
-      });
-    }
-
     if (data.categoryId) {
       await tx.productCategory.create({
         data: {
@@ -206,6 +193,23 @@ export const createProductService = async (data: CreateProductInput) => {
     });
   });
 
+  if (result && result.status === "ACTIVE" && embedding.length > 0) {
+    try {
+      const index = getPineconeIndex();
+      await index.upsert({
+        records: [
+          {
+            id: result.id,
+            values: embedding,
+            metadata: { name: result.name, description: result.description || "" },
+          },
+        ],
+      });
+    } catch (error) {
+      console.error("Failed to upsert to Pinecone:", error);
+    }
+  }
+
   return apiResponse("Product created successfully", result);
 };
 
@@ -259,12 +263,41 @@ export const getProductsService = async (data: ListProductsInput) => {
     minPrice,
     maxPrice,
     ids,
+    rating,
   } = data;
 
   const categorySlugs = categories ?? (category ? [category] : undefined);
 
+  let ratedProductIds: string[] | undefined = undefined;
+  if (rating !== undefined) {
+    const ratedGroups = await prisma.review.groupBy({
+      by: ["productId"],
+      _avg: {
+        rating: true,
+      },
+      having: {
+        rating: {
+          _avg: {
+            gte: rating,
+          },
+        },
+      },
+    });
+    ratedProductIds = ratedGroups.map((g) => g.productId);
+  }
+
   const where: Prisma.ProductWhereInput = {
-    ...(ids && ids.length > 0 && { id: { in: ids } }),
+    ...(ids && ids.length > 0
+      ? {
+          id: {
+            in: ratedProductIds
+              ? ids.filter((id) => ratedProductIds!.includes(id))
+              : ids,
+          },
+        }
+      : ratedProductIds
+        ? { id: { in: ratedProductIds } }
+        : {}),
     ...(status && { status }),
     ...(q && {
       name: {
@@ -321,22 +354,63 @@ export const getProductsService = async (data: ListProductsInput) => {
   if (sort === "name_asc") orderBy = { name: "asc" };
   else if (sort === "name_desc") orderBy = { name: "desc" };
   else if (sort === "oldest") orderBy = { createdAt: "asc" };
-  else if (sort === "price_asc") {
-    orderBy = {
-      variants: {
+
+  if (sort === "price_asc" || sort === "price_desc") {
+    try {
+      const variantGroups = await prisma.productVariant.groupBy({
+        by: ["productId"],
         _min: {
-          price: "asc",
+          price: true,
         },
-      },
-    };
-  } else if (sort === "price_desc") {
-    orderBy = {
-      variants: {
-        _min: {
-          price: "desc",
+        where: {
+          product: where,
+          AND: [
+            ...(minPrice !== undefined ? [{ price: { gte: minPrice } }] : []),
+            ...(maxPrice !== undefined ? [{ price: { lte: maxPrice } }] : []),
+          ],
         },
-      },
-    };
+        orderBy: {
+          _min: {
+            price: sort === "price_asc" ? "asc" : "desc",
+          },
+        },
+      });
+
+      const total = variantGroups.length;
+      const paginatedGroups = variantGroups.slice((page - 1) * limit, page * limit);
+      const productIds = paginatedGroups.map((g) => g.productId);
+
+      const products = await prisma.product.findMany({
+        where: {
+          id: { in: productIds },
+        },
+        select: productSelect,
+      });
+
+      // Keep the sort order of productIds
+      const productsMap = new Map(products.map((p) => [p.id, p]));
+      const orderedProducts = productIds
+        .map((id) => productsMap.get(id))
+        .filter(Boolean) as any[];
+
+      const totalPages = Math.max(1, Math.ceil(total / limit));
+      const processedProducts = orderedProducts.map(applyDynamicDiscounts);
+
+      return apiResponse("Products fetched successfully", {
+        products: processedProducts,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages,
+          hasNext: page < totalPages,
+          hasPrev: page > 1,
+        },
+      });
+    } catch (error: any) {
+      console.error("[getProductsService] GroupBy Sort Failed:", error.message);
+      // Fallback below to safe mode
+    }
   }
 
   try {
@@ -397,13 +471,15 @@ export const getProductsService = async (data: ListProductsInput) => {
   }
 };
 
-export const getProductByIdService = async (id: string) => {
+export const getProductByIdService = async (id: string, isAdmin: boolean = false) => {
   const product = await prisma.product.findUnique({
     where: { id },
     select: productSelect,
   });
 
-  if (!product) throw new ApiError("Product not found", StatusCodes.NOT_FOUND);
+  if (!product || (!isAdmin && product.status === "INACTIVE")) {
+    throw new ApiError("Product not found", StatusCodes.NOT_FOUND);
+  }
 
   return apiResponse("Product fetched successfully", applyDynamicDiscounts(product));
 };
@@ -412,19 +488,24 @@ export const updateProductService = async (
   id: string,
   data: UpdateProductInput,
 ) => {
-  // If name or description changed, regenerate embedding
+  const existingProduct = await prisma.product.findUnique({
+    where: { id },
+    select: { name: true, description: true, status: true },
+  });
+
+  if (!existingProduct) {
+    throw new ApiError("Product not found", StatusCodes.NOT_FOUND);
+  }
+
+  // Regenerate embedding if name or description changed, OR if status is changing from INACTIVE to ACTIVE
   let embedding: number[] | null = null;
-  if (data.name !== undefined || data.description !== undefined) {
-    const existingProduct = await prisma.product.findUnique({
-      where: { id },
-      select: { name: true, description: true },
-    });
-    
-    if (existingProduct) {
-      const name = data.name ?? existingProduct.name;
-      const description = data.description ?? existingProduct.description;
-      embedding = await generateEmbedding(`${name} ${description || ""}`);
-    }
+  const isActivating = existingProduct.status === "INACTIVE" && data.status === "ACTIVE";
+  const nameOrDescChanged = data.name !== undefined || data.description !== undefined;
+
+  if (nameOrDescChanged || isActivating) {
+    const name = data.name ?? existingProduct.name;
+    const description = data.description ?? existingProduct.description;
+    embedding = await generateEmbedding(`${name} ${description || ""}`);
   }
 
   const updated = await prisma.$transaction(async (tx) => {
@@ -448,22 +529,6 @@ export const updateProductService = async (
       },
       select: { id: true, name: true, description: true },
     });
-
-    if (embedding && embedding.length > 0) {
-      const index = getPineconeIndex();
-      await index.upsert({
-        records: [
-          {
-            id: id,
-            values: embedding,
-            metadata: { 
-              name: updatedProduct.name, 
-              description: updatedProduct.description || "" 
-            },
-          },
-        ]
-      });
-    }
 
     if (data.categoryId !== undefined) {
       await tx.productCategory.deleteMany({ where: { productId: id } });
@@ -497,8 +562,39 @@ export const updateProductService = async (
       }
     }
 
-    // If variants not provided, stop here (core update only)
+    // If variants not provided, stop here (core update only or default variant update)
     if (!data.variants) {
+      if (
+        data.defaultPrice !== undefined ||
+        data.defaultSalePrice !== undefined ||
+        data.defaultStock !== undefined
+      ) {
+        const current = await tx.productVariant.findMany({
+          where: { productId: id },
+          select: { id: true },
+        });
+
+        if (current.length === 1) {
+          const singleVariant = current[0];
+          await tx.productVariant.update({
+            where: { id: singleVariant.id },
+            data: {
+              ...(data.defaultPrice !== undefined ? { price: decimal(data.defaultPrice) } : {}),
+              ...(data.defaultSalePrice !== undefined
+                ? { salePrice: data.defaultSalePrice === null ? null : decimal(data.defaultSalePrice) }
+                : {}),
+            },
+          });
+
+          if (data.defaultStock !== undefined) {
+            await tx.inventory.upsert({
+              where: { variantId: singleVariant.id },
+              create: { variantId: singleVariant.id, stock: data.defaultStock },
+              update: { stock: data.defaultStock },
+            });
+          }
+        }
+      }
       return tx.product.findUnique({ where: { id }, select: productSelect });
     }
 
@@ -515,15 +611,62 @@ export const updateProductService = async (
     // Fetch current variants for deletion detection
     const current = await tx.productVariant.findMany({
       where: { productId: id },
-      select: { id: true },
+      select: { id: true, name: true, sku: true },
     });
     const currentIds = new Set(current.map((v) => v.id));
     const incomingIds = new Set(
       data.variants.map((v) => v.id).filter(Boolean) as string[],
     );
+    const toDelete = [...currentIds].filter((vid) => !incomingIds.has(vid));
+
+    // Check if the product has been purchased (has any order items)
+    const orderItem = await tx.orderItem.findFirst({
+      where: { variant: { productId: id } },
+      select: { id: true },
+    });
+    const hasBeenPurchased = !!orderItem;
+
+    if (hasBeenPurchased) {
+      // 1. You shouldn't be able to remove existing variants
+      if (toDelete.length > 0) {
+        throw new ApiError(
+          "Cannot delete variants from a product that has been purchased.",
+          StatusCodes.BAD_REQUEST,
+        );
+      }
+
+      // 2. You should only modify variant stock or price (not name/sku)
+      for (const v of data.variants) {
+        if (v.id) {
+          const existingVar = current.find((cv) => cv.id === v.id);
+          if (existingVar) {
+            const nameChanged = v.name !== undefined && v.name !== existingVar.name;
+            const skuChanged = v.sku !== undefined && v.sku !== (existingVar.sku ?? undefined);
+
+            if (nameChanged || skuChanged) {
+              throw new ApiError(
+                `Cannot modify name or SKU of existing variant "${existingVar.name}" because this product has been purchased.`,
+                StatusCodes.BAD_REQUEST,
+              );
+            }
+          }
+        }
+      }
+
+      // 3. For single ones, you shouldn't be able to add variants to them
+      const isSingleProduct = current.length === 1;
+      if (isSingleProduct) {
+        const hasNewVariants = data.variants.some((v) => !v.id);
+        if (hasNewVariants) {
+          throw new ApiError(
+            "Cannot add variants to a single product that has been purchased.",
+            StatusCodes.BAD_REQUEST,
+          );
+        }
+      }
+    }
 
     // Delete variants removed from payload
-    const toDelete = [...currentIds].filter((vid) => !incomingIds.has(vid));
     if (toDelete.length) {
       // inventory should cascade if relation is onDelete: Cascade,
       // but we delete explicitly to be safe if your schema doesn't cascade.
@@ -594,6 +737,33 @@ export const updateProductService = async (
     return tx.product.findUnique({ where: { id }, select: productSelect });
   });
 
+  if (updated) {
+    try {
+      const index = getPineconeIndex();
+      if (updated.status === "ACTIVE") {
+        if (embedding && embedding.length > 0) {
+          await index.upsert({
+            records: [
+              {
+                id: id,
+                values: embedding,
+                metadata: { 
+                  name: updated.name, 
+                  description: updated.description || "" 
+                },
+              },
+            ]
+          });
+        }
+      } else {
+        // status is INACTIVE: remove from Pinecone
+        await index.deleteOne({ id });
+      }
+    } catch (error) {
+      console.error("Failed to update Pinecone index:", error);
+    }
+  }
+
   return apiResponse("Product updated successfully", updated);
 };
 
@@ -619,6 +789,12 @@ export const deleteProductService = async (
       data: { status: "INACTIVE" },
       select: productSelect,
     });
+    try {
+      const index = getPineconeIndex();
+      await index.deleteOne({ id });
+    } catch (error) {
+      console.error("Failed to delete from Pinecone on soft delete:", error);
+    }
     return apiResponse("Product archived successfully", updated);
   }
 

@@ -26,6 +26,7 @@ export const productsKeys = {
     onDiscount?: boolean;
     status?: string;
     sort?: string;
+    rating?: number;
   }) =>
     ["products", "list", params ?? {}] as const,
   detail: (id: string) => ["products", "detail", id] as const,
@@ -42,6 +43,7 @@ export function useGetProducts(params?: {
   onDiscount?: boolean;
   status?: string;
   sort?: string;
+  rating?: number;
 }) {
   return useQuery<GetProductsResponse>({
     queryKey: productsKeys.list(params),

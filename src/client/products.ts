@@ -16,6 +16,7 @@ export async function getProducts(params?: {
   onDiscount?: boolean;
   status?: string;
   sort?: string;
+  rating?: number;
 }) {
   const query = { ...params } as Record<string, any>;
   

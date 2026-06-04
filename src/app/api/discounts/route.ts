@@ -27,7 +27,7 @@ export async function GET(req: Request) {
     const rawQuery = Object.fromEntries(url.searchParams.entries());
     const query = validateOrThrow(listDiscountsSchema, rawQuery);
 
-    const [total, productDiscounts] = await prisma.$transaction([
+    const [total, productDiscounts] = await Promise.all([
       prisma.productDiscount.count(),
       prisma.productDiscount.findMany({
         skip: (query.page - 1) * query.limit,

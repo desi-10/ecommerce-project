@@ -14,7 +14,7 @@ import { getPineconeIndex } from "@/lib/pinecone";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { initiateOrderService } from "@/server/payments/payments.service";
-import { REFUND_POLICY, PRIVACY_POLICY, TERMS_OF_SERVICE } from "@/lib/policies";
+import { REFUND_POLICY, PRIVACY_POLICY, TERMS_OF_SERVICE, RETURN_POLICY } from "@/lib/policies";
 
 /* ------------------------------------------------------- */
 /* 1. Validate API Key                                    */
@@ -36,12 +36,16 @@ async function calculateOrderTotal(items: { variantId: string; quantity: number 
   const variantIds = items.map(it => it.variantId);
   const variants = await prisma.productVariant.findMany({
     where: { id: { in: variantIds } },
+    include: { product: true },
   });
 
   let subtotal = 0;
   for (const item of items) {
     const variant = variants.find(v => v.id === item.variantId);
     if (!variant) throw new Error(`Product variant not found: ${item.variantId}`);
+    if (!variant.product || variant.product.status === "INACTIVE") {
+      throw new Error(`Product "${variant.product?.name || "Unknown"}" is inactive and cannot be purchased.`);
+    }
     const price = variant.salePrice ? Number(variant.salePrice) : Number(variant.price);
     subtotal += price * item.quantity;
   }
@@ -96,13 +100,16 @@ export async function chatWithAssistant(
         functionDeclarations: [
           {
             name: "getProducts",
-            description: "Retrieve detailed product information by product IDs",
+            description: "Retrieve, search, and list products from the catalog. Can retrieve by specific product IDs, filter by category slug, filter by discount/sale status, or sort by newest/oldest/price.",
             parameters: {
               type: "OBJECT",
               properties: {
-                ids: { type: "ARRAY", items: { type: "STRING" } },
+                ids: { type: "ARRAY", items: { type: "STRING" }, description: "Optional list of specific product IDs to retrieve" },
+                category: { type: "STRING", description: "Optional category slug to filter products (e.g. 'fashion', 'groceries')" },
+                onDiscount: { type: "BOOLEAN", description: "Optional filter to only get products on sale/discount" },
+                sort: { type: "STRING", enum: ["newest", "oldest", "price_asc", "price_desc"], description: "Optional sort order. Use 'newest' to get the latest products." },
+                limit: { type: "NUMBER", description: "Optional number of products to return (default 5, max 20)" },
               },
-              required: ["ids"],
             },
           },
           {
@@ -124,14 +131,14 @@ export async function chatWithAssistant(
           },
           {
             name: "getStorePolicy",
-            description: "Retrieve MartFury store policy details (refund policy, privacy policy, or terms of service) to answer customer questions.",
+            description: "Retrieve MartFury store policy details (refund policy, privacy policy, terms of service, or return policy) to answer customer questions.",
             parameters: {
               type: "OBJECT",
               properties: {
                 policyType: { 
                   type: "STRING", 
-                  enum: ["refund", "privacy", "terms"], 
-                  description: "The specific policy to retrieve (refund policy, privacy policy, or terms of service)" 
+                  enum: ["refund", "privacy", "terms", "return"], 
+                  description: "The specific policy to retrieve (refund policy, privacy policy, terms of service, or return policy)" 
                 },
               },
               required: ["policyType"],
@@ -240,6 +247,7 @@ RULES:
 5. If the user asks about store policies (refunds, returns, privacy, security, terms of service, etc.), call the "getStorePolicy" tool to fetch the actual policy text, then summarize it accurately for the user. Do not make up policy rules.
 6. Always use tools when structured data is needed.
 7. Be conversational but concise.
+8. Always provide a friendly, helpful conversational response in your final output, explaining the actions you took or the results you found (e.g. "I found these products for you:" or "Here is the checkout link:"). Never output an empty text response.
 `,
     });
 
@@ -286,6 +294,8 @@ RULES:
               output = { policyContent: PRIVACY_POLICY };
             } else if (type === "terms") {
               output = { policyContent: TERMS_OF_SERVICE };
+            } else if (type === "return") {
+              output = { policyContent: RETURN_POLICY };
             } else {
               output = { error: "Unknown policy type requested." };
             }
@@ -294,9 +304,12 @@ RULES:
           case "getProducts":
             output = await getProductsService({
               ids: args.ids,
+              category: args.category,
+              onDiscount: args.onDiscount,
+              sort: args.sort || "newest",
               page: 1,
-              limit: args.ids?.length || 5,
-              sort: "newest",
+              limit: args.limit || args.ids?.length || 5,
+              ...(isAdmin ? {} : { status: "ACTIVE" }),
             });
             break;
 
@@ -471,12 +484,18 @@ RULES:
       functionCalls = response.functionCalls();
     }
 
-    let resultText = response.text();
+    let resultText = "";
+    try {
+      resultText = response.text();
+    } catch (e: any) {
+      console.warn("Failed to retrieve text from Gemini response:", e.message || e);
+    }
+
     if (!resultText || resultText.trim() === "") {
       if (products.length > 0) {
         resultText = "Here are the products I found for you:";
       } else {
-        resultText = "I processed your request.";
+        resultText = "I processed your request. Let me know if you need help finding products, checking store policies, or completing checkout!";
       }
     }
     
@@ -494,8 +513,19 @@ RULES:
   } catch (error: any) {
     console.error("AI Assistant Error:", error);
 
+    const errorMessage = error?.message || "";
+    let friendlyError = "Sorry, I encountered an unexpected error. Please try again.";
+
+    if (
+      errorMessage.includes("429") || 
+      errorMessage.toLowerCase().includes("quota exceeded") || 
+      errorMessage.toLowerCase().includes("too many requests")
+    ) {
+      friendlyError = "The AI assistant is currently experiencing high traffic and has temporarily hit its request limit. Please wait a moment and try again.";
+    }
+
     return {
-      error: "AI assistant failed. " + (error?.message || "Unknown error"),
+      error: friendlyError,
     };
   }
 }

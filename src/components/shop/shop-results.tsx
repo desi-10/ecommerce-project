@@ -17,7 +17,6 @@ import {
 } from "../ui/sheet";
 import { useGetProducts } from "@/hooks/use-product";
 import { normalizeProduct } from "@/lib/product-normalizer";
-import { Product } from "@/types/product";
 
 type ViewMode = "grid" | "list";
 type SortMode = "latest" | "price_low" | "price_high";
@@ -35,13 +34,14 @@ export default function ShopResultsWithSidebar() {
     const [view, setView] = useState<ViewMode>("grid");
     const [sort, setSort] = useState<SortMode>("latest");
     const [page, setPage] = useState(1);
-    
+
     // Initialize filters from SearchParams (for homepage redirects)
     const [filters, setFilters] = useState({
         q: searchParams.get("q") || "",
         categories: searchParams.get("category") ? [searchParams.get("category")!] : [] as string[],
         minPrice: Number(searchParams.get("minPrice") || 0),
         maxPrice: Number(searchParams.get("maxPrice") || 2000),
+        rating: searchParams.get("rating") ? Number(searchParams.get("rating")) : null as number | null,
     });
 
     const pageSize = 12;
@@ -53,6 +53,7 @@ export default function ShopResultsWithSidebar() {
         categories: filters.categories.length > 0 ? filters.categories : undefined,
         minPrice: filters.minPrice,
         maxPrice: filters.maxPrice,
+        rating: filters.rating || undefined,
         sort: sortMap[sort] || "newest",
     });
 
@@ -66,6 +67,7 @@ export default function ShopResultsWithSidebar() {
             categories: payload.categories,
             minPrice: payload.minPrice,
             maxPrice: payload.maxPrice,
+            rating: payload.rating,
         });
         setPage(1);
     };
@@ -82,6 +84,7 @@ export default function ShopResultsWithSidebar() {
             categories: searchParams.get("category") ? [searchParams.get("category")!] : [],
             minPrice: Number(searchParams.get("minPrice") || 0),
             maxPrice: Number(searchParams.get("maxPrice") || 2000),
+            rating: searchParams.get("rating") ? Number(searchParams.get("rating")) : null,
         });
         setPage(1);
     }, [searchParams]);

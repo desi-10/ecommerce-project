@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { headers } from "next/headers";
+import { auth } from "@/lib/auth";
 import { validateOrThrow } from "@/lib/validator";
 import { handleApiError } from "@/lib/api-handler";
 import { requireAdminServerSession } from "@/lib/auth-guards";
@@ -18,7 +20,13 @@ export const GET = async (req: Request, context: RouteContext) => {
   try {
     const { id } = await context.params;
 
-    const result = await getProductByIdService(id);
+    const requestHeaders = await headers();
+    const session = await auth.api.getSession({
+      headers: requestHeaders,
+    });
+    const isAdmin = session?.user?.role === "admin";
+
+    const result = await getProductByIdService(id, isAdmin);
     return NextResponse.json(result);
   } catch (error) {
     return handleApiError(error);
@@ -56,6 +64,9 @@ export const PATCH = async (req: Request, context: RouteContext) => {
       if (formData.has("description")) payload.description = formData.get("description") as string;
       if (formData.has("status")) payload.status = formData.get("status") as string;
       if (formData.has("categoryId")) payload.categoryId = formData.get("categoryId") as string;
+      if (formData.has("defaultPrice")) payload.defaultPrice = formData.get("defaultPrice");
+      if (formData.has("defaultSalePrice")) payload.defaultSalePrice = formData.get("defaultSalePrice");
+      if (formData.has("defaultStock")) payload.defaultStock = formData.get("defaultStock");
 
       const variantsStr = formData.get("variants") as string;
       if (variantsStr) {

@@ -108,7 +108,7 @@ export const listPaymentsService = async (
     ...(query.status ? { status: query.status } : {}),
   };
 
-  const [total, items] = await prisma.$transaction([
+  const [total, items] = await Promise.all([
     prisma.payment.count({ where }),
     prisma.payment.findMany({
       where,
@@ -154,7 +154,7 @@ export const adminListPaymentsService = async (query: ListPaymentsInput) => {
     ...(query.status ? { status: query.status } : {}),
   };
 
-  const [total, items] = await prisma.$transaction([
+  const [total, items] = await Promise.all([
     prisma.payment.count({ where }),
     prisma.payment.findMany({
       where,

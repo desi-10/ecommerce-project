@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Bot, User, Send, Sparkles, X, Mic, ShoppingBag } from "lucide-react";
+import { Bot, User, Send, Sparkles, X, Mic, ShoppingBag, AlertCircle } from "lucide-react";
 import { chatWithAssistant } from "@/server/ai/ai.actions";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -18,6 +18,49 @@ interface Message {
   products?: any[];
   checkoutUrl?: string;
   checkoutAmount?: number;
+  isError?: boolean;
+}
+
+function renderMarkdown(text: string) {
+  if (!text) return "";
+  
+  // Replace bold syntax **text** with <strong>text</strong>
+  let html = text.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+  
+  // Replace bullet points starting with * or - with list items
+  const lines = html.split("\n");
+  let inList = false;
+  const result: React.ReactNode[] = [];
+  
+  lines.forEach((line, idx) => {
+    const trimmed = line.trim();
+    if (trimmed.startsWith("* ") || trimmed.startsWith("- ")) {
+      if (!inList) {
+        inList = true;
+      }
+      const content = trimmed.substring(2);
+      result.push(
+        <li key={idx} className="ml-4 list-disc list-inside">
+          <span dangerouslySetInnerHTML={{ __html: content }} />
+        </li>
+      );
+    } else {
+      if (inList) {
+        inList = false;
+      }
+      if (trimmed === "") {
+        result.push(<div key={idx} className="h-2" />);
+      } else {
+        result.push(
+          <p key={idx} className="mb-1 leading-relaxed">
+            <span dangerouslySetInnerHTML={{ __html: trimmed }} />
+          </p>
+        );
+      }
+    }
+  });
+  
+  return result;
 }
 
 const QUICK_PROMPTS = [
@@ -104,7 +147,11 @@ export function AssistantChatDialog({
       if (result.error) {
         setMessages((prev) => [
           ...prev,
-          { role: "model", parts: [{ text: `Error: ${result.error}` }] },
+          { 
+            role: "model", 
+            parts: [{ text: result.error }],
+            isError: true 
+          },
         ]);
       } else {
         setMessages((prev) => [
@@ -125,7 +172,11 @@ export function AssistantChatDialog({
     } catch {
       setMessages((prev) => [
         ...prev,
-        { role: "model", parts: [{ text: "Sorry, I encountered an error. Please try again." }] },
+        { 
+          role: "model", 
+          parts: [{ text: "Sorry, I'm having trouble connecting right now. Please check your internet connection and try again." }],
+          isError: true
+        },
       ]);
     } finally {
       setIsLoading(false);
@@ -229,10 +280,18 @@ export function AssistantChatDialog({
                         "text-sm px-4 py-2.5 leading-relaxed",
                         m.role === "user"
                           ? "bg-primary text-primary-foreground rounded-2xl rounded-br-sm"
+                          : m.isError
+                          ? "bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/40 text-red-800 dark:text-red-300 rounded-2xl rounded-bl-sm"
                           : "bg-secondary/60 border border-border/30 rounded-2xl rounded-bl-sm"
                       )}
                     >
-                      {m.parts[0].text}
+                      {m.isError && (
+                        <div className="flex items-center gap-1.5 font-semibold text-xs text-red-700 dark:text-red-400 mb-1">
+                          <AlertCircle className="w-3.5 h-3.5" />
+                          Assistant Error
+                        </div>
+                      )}
+                      <div className="space-y-1">{renderMarkdown(m.parts[0].text)}</div>
                     </div>
 
                     {/* Checkout card */}

@@ -100,6 +100,16 @@ export const createOrderService = async (raw: unknown) => {
     throw new ApiError("One or more variants not found", StatusCodes.NOT_FOUND);
   }
 
+  // Check if any product is inactive
+  for (const v of variants) {
+    if (!v.product || v.product.status === "INACTIVE") {
+      throw new ApiError(
+        `Product "${v.product?.name || "Unknown"}" is inactive and cannot be purchased.`,
+        StatusCodes.BAD_REQUEST,
+      );
+    }
+  }
+
   // Active product discounts
   const productIds = variants.map((v) => v.productId);
   const productDiscounts = await prisma.productDiscount.findMany({
@@ -387,7 +397,7 @@ export const getOrdersService = async (data: ListOrderInput) => {
         ? { createdAt: "asc" }
         : { createdAt: "desc" }; // fallback
 
-  const [total, orders] = await prisma.$transaction([
+  const [total, orders] = await Promise.all([
     prisma.order.count({ where }),
     prisma.order.findMany({
       where,
