@@ -1,14 +1,12 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Avatar, } from "@/components/ui/avatar";
-import { Bot, User, Send, Sparkles, Loader2, X, Mic } from "lucide-react";
+import { Bot, User, Send, Sparkles, X, Mic, ShoppingBag } from "lucide-react";
 import { chatWithAssistant } from "@/server/ai/ai.actions";
 import { cn } from "@/lib/utils";
-import { motion, } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { useSession } from "@/lib/auth-client";
@@ -22,12 +20,24 @@ interface Message {
   checkoutAmount?: number;
 }
 
-export function AssistantChatDialog({ open, onOpenChange }: { open: boolean, onOpenChange: (open: boolean) => void }) {
+const QUICK_PROMPTS = [
+  { label: "Latest products", value: "Show me the latest products" },
+  { label: "Gift ideas", value: "Help me buy clothes for my mom" },
+];
+
+export function AssistantChatDialog({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const recognitionRef = useRef<any>(null);
 
   const { data: session } = useSession();
@@ -40,48 +50,38 @@ export function AssistantChatDialog({ open, onOpenChange }: { open: boolean, onO
   }, [messages, isLoading]);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-      if (SpeechRecognition) {
-        const rec = new SpeechRecognition();
-        rec.continuous = false;
-        rec.interimResults = false;
-        rec.lang = "en-US";
-
-        rec.onstart = () => {
-          setIsListening(true);
-        };
-
-        rec.onresult = (event: any) => {
-          const transcript = event.results[0][0].transcript;
-          setInput((prev) => prev ? prev + " " + transcript : transcript);
-        };
-
-        rec.onerror = (event: any) => {
-          console.error("Speech recognition error", event);
-          setIsListening(false);
-        };
-
-        rec.onend = () => {
-          setIsListening(false);
-        };
-
-        recognitionRef.current = rec;
-      }
+    if (open) {
+      setTimeout(() => inputRef.current?.focus(), 100);
     }
+  }, [open]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SR) return;
+    const rec = new SR();
+    rec.continuous = false;
+    rec.interimResults = false;
+    rec.lang = "en-US";
+    rec.onstart = () => setIsListening(true);
+    rec.onresult = (e: any) => {
+      const t = e.results[0][0].transcript;
+      setInput((prev) => (prev ? prev + " " + t : t));
+    };
+    rec.onerror = () => setIsListening(false);
+    rec.onend = () => setIsListening(false);
+    recognitionRef.current = rec;
   }, []);
 
   const toggleListening = () => {
     if (!recognitionRef.current) {
-      alert("Speech recognition is not supported in this browser. Please try using Chrome or Safari.");
+      alert("Speech recognition not supported. Try Chrome or Safari.");
       return;
     }
-
     if (isListening) {
       recognitionRef.current.stop();
     } else {
       try {
-        localStorage.setItem("assistant-mic-used", "true");
         recognitionRef.current.start();
       } catch (err) {
         console.error(err);
@@ -100,10 +100,12 @@ export function AssistantChatDialog({ open, onOpenChange }: { open: boolean, onO
     try {
       const cartItems = useCartStore.getState().items;
       const result = await chatWithAssistant(messages, input, isAdmin, cartItems);
-      console.log("AI Chat Result:", result);
 
       if (result.error) {
-        setMessages((prev) => [...prev, { role: "model", parts: [{ text: `Error: ${result.error}` }] }]);
+        setMessages((prev) => [
+          ...prev,
+          { role: "model", parts: [{ text: `Error: ${result.error}` }] },
+        ]);
       } else {
         setMessages((prev) => [
           ...prev,
@@ -113,128 +115,168 @@ export function AssistantChatDialog({ open, onOpenChange }: { open: boolean, onO
             products: result.products,
             checkoutUrl: result.checkoutUrl,
             checkoutAmount: result.checkoutAmount,
-          }
+          },
         ]);
 
         if (result.checkoutUrl) {
           useCartStore.getState().clearCart();
         }
       }
-    } catch (error) {
-      setMessages((prev) => [...prev, { role: "model", parts: [{ text: "Sorry, I encountered an error. Please try again." }] }]);
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        { role: "model", parts: [{ text: "Sorry, I encountered an error. Please try again." }] },
+      ]);
     } finally {
       setIsLoading(false);
     }
   };
 
+  const isEmpty = messages.length === 0;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] h-[600px] flex flex-col p-0 overflow-hidden border-none shadow-2xl rounded-2xl bg-gradient-to-br from-background to-secondary/20">
-        <DialogHeader className="p-6 bg-primary text-primary-foreground flex flex-row items-center justify-between space-y-0">
+      <DialogContent showCloseButton={false} className="sm:max-w-[480px] h-[640px] flex flex-col p-0 overflow-hidden border border-border/60 shadow-xl rounded-3xl bg-background">
+        {/* Header */}
+        <DialogHeader className="px-5 py-4 border-b border-border/40 flex flex-row items-center justify-between space-y-0 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-white/20 rounded-full">
-              <Bot className="w-6 h-6" />
+            <div className="relative">
+              <div className="w-9 h-9 rounded-2xl bg-primary flex items-center justify-center shadow-sm">
+                <Sparkles className="w-4 h-4 text-primary-foreground" />
+              </div>
+              {/* Online dot */}
+              <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 border-2 border-background rounded-full" />
             </div>
             <div>
-              <DialogTitle className="text-xl font-bold tracking-tight">AI Assistant</DialogTitle>
-              <p className="text-xs text-primary-foreground/70 font-medium">Always here to help you shop or manage</p>
+              <DialogTitle className="text-sm font-semibold leading-none">AI Assistant</DialogTitle>
+              <p className="text-[11px] text-muted-foreground mt-0.5">Always here to help</p>
             </div>
           </div>
           <Button
             variant="ghost"
             size="icon"
-            className="text-primary-foreground hover:bg-white/10"
+            className="rounded-full w-8 h-8 text-muted-foreground hover:text-foreground hover:bg-secondary/60"
             onClick={() => onOpenChange(false)}
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </Button>
         </DialogHeader>
 
-        <div className="flex-1 overflow-hidden relative flex flex-col">
-          <div className="flex-1 p-6 overflow-y-auto scrollbar-hide" ref={scrollRef}>
-            <div className="space-y-6">
-              {messages.length === 0 && (
-                <div className="text-center py-10 space-y-4">
-                  <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                    <Sparkles className="w-8 h-8 text-primary animate-pulse" />
-                  </div>
-                  <h3 className="text-lg font-semibold">How can I help you today?</h3>
-                  <p className="text-sm text-muted-foreground max-w-[300px] mx-auto">
-                    I can help you find products, create new items, or manage your store's inventory.
-                  </p>
-                  <div className="grid grid-cols-1 gap-2 mt-6">
-                    <Button variant="outline" size="sm" onClick={() => setInput("Show me the latest products")} className="justify-start h-auto py-2 px-4">
-                      "Show me the latest products"
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => setInput("Help me buy clothes for my mom")} className="justify-start h-auto py-2 px-4">
-                      "Help me buy clothes for my mom"
-                    </Button>
-                  </div>
+        {/* Messages */}
+        <div className="flex-1 overflow-y-auto px-4 py-5 space-y-5 scrollbar-hide" ref={scrollRef}>
+          <AnimatePresence initial={false}>
+            {isEmpty ? (
+              <motion.div
+                key="empty"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="h-full flex flex-col items-center justify-center text-center py-8 space-y-5"
+              >
+                <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center">
+                  <Sparkles className="w-7 h-7 text-primary" />
                 </div>
-              )}
-              {messages.map((m, i) => (
+                <div className="space-y-1">
+                  <h3 className="text-base font-semibold">How can I help you?</h3>
+                  <p className="text-sm text-muted-foreground max-w-[260px] leading-relaxed">
+                    Find products, manage inventory, or get checkout-ready in seconds.
+                  </p>
+                </div>
+                <div className="flex flex-col gap-2 w-full max-w-[280px] mt-2">
+                  {QUICK_PROMPTS.map((p) => (
+                    <button
+                      key={p.value}
+                      onClick={() => setInput(p.value)}
+                      className="text-left text-sm px-4 py-2.5 rounded-xl border border-border/60 hover:border-primary/40 hover:bg-primary/5 text-muted-foreground hover:text-foreground transition-all duration-150"
+                    >
+                      {p.label} →
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            ) : (
+              messages.map((m, i) => (
                 <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
                   key={i}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2 }}
                   className={cn(
-                    "flex items-start gap-3",
+                    "flex items-end gap-2.5",
                     m.role === "user" ? "flex-row-reverse" : "flex-row"
                   )}
                 >
-                  <Avatar className={cn(
-                    "w-8 h-8 border-2",
-                    m.role === "user" ? "border-primary/20" : "border-primary/50"
-                  )}>
-                    {m.role === "user" ? <User className="p-1.5" /> : <Bot className="p-1.5" />}
-                  </Avatar>
-                  <div className={cn(
-                    "max-w-[80%] flex flex-col gap-3"
-                  )}>
-                    <div className={cn(
-                      "rounded-2xl px-4 py-3 text-sm shadow-sm",
+                  {/* Avatar */}
+                  <div
+                    className={cn(
+                      "w-7 h-7 rounded-full flex items-center justify-center shrink-0 mb-0.5",
                       m.role === "user"
-                        ? "bg-primary text-primary-foreground rounded-tr-none"
-                        : "bg-card border rounded-tl-none"
-                    )}>
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-secondary text-secondary-foreground border border-border/40"
+                    )}
+                  >
+                    {m.role === "user" ? (
+                      <User className="w-3.5 h-3.5" />
+                    ) : (
+                      <Bot className="w-3.5 h-3.5" />
+                    )}
+                  </div>
+
+                  <div className="max-w-[78%] flex flex-col gap-2.5">
+                    {/* Bubble */}
+                    <div
+                      className={cn(
+                        "text-sm px-4 py-2.5 leading-relaxed",
+                        m.role === "user"
+                          ? "bg-primary text-primary-foreground rounded-2xl rounded-br-sm"
+                          : "bg-secondary/60 border border-border/30 rounded-2xl rounded-bl-sm"
+                      )}
+                    >
                       {m.parts[0].text}
                     </div>
 
+                    {/* Checkout card */}
                     {m.checkoutUrl && (
                       <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
+                        initial={{ opacity: 0, scale: 0.97 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 p-4 rounded-xl shadow-sm space-y-3"
+                        className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 p-4 rounded-2xl space-y-3"
                       >
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider">Checkout Ready</span>
-                          <span className="text-sm font-bold text-emerald-700 dark:text-emerald-400 font-mono">
-                            ${m.checkoutAmount ? m.checkoutAmount.toFixed(2) : "0.00"}
+                          <div className="flex items-center gap-1.5">
+                            <ShoppingBag className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                            <span className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 uppercase tracking-wider">
+                              Order Ready
+                            </span>
+                          </div>
+                          <span className="text-sm font-bold text-emerald-700 dark:text-emerald-400">
+                            ${m.checkoutAmount?.toFixed(2) ?? "0.00"}
                           </span>
                         </div>
-                        <p className="text-xs text-muted-foreground">
-                          Your order has been prepared. Click the button below to proceed to the payment page.
+                        <p className="text-[11px] text-muted-foreground leading-relaxed">
+                          Your cart is set. Proceed to complete your purchase securely.
                         </p>
-                        <Button
-                          asChild
-                          className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg h-9 text-xs transition-colors cursor-pointer"
+                        <a
+                          href={m.checkoutUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-center w-full h-9 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-colors"
                         >
-                          <a href={m.checkoutUrl} target="_blank" rel="noopener noreferrer">
-                            Pay Now with Stripe/Paystack
-                          </a>
-                        </Button>
+                          Pay Now
+                        </a>
                       </motion.div>
                     )}
 
+                    {/* Product cards */}
                     {m.products && m.products.length > 0 && (
-                      <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide -mx-2 px-2">
+                      <div className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-hide -mx-1 px-1">
                         {m.products.map((product: any) => (
                           <Link
                             key={product.id}
                             href={`/shop/${product.id}`}
-                            className="flex-shrink-0 w-[180px] bg-card border rounded-xl overflow-hidden hover:border-primary/50 transition-colors shadow-sm group"
+                            className="flex-shrink-0 w-[160px] bg-background border border-border/50 rounded-2xl overflow-hidden hover:border-primary/40 hover:shadow-md transition-all duration-200 group"
                           >
-                            <div className="relative h-[120px] w-full bg-secondary/20">
+                            <div className="relative h-[100px] bg-secondary/30">
                               {product.image ? (
                                 <Image
                                   src={product.image}
@@ -243,23 +285,21 @@ export function AssistantChatDialog({ open, onOpenChange }: { open: boolean, onO
                                   className="object-cover group-hover:scale-105 transition-transform duration-300"
                                 />
                               ) : (
-                                <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                                  No Image
+                                <div className="w-full h-full flex items-center justify-center text-muted-foreground/40">
+                                  <ShoppingBag className="w-6 h-6" />
                                 </div>
                               )}
                             </div>
-                            <div className="p-3 space-y-1">
-                              <h4 className="text-xs font-semibold line-clamp-1 group-hover:text-primary transition-colors">
+                            <div className="p-2.5 space-y-0.5">
+                              <h4 className="text-[11px] font-semibold line-clamp-1 group-hover:text-primary transition-colors">
                                 {product.name}
                               </h4>
                               <p className="text-[10px] text-muted-foreground line-clamp-1">
                                 {product.description}
                               </p>
-                              <div className="flex items-center justify-between mt-1">
-                                <span className="text-sm font-bold text-primary">
-                                  ${product.variants?.[0]?.price || "0.00"}
-                                </span>
-                              </div>
+                              <span className="block text-xs font-bold text-primary pt-0.5">
+                                ${product.variants?.[0]?.price ?? "0.00"}
+                              </span>
                             </div>
                           </Link>
                         ))}
@@ -267,60 +307,74 @@ export function AssistantChatDialog({ open, onOpenChange }: { open: boolean, onO
                     )}
                   </div>
                 </motion.div>
-              ))}
-              {isLoading && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="flex items-start gap-3"
-                >
-                  <Avatar className="w-8 h-8 border-2 border-primary/50">
-                    <Bot className="p-1.5" />
-                  </Avatar>
-                  <div className="bg-card border rounded-2xl rounded-tl-none px-4 py-3 flex items-center gap-2">
-                    <Loader2 className="w-4 h-4 animate-spin text-primary" />
-                    <span className="text-sm text-muted-foreground">Thinking...</span>
-                  </div>
-                </motion.div>
-              )}
-            </div>
-          </div>
+              ))
+            )}
+
+            {/* Typing indicator */}
+            {isLoading && (
+              <motion.div
+                key="loading"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="flex items-end gap-2.5"
+              >
+                <div className="w-7 h-7 rounded-full bg-secondary border border-border/40 flex items-center justify-center shrink-0">
+                  <Bot className="w-3.5 h-3.5" />
+                </div>
+                <div className="bg-secondary/60 border border-border/30 rounded-2xl rounded-bl-sm px-4 py-3 flex items-center gap-1.5">
+                  {[0, 0.15, 0.3].map((delay, i) => (
+                    <motion.span
+                      key={i}
+                      className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50"
+                      animate={{ y: [0, -4, 0] }}
+                      transition={{ repeat: Infinity, duration: 0.7, delay, ease: "easeInOut" }}
+                    />
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
-        <div className="p-4 bg-background border-t">
-          <form
-            onSubmit={(e) => { e.preventDefault(); handleSend(); }}
-            className="flex items-center gap-2 bg-secondary/30 p-1 rounded-full border focus-within:border-primary/50 transition-colors"
+        {/* Input bar */}
+        <div className="px-4 pb-4 pt-3 border-t border-border/40 shrink-0 bg-background">
+          <div
+            className={cn(
+              "flex items-center gap-1 bg-secondary/40 rounded-2xl border transition-all duration-150",
+              isListening ? "border-red-400/60" : "border-border/40 focus-within:border-primary/50"
+            )}
           >
-            <Input
+            <input
+              ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder={isListening ? "Listening..." : "Ask anything..."}
-              className="flex-1 bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 px-4"
+              onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
+              placeholder={isListening ? "Listening…" : "Ask anything…"}
               disabled={isListening}
+              className="flex-1 bg-transparent text-sm px-4 py-3 outline-none placeholder:text-muted-foreground/50 disabled:opacity-60"
             />
-            <Button
+            <button
               type="button"
-              variant="ghost"
-              size="icon"
               onClick={toggleListening}
               className={cn(
-                "rounded-full h-9 w-9 shrink-0 transition-all",
-                isListening ? "text-red-500 bg-red-50 hover:bg-red-100 animate-pulse" : "text-muted-foreground hover:text-foreground"
+                "w-9 h-9 rounded-xl flex items-center justify-center mr-1 transition-all",
+                isListening
+                  ? "text-red-500 bg-red-50 dark:bg-red-950/30 animate-pulse"
+                  : "text-muted-foreground/60 hover:text-foreground hover:bg-secondary"
               )}
             >
               <Mic className="w-4 h-4" />
-            </Button>
-            <Button
-              type="submit"
-              size="icon"
+            </button>
+            <button
+              onClick={handleSend}
               disabled={isLoading || !input.trim() || isListening}
-              className="rounded-full h-9 w-9 shrink-0 transition-transform active:scale-95"
+              className="w-9 h-9 rounded-xl bg-primary text-primary-foreground flex items-center justify-center mr-1 hover:opacity-90 transition-all disabled:opacity-30 active:scale-95"
             >
-              <Send className="w-4 h-4" />
-            </Button>
-          </form>
-          <p className="text-[10px] text-center mt-2 text-muted-foreground uppercase tracking-widest font-medium opacity-50">
+              <Send className="w-3.5 h-3.5" />
+            </button>
+          </div>
+          <p className="text-[10px] text-center mt-2 text-muted-foreground/40 tracking-widest uppercase font-medium">
             Powered by Gemini AI
           </p>
         </div>

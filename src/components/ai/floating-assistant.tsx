@@ -1,15 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Bot, Sparkles } from "lucide-react";
+import { Bot } from "lucide-react";
 import { AssistantChatDialog } from "./assistant-chat-dialog";
 import { motion, AnimatePresence } from "framer-motion";
 
 export function FloatingAssistant() {
   const [open, setOpen] = useState(false);
 
-  // Listen for global open event
   useEffect(() => {
     const handleOpen = () => setOpen(true);
     window.addEventListener("open-ai-assistant", handleOpen);
@@ -22,24 +20,24 @@ export function FloatingAssistant() {
         <AnimatePresence>
           {!open && (
             <motion.div
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0, opacity: 0 }}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
+              initial={{ scale: 0.6, opacity: 0, y: 12 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.6, opacity: 0, y: 12 }}
+              transition={{ type: "spring", stiffness: 400, damping: 22 }}
             >
-              <Button
+              {/* Pulse ring */}
+              <span className="absolute inset-0 rounded-full bg-primary/30 animate-ping" />
+
+              <button
                 onClick={() => setOpen(true)}
-                size="lg"
-                className="h-14 w-14 rounded-full shadow-2xl bg-primary hover:bg-primary/90 text-primary-foreground border-4 border-background"
+                aria-label="Open AI Assistant"
+                className="relative w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30 border-[3px] border-background flex items-center justify-center hover:scale-105 hover:shadow-xl hover:shadow-primary/40 active:scale-95 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
               >
-                <div className="relative">
-                  <Bot className="h-7 w-7" />
-                  <div className="absolute -top-2 -right-2">
-                    <Sparkles className="h-4 w-4 text-yellow-400 animate-pulse" />
-                  </div>
-                </div>
-              </Button>
+                <Bot className="w-6 h-6" />
+
+                {/* Sparkle dot */}
+                <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-yellow-400 rounded-full border-2 border-background shadow-sm" />
+              </button>
             </motion.div>
           )}
         </AnimatePresence>
