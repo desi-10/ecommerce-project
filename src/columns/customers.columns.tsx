@@ -40,10 +40,10 @@ function CustomerActions({ customerId }: { customerId: string }) {
           <MoreHorizontal className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="bg-white border-gray-100 shadow-xl rounded-xl p-1 w-44">
+      <DropdownMenuContent align="end" className="bg-white border-gray-100 shadow-sm rounded-md p-1 w-44">
         <DropdownMenuItem 
           onClick={() => router.push(`/dashboard/customers/${customerId}`)}
-          className="rounded-lg cursor-pointer py-2 font-medium"
+          className="rounded-md cursor-pointer py-2 font-medium"
         >
           <Eye className="h-4 w-4 mr-2 text-blue-500" />
           View History

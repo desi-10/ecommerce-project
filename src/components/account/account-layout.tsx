@@ -38,7 +38,7 @@ export default function AccountLayout({ children }: { children: ReactNode }) {
                         
                         {/* Sidebar */}
                         <aside className="w-full md:w-72 shrink-0">
-                            <div className="bg-white rounded-2xl border border-neutral-200 overflow-hidden shadow-sm">
+                            <div className="bg-white rounded-md border border-neutral-200 overflow-hidden shadow-sm">
                                 {/* User Header */}
                                 <div className="p-6 border-b border-neutral-100 bg-neutral-50/50">
                                     <div className="flex items-center gap-4">
@@ -73,9 +73,9 @@ export default function AccountLayout({ children }: { children: ReactNode }) {
                                                 key={item.href}
                                                 href={item.href}
                                                 className={cn(
-                                                    "flex items-center justify-between group px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200",
+                                                    "flex items-center justify-between group px-4 py-3 rounded-md text-sm font-medium transition-all duration-200",
                                                     isActive 
-                                                        ? "bg-blue-50 text-blue-600 shadow-sm shadow-blue-100/50" 
+                                                        ? "bg-blue-50 text-blue-600 border border-blue-100" 
                                                         : "text-neutral-600 hover:bg-neutral-50"
                                                 )}
                                             >
@@ -95,7 +95,7 @@ export default function AccountLayout({ children }: { children: ReactNode }) {
                                     })}
                                     
                                     <div className="mt-4 pt-4 border-t border-neutral-100">
-                                        <button className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition-colors">
+                                        <button className="flex items-center gap-3 w-full px-4 py-3 rounded-md text-sm font-medium text-red-600 hover:bg-red-50 transition-colors">
                                             <LogOut className="h-4 w-4" />
                                             Logout
                                         </button>
@@ -106,7 +106,7 @@ export default function AccountLayout({ children }: { children: ReactNode }) {
 
                         {/* Content */}
                         <div className="flex-1 min-w-0">
-                            <div className="bg-white rounded-2xl border border-neutral-200 shadow-sm overflow-hidden">
+                            <div className="bg-white rounded-md border border-neutral-200 shadow-sm overflow-hidden">
                                 <div className="p-6 md:p-8">
                                     {children}
                                 </div>

@@ -19,7 +19,7 @@ export function HeroBannerPlusPromos() {
       <Wrapper>
         <div className="py-6 md:py-8 grid gap-4 md:grid-cols-[1fr_320px]">
           {/* 🔥 Big Banner */}
-          <div className="relative h-[360px] overflow-hidden border border-neutral-200 group">
+          <div className="relative h-[360px] rounded-md overflow-hidden border border-neutral-200 shadow-sm group">
             <Image
               src={
                 mainProduct?.image ||
@@ -51,7 +51,7 @@ export function HeroBannerPlusPromos() {
               <div className="mt-6 flex items-center gap-4">
                 <Link
                   href={mainProduct ? `/shop/${mainProduct.id}` : "/shop"}
-                  className="inline-flex rounded-sm bg-blue-600 px-6 py-3 text-white font-bold hover:bg-blue-700 transition shadow-lg"
+                  className="inline-flex rounded-md bg-blue-600 px-6 py-3 text-white font-bold hover:bg-blue-700 transition shadow-sm"
                 >
                   Shop Now
                 </Link>
@@ -69,7 +69,7 @@ export function HeroBannerPlusPromos() {
           {/* 🔥 Right Promos */}
           <div className="grid gap-4">
             {/* Promo 1 */}
-            <div className="relative h-[170px] overflow-hidden border border-neutral-200 group">
+            <div className="relative h-[170px] rounded-md overflow-hidden border border-neutral-200 shadow-sm group">
               <Image
                 src={
                   side1?.image ||
@@ -100,7 +100,7 @@ export function HeroBannerPlusPromos() {
             </div>
 
             {/* Promo 2 */}
-            <div className="relative h-[170px] overflow-hidden border border-neutral-200 group">
+            <div className="relative h-[170px] rounded-md overflow-hidden border border-neutral-200 shadow-sm group">
               <Image
                 src={
                   side2?.image ||

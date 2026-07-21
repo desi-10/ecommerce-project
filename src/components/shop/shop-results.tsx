@@ -17,6 +17,7 @@ import {
 } from "../ui/sheet";
 import { useGetProducts } from "@/hooks/use-product";
 import { normalizeProduct } from "@/lib/product-normalizer";
+import { ProductGridSkeleton, ProductListSkeleton } from "@/components/ui/skeletons";
 
 type ViewMode = "grid" | "list";
 type SortMode = "latest" | "price_low" | "price_high";
@@ -103,7 +104,7 @@ export default function ShopResultsWithSidebar() {
                 <div className="mb-3 flex items-center justify-between md:hidden">
                     <Sheet>
                         <SheetTrigger asChild>
-                            <Button variant="outline" className="rounded-sm">
+                            <Button variant="outline" className="rounded-md shadow-sm">
                                 Filter
                             </Button>
                         </SheetTrigger>
@@ -135,7 +136,9 @@ export default function ShopResultsWithSidebar() {
 
                 {/* Loading / Error */}
                 {isLoading ? (
-                    <div className="mt-6 text-sm text-muted-foreground">Loading products...</div>
+                    <div className="mt-4">
+                        {view === "grid" ? <ProductGridSkeleton count={8} /> : <ProductListSkeleton count={4} />}
+                    </div>
                 ) : isError ? (
                     <div className="mt-6 text-sm text-red-600">Failed to load products.</div>
                 ) : (

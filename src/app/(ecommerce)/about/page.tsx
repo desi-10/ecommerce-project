@@ -38,7 +38,7 @@ export default function AboutUsSection() {
                         {/* Left — copy */}
                         <div className="space-y-8">
                             <div>
-                                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold tracking-[0.18em] uppercase text-primary border border-primary/30 bg-primary/5 px-3 py-1 rounded-full">
+                                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold tracking-[0.18em] uppercase text-primary border border-primary/30 bg-primary/5 px-3 py-1 rounded-md">
                                     About Us
                                 </span>
                                 <h1 className="mt-5 text-4xl md:text-5xl font-extrabold leading-[1.08] tracking-tight text-foreground">
@@ -58,7 +58,7 @@ export default function AboutUsSection() {
                             </div>
 
                             {/* Stats grid */}
-                            <div className="grid grid-cols-2 gap-px bg-border rounded-2xl overflow-hidden border border-border">
+                            <div className="grid grid-cols-2 gap-px bg-border rounded-md overflow-hidden border border-border shadow-sm">
                                 {stats.map((s) => (
                                     <div
                                         key={s.label}
@@ -78,18 +78,18 @@ export default function AboutUsSection() {
                             {/* Decorative background blob */}
                             <div
                                 aria-hidden
-                                className="absolute inset-0 -m-6 rounded-3xl bg-gradient-to-br from-primary/8 via-primary/4 to-transparent"
+                                className="absolute inset-0 -m-6 rounded-md bg-gradient-to-br from-primary/5 via-primary/2 to-transparent"
                             />
                             {/* Accent corner lines */}
-                            <div aria-hidden className="absolute top-0 right-0 w-16 h-16 border-t-2 border-r-2 border-primary/30 rounded-tr-2xl" />
-                            <div aria-hidden className="absolute bottom-0 left-0 w-16 h-16 border-b-2 border-l-2 border-primary/30 rounded-bl-2xl" />
+                            <div aria-hidden className="absolute top-0 right-0 w-16 h-16 border-t-2 border-r-2 border-primary/30 rounded-tr-md" />
+                            <div aria-hidden className="absolute bottom-0 left-0 w-16 h-16 border-b-2 border-l-2 border-primary/30 rounded-bl-md" />
 
-                            <div className="relative h-72 md:h-[400px] rounded-2xl overflow-hidden border border-border bg-gradient-to-br from-muted/60 to-muted/20">
+                            <div className="relative h-72 md:h-[400px] rounded-md overflow-hidden border border-border bg-gradient-to-br from-muted/60 to-muted/20 shadow-sm">
                                 <Image
                                     src="/martfury/drone.png"
                                     alt="About our store"
                                     fill
-                                    className="object-contain p-10 drop-shadow-xl"
+                                    className="object-contain p-10"
                                 />
                             </div>
                         </div>
@@ -100,7 +100,7 @@ export default function AboutUsSection() {
                         {pillars.map((p, i) => (
                             <div
                                 key={p.title}
-                                className="group relative bg-background border border-border rounded-2xl p-7 hover:border-primary/40 hover:shadow-md transition-all duration-200 overflow-hidden"
+                                className="group relative bg-background border border-border rounded-md p-7 shadow-sm hover:border-primary/40 hover:shadow-md transition-all duration-200 overflow-hidden"
                             >
                                 {/* Subtle number watermark */}
                                 <span
@@ -110,7 +110,7 @@ export default function AboutUsSection() {
                                     {String(i + 1).padStart(2, "0")}
                                 </span>
 
-                                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-5 group-hover:bg-primary/20 transition-colors">
+                                <div className="w-10 h-10 rounded-md bg-primary/10 flex items-center justify-center mb-5 group-hover:bg-primary/20 transition-colors">
                                     <p.icon className="w-5 h-5 text-primary" />
                                 </div>
 

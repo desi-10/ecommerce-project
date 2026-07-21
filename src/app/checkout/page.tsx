@@ -13,6 +13,7 @@ import axios from "axios";
 import { useValidateCoupon } from "@/hooks/use-coupon";
 import { toast } from "sonner";
 import { useSession } from "@/lib/auth-client";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const checkoutSchema = z.object({
   email: z.string().email("Enter a valid email"),
@@ -37,6 +38,7 @@ export default function CheckoutPage() {
 
   const [coupon, setCoupon] = useState<{ id: string; code: string; type: string; value: number } | null>(null);
   const [couponInput, setCouponInput] = useState("");
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const { mutate: validateCoupon, isPending: isValidating } = useValidateCoupon();
   const { data: session } = useSession();
   const user = session?.user;
@@ -69,6 +71,8 @@ export default function CheckoutPage() {
     },
   });
 
+  const isProcessing = isSubmitting || isRedirecting;
+
   useEffect(() => {
     if (user) {
       if (!getValues("email")) setValue("email", user.email);
@@ -82,6 +86,7 @@ export default function CheckoutPage() {
 
   const onSubmit = async (data: CheckoutType) => {
     try {
+      setIsRedirecting(true);
       const res = await axios.post("/api/order-payment", {
         email: data.email,
         amount: total,
@@ -112,6 +117,7 @@ export default function CheckoutPage() {
       // ✅ Redirect properly
       window.location.href = url;
     } catch (error: any) {
+      setIsRedirecting(false);
       console.error("Payment error:", error);
       const msg = error.response?.data?.message || "Something went wrong while processing payment. Please try again.";
       toast.error(msg);
@@ -137,7 +143,25 @@ export default function CheckoutPage() {
         <div className="grid lg:grid-cols-[1fr_380px] gap-10 lg:gap-14 py-10">
           {/* LEFT */}
           <section className="min-w-0">
-            <div className="rounded-md border border-neutral-200 py-6 px-4">
+            {isProcessing && (
+              <div className="mb-6 p-4 rounded-md border border-blue-200 bg-blue-50/70 shadow-sm space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="h-2.5 w-2.5 rounded-full bg-blue-600 animate-pulse" />
+                    <span className="text-sm font-semibold text-blue-900">
+                      Processing payment with {gateway === "stripe" ? "Stripe" : "Paystack"}...
+                    </span>
+                  </div>
+                  <span className="text-xs text-blue-600 font-medium">Please wait</span>
+                </div>
+                <div className="space-y-1.5">
+                  <p className="text-xs text-blue-700">Connecting securely to payment provider. Do not close or refresh this page.</p>
+                  <Skeleton className="h-2 w-full rounded-md bg-blue-200" />
+                </div>
+              </div>
+            )}
+
+            <fieldset disabled={isProcessing} className="rounded-md border border-neutral-200 py-6 px-4 shadow-sm space-y-0 disabled:opacity-60 transition-opacity">
               {/* Contact info */}
               <div className="flex items-center justify-between gap-4 mb-2">
                 <h2 className="text-lg font-semibold text-neutral-900">
@@ -316,16 +340,12 @@ export default function CheckoutPage() {
               <div className="mt-8 flex items-center justify-between gap-4">
                 <Link
                   href="/shop"
-                  className="text-sm text-blue-600 hover:underline"
+                  className={`text-sm text-blue-600 hover:underline ${isProcessing ? "pointer-events-none opacity-50" : ""}`}
                 >
                   ‹ Return to shop
                 </Link>
-
-                {/* <Button type="submit" disabled={isSubmitting || cartItems.length === 0}>
-                                    {cartItems.length === 0 ? "Cart is empty" : "Continue to payment"}
-                                </Button> */}
               </div>
-            </div>
+            </fieldset>
 
             {/* Footer links */}
             <div className="mt-10 border-t border-neutral-200 pt-4 text-xs text-neutral-500 flex flex-wrap gap-x-4 gap-y-2">
@@ -383,13 +403,14 @@ export default function CheckoutPage() {
               <div className="flex gap-3">
                 <input
                   value={couponInput}
+                  disabled={isProcessing}
                   onChange={(e) => setCouponInput(e.target.value)}
                   placeholder="Gift card or discount code"
-                  className="h-11 flex-1 rounded-md border border-neutral-200 px-3 text-sm outline-none focus:border-neutral-400 font-mono"
+                  className="h-11 flex-1 rounded-md border border-neutral-200 px-3 text-sm outline-none focus:border-neutral-400 font-mono disabled:opacity-50"
                 />
                 <button
                   type="button"
-                  disabled={isValidating || !couponInput}
+                  disabled={isValidating || !couponInput || isProcessing}
                   onClick={() => {
                     validateCoupon(
                       { code: couponInput, subtotal: cartSubtotal },
@@ -412,7 +433,7 @@ export default function CheckoutPage() {
                   }}
                   className="h-11 rounded-md bg-neutral-900 px-5 text-sm font-semibold text-white hover:brightness-110 disabled:opacity-50 transition-all"
                 >
-                  {isValidating ? <Loader2 className="h-4 w-4 animate-spin" /> : "Apply"}
+                  {isValidating ? <Skeleton className="h-4 w-12 rounded-md" /> : "Apply"}
                 </button>
               </div>
 
@@ -473,15 +494,15 @@ export default function CheckoutPage() {
 
             {/* Payment gateway choice */}
             <div className="flex flex-wrap items-center justify-between gap-3 mt-5">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 w-full sm:w-auto">
                 <button
                   type="submit"
                   onClick={() => setGateway("stripe")}
-                  disabled={isSubmitting}
+                  disabled={isProcessing}
                   className={[
-                    "flex flex-col items-center justify-center gap-2 rounded-md border px-3 py-2 text-sm cursor-pointer",
+                    "flex flex-1 sm:flex-initial flex-col items-center justify-center gap-2 rounded-md border px-4 py-3 text-sm cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed",
                     gateway === "stripe"
-                      ? "border-neutral-500 ring-1 ring-neutral-200"
+                      ? "border-blue-600 bg-blue-50/20 ring-1 ring-blue-500"
                       : "border-neutral-200 hover:border-neutral-300",
                   ].join(" ")}
                   aria-pressed={gateway === "stripe"}
@@ -492,19 +513,26 @@ export default function CheckoutPage() {
                     src="https://img.icons8.com/external-tal-revivo-color-tal-revivo/96/external-stripe-to-make-and-receive-payments-over-the-internet-logo-color-tal-revivo.png"
                     alt="Stripe"
                   />
-                  <span className="text-muted-foreground">
-                    Checkout with Stripe
-                  </span>
+                  {isProcessing && gateway === "stripe" ? (
+                    <div className="flex flex-col items-center gap-1">
+                      <span className="text-xs font-semibold text-blue-600">Connecting...</span>
+                      <Skeleton className="h-1.5 w-20 rounded-md bg-blue-200" />
+                    </div>
+                  ) : (
+                    <span className="text-neutral-700 font-medium text-xs">
+                      Checkout with Stripe
+                    </span>
+                  )}
                 </button>
 
                 <button
                   type="submit"
                   onClick={() => setGateway("paystack")}
-                  disabled={isSubmitting}
+                  disabled={isProcessing}
                   className={[
-                    "flex flex-col items-center gap-2 rounded-md border px-3 py-2 text-sm cursor-pointer",
+                    "flex flex-1 sm:flex-initial flex-col items-center justify-center gap-2 rounded-md border px-4 py-3 text-sm cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed",
                     gateway === "paystack"
-                      ? "border-neutral-900 ring-1 ring-neutral-900"
+                      ? "border-emerald-600 bg-emerald-50/20 ring-1 ring-emerald-500"
                       : "border-neutral-200 hover:border-neutral-300",
                   ].join(" ")}
                   aria-pressed={gateway === "paystack"}
@@ -515,9 +543,16 @@ export default function CheckoutPage() {
                     width={40}
                     height={40}
                   />
-                  <span className="text-muted-foreground">
-                    Checkout with Paystack
-                  </span>
+                  {isProcessing && gateway === "paystack" ? (
+                    <div className="flex flex-col items-center gap-1">
+                      <span className="text-xs font-semibold text-emerald-600">Connecting...</span>
+                      <Skeleton className="h-1.5 w-20 rounded-md bg-emerald-200" />
+                    </div>
+                  ) : (
+                    <span className="text-neutral-700 font-medium text-xs">
+                      Checkout with Paystack
+                    </span>
+                  )}
                 </button>
               </div>
 

@@ -26,7 +26,7 @@ export default function CouponsDashboardPage() {
           </div>
           <Button 
             onClick={() => setAddOpen(true)}
-            className="bg-blue-600 text-white hover:bg-blue-700 h-11 px-6 rounded-xl shadow-lg shadow-blue-100 transition-all font-bold gap-2"
+            className="bg-blue-600 text-white hover:bg-blue-700 h-11 px-6 rounded-md shadow-sm transition-all font-bold gap-2"
           >
             <Plus className="h-5 w-5" />
             Create Coupon
@@ -36,8 +36,8 @@ export default function CouponsDashboardPage() {
         {/* Quick Stats */}
         {!isLoading && coupons.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
-               <div className="h-12 w-12 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
+            <div className="bg-white p-6 rounded-md border border-gray-100 shadow-sm flex items-center gap-4">
+               <div className="h-12 w-12 rounded-md bg-blue-50 flex items-center justify-center text-blue-600">
                   <Ticket className="h-6 w-6" />
                </div>
                <div>
@@ -45,8 +45,8 @@ export default function CouponsDashboardPage() {
                   <p className="text-2xl font-black text-gray-900">{coupons.length}</p>
                </div>
             </div>
-            <div className="bg-white p-6 rounded-2xl border border-emerald-50 shadow-sm flex items-center gap-4">
-               <div className="h-12 w-12 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
+            <div className="bg-white p-6 rounded-md border border-emerald-50 shadow-sm flex items-center gap-4">
+               <div className="h-12 w-12 rounded-md bg-emerald-50 flex items-center justify-center text-emerald-600">
                   <Plus className="h-6 w-6" />
                </div>
                <div>
@@ -58,7 +58,7 @@ export default function CouponsDashboardPage() {
         )}
 
         {isError && (
-          <div className="flex items-start gap-3 rounded-2xl bg-red-50 p-6 border border-red-100 mb-8">
+          <div className="flex items-start gap-3 rounded-md bg-red-50 p-6 border border-red-100 mb-8 shadow-sm">
             <AlertCircle className="h-6 w-6 text-red-600 flex-shrink-0" />
             <div>
               <p className="font-bold text-red-900">Failed to load coupons</p>
@@ -69,14 +69,9 @@ export default function CouponsDashboardPage() {
           </div>
         )}
 
-        {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-24 bg-white rounded-2xl border border-gray-50 shadow-sm">
-             <Loader2 className="h-10 w-10 text-blue-600 animate-spin mb-4" />
-             <p className="text-gray-500 font-medium">Securing your promotions...</p>
-          </div>
-        ) : coupons.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24 bg-white rounded-2xl border border-dashed border-gray-200">
-            <div className="h-20 w-20 rounded-full bg-gray-50 flex items-center justify-center mb-6">
+        {!isLoading && coupons.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-24 bg-white rounded-md border border-dashed border-gray-200 shadow-sm">
+            <div className="h-20 w-20 rounded-md bg-gray-50 flex items-center justify-center mb-6">
               <Ticket className="h-10 w-10 text-gray-300" />
             </div>
             <h3 className="text-xl font-bold text-gray-900 mb-2">No coupons yet</h3>
@@ -85,15 +80,15 @@ export default function CouponsDashboardPage() {
             </p>
             <Button 
                 onClick={() => setAddOpen(true)}
-                className="bg-blue-600 text-white hover:bg-blue-700 h-11 px-8 rounded-xl shadow-lg shadow-blue-100 transition-all font-bold gap-2"
+                className="bg-blue-600 text-white hover:bg-blue-700 h-11 px-8 rounded-md shadow-sm transition-all font-bold gap-2"
             >
                 <Plus className="h-5 w-5" />
                 Add Your First Coupon
             </Button>
           </div>
         ) : (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-             <DataTable columns={couponColumns} data={{ items: coupons }} />
+          <div className="bg-white rounded-md border border-gray-100 shadow-sm overflow-hidden">
+             <DataTable columns={couponColumns} data={{ items: coupons }} isLoading={isLoading} />
           </div>
         )}
 

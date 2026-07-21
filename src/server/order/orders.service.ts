@@ -518,12 +518,26 @@ export const getUserOrderDetailService = async (
         include: {
           variant: {
             include: {
-              product: true,
+              product: {
+                include: {
+                  images: true,
+                },
+              },
             },
           },
         },
       },
-      payments: true,
+      payments: {
+        orderBy: { createdAt: "desc" },
+      },
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+      coupon: true,
     },
   });
 

@@ -31,7 +31,7 @@ export default function ReviewsDashboardPage() {
           </div>
 
           {isError && (
-            <div className="flex items-start gap-3 rounded-lg bg-red-50 p-4 border border-red-200 mb-6 font-medium text-red-900">
+            <div className="flex items-start gap-3 rounded-md bg-red-50 p-4 border border-red-200 mb-6 font-medium text-red-900 shadow-sm">
               <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
               <div>
                 <p>Failed to load reviews</p>
@@ -40,25 +40,21 @@ export default function ReviewsDashboardPage() {
             </div>
           )}
 
-          {isLoading ? (
-            <div className="flex flex-col items-center justify-center py-20 bg-white rounded-xl border border-gray-100 shadow-sm">
-                <Loader2 className="h-8 w-8 animate-spin text-blue-600 mb-4" />
-                <p className="text-neutral-500 font-medium animate-pulse">Loading reviews...</p>
-            </div>
-          ) : reviews.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 bg-white rounded-xl border border-dashed border-gray-300">
+          {!isLoading && reviews.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 bg-white rounded-md border border-dashed border-gray-300 shadow-sm">
               <MessageSquare className="h-12 w-12 text-gray-400 mb-4" />
               <h3 className="text-lg font-semibold text-gray-900">No reviews found</h3>
               <p className="text-sm text-gray-500 mt-2">Reviews will appear here once customers provide feedback on your products.</p>
             </div>
           ) : (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-1 font-sans">
+            <div className="bg-white rounded-md shadow-sm border border-gray-100 p-1 font-sans">
               <DataTable 
                 columns={reviewColumns(refetch)} 
                 data={{ 
                     items: reviews,
                     pagination: response?.data?.pagination 
                 }} 
+                isLoading={isLoading}
               />
             </div>
           )}

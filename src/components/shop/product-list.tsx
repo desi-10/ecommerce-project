@@ -41,7 +41,7 @@ export default function ProductListRow({ p }: { p: Product }) {
     const reviews = 0; 
 
     return (
-        <div className="border border-neutral-200 bg-white p-4 hover:shadow-sm transition">
+        <div className="border border-neutral-200 bg-white p-4 shadow-sm hover:shadow-md transition rounded-md overflow-hidden">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-[150px_1fr_200px] md:items-start">
                 <div className="relative aspect-square w-full">
                     <Image
@@ -83,7 +83,7 @@ export default function ProductListRow({ p }: { p: Product }) {
                     )}
                 </div>
 
-                <div className="bg-neutral-50 p-4 rounded-sm border border-neutral-100 h-full flex flex-col justify-between">
+                <div className="bg-neutral-50 p-4 rounded-md border border-neutral-100 h-full flex flex-col justify-between">
                     <div>
                         <div className="text-lg font-bold text-neutral-900">${money(price)}</div>
                         {oldPrice !== null && oldPrice > price ? (

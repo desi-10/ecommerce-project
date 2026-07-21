@@ -28,15 +28,15 @@ export default function PaymentsDashboardPage() {
           {/* Payment Stats Cards */}
           {!isLoading && payments.length > 0 && (
             <div className="grid gap-4 md:grid-cols-3 mt-6 mb-6">
-              <div className="bg-white rounded-xl border border-gray-200 p-4">
+              <div className="bg-white rounded-md border border-gray-200 p-4 shadow-sm">
                 <p className="text-xs font-medium text-gray-600 uppercase tracking-wide">Total Payments</p>
                 <p className="text-2xl font-bold text-gray-900 mt-2">{formatGHS(totalPayments, false)}</p>
               </div>
-              <div className="bg-white rounded-xl border border-gray-200 p-4">
+              <div className="bg-white rounded-md border border-gray-200 p-4 shadow-sm">
                 <p className="text-xs font-medium text-emerald-600 uppercase tracking-wide">Successful</p>
                 <p className="text-2xl font-bold text-emerald-600 mt-2">{successfulPayments}</p>
               </div>
-              <div className="bg-white rounded-xl border border-gray-200 p-4">
+              <div className="bg-white rounded-md border border-gray-200 p-4 shadow-sm">
                 <p className="text-xs font-medium text-red-600 uppercase tracking-wide">Failed</p>
                 <p className="text-2xl font-bold text-red-600 mt-2">{failedPayments}</p>
               </div>
@@ -44,7 +44,7 @@ export default function PaymentsDashboardPage() {
           )}
 
           {isError && (
-            <div className="flex items-start gap-3 rounded-lg bg-red-50 p-4 border border-red-200 mb-6">
+            <div className="flex items-start gap-3 rounded-md bg-red-50 p-4 border border-red-200 mb-6 shadow-sm">
               <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
               <div>
                 <p className="font-medium text-red-900">Failed to load payments</p>
@@ -55,14 +55,8 @@ export default function PaymentsDashboardPage() {
             </div>
           )}
 
-          {isLoading ? (
-            <div className="space-y-3">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="h-16 bg-gray-100 animate-pulse rounded-xl" />
-              ))}
-            </div>
-          ) : payments.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 rounded-xl border border-dashed border-gray-300 bg-gray-50">
+          {!isLoading && payments.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 rounded-md border border-dashed border-gray-300 bg-gray-50 shadow-sm">
               <CreditCard className="h-12 w-12 text-gray-400 mb-4" />
               <h3 className="text-lg font-semibold text-gray-900 mb-2">No payments yet</h3>
               <p className="text-sm text-gray-600 mb-6 text-center max-w-sm">
@@ -70,7 +64,7 @@ export default function PaymentsDashboardPage() {
               </p>
             </div>
           ) : (
-            <DataTable columns={paymentColumns} data={{ items: payments }} />
+            <DataTable columns={paymentColumns} data={{ items: payments }} isLoading={isLoading} />
           )}
         </div>
       </Wrapper>

@@ -26,9 +26,11 @@ export default async function DashboardLayout({
 
   return (
     <SidebarProvider>
-      <AppSidebar />
+      <div className="print:hidden">
+        <AppSidebar />
+      </div>
       <SidebarInset className="bg-slate-50 min-h-screen">
-        <header className="flex h-20 shrink-0 items-center justify-between border-b border-gray-100 bg-white px-6 shadow-sm z-10 w-full transition-all">
+        <header className="flex h-20 shrink-0 items-center justify-between border-b border-gray-100 bg-white px-6 shadow-sm z-10 w-full transition-all print:hidden">
           <div className="flex items-center gap-4 flex-1">
             <SidebarTrigger className="-ml-2 hover:bg-gray-100 p-2 rounded-lg transition-colors" />
 
@@ -51,7 +53,7 @@ export default async function DashboardLayout({
           </div>
         </header>
 
-        <main className="flex flex-1 flex-col gap-6 p-6 lg:p-8">
+        <main className="flex flex-1 flex-col gap-6 p-6 lg:p-8 print:p-0 print:gap-0 print:bg-white">
           {children}
         </main>
       </SidebarInset>

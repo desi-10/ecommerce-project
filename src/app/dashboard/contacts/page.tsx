@@ -38,7 +38,7 @@ export default function ContactsDashboardPage() {
                     </div>
 
                     {isError && (
-                        <div className="flex items-start gap-3 rounded-lg bg-red-50 p-4 border border-red-200 mb-6 font-medium text-red-900">
+                        <div className="flex items-start gap-3 rounded-md bg-red-50 p-4 border border-red-200 mb-6 font-medium text-red-900 shadow-sm">
                             <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
                             <div>
                                 <p>Failed to load inquiries</p>
@@ -47,22 +47,18 @@ export default function ContactsDashboardPage() {
                         </div>
                     )}
 
-                    {isLoading ? (
-                        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-xl border border-gray-100 shadow-sm">
-                            <Loader2 className="h-8 w-8 animate-spin text-blue-600 mb-4" />
-                            <p className="text-neutral-500 font-medium animate-pulse">Fetching records...</p>
-                        </div>
-                    ) : inquiries.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-xl border border-dashed border-gray-300">
+                    {!isLoading && inquiries.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-md border border-dashed border-gray-300 shadow-sm">
                             <Inbox className="h-12 w-12 text-gray-400 mb-4" />
                             <h3 className="text-lg font-semibold text-gray-900">Inbox is empty</h3>
                             <p className="text-sm text-gray-500 mt-2">No customer inquiries have been received yet.</p>
                         </div>
                     ) : (
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-1">
+                        <div className="bg-white rounded-md shadow-sm border border-gray-100 p-1">
                             <DataTable 
                                 columns={contactColumns(refetch)} 
                                 data={{ items: inquiries }} 
+                                isLoading={isLoading}
                             />
                         </div>
                     )}

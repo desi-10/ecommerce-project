@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -221,7 +222,7 @@ export function ProductForm({ initialData, isEdit = false }: ProductFormProps) {
       <div className="grid gap-6 md:grid-cols-3">
         <div className="md:col-span-2 space-y-6">
           {/* General Information */}
-          <div className="rounded-xl border bg-white shadow-sm p-6">
+          <div className="rounded-md border bg-white shadow-sm p-6">
             <h2 className="text-lg font-semibold mb-4">General Information</h2>
             <div className="grid gap-6">
               <div className="grid gap-2">
@@ -255,7 +256,7 @@ export function ProductForm({ initialData, isEdit = false }: ProductFormProps) {
           </div>
 
           {/* Media */}
-          <div className="rounded-xl border bg-white shadow-sm p-6">
+          <div className="rounded-md border bg-white shadow-sm p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold">Product Images</h2>
               <p className="text-xs text-muted-foreground">
@@ -337,7 +338,7 @@ export function ProductForm({ initialData, isEdit = false }: ProductFormProps) {
 
           {/* Pricing */}
           {!fields.length && (
-            <div className="rounded-xl border bg-white shadow-sm p-6">
+            <div className="rounded-md border bg-white shadow-sm p-6">
               <h2 className="text-lg font-semibold mb-4">
                 Pricing & Inventory
               </h2>
@@ -388,7 +389,7 @@ export function ProductForm({ initialData, isEdit = false }: ProductFormProps) {
           )}
 
           {/* Variants Restoration */}
-          <div className="rounded-xl border bg-white shadow-sm p-6">
+          <div className="rounded-md border bg-white shadow-sm p-6">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h2 className="text-lg font-semibold">Product Variants</h2>
@@ -482,7 +483,7 @@ export function ProductForm({ initialData, isEdit = false }: ProductFormProps) {
 
         <div className="space-y-6">
           {/* Status Toggle */}
-          <div className="rounded-xl border bg-white shadow-sm p-6">
+          <div className="rounded-md border bg-white shadow-sm p-6">
             <h2 className="text-lg font-semibold mb-4">Availability</h2>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
@@ -509,11 +510,11 @@ export function ProductForm({ initialData, isEdit = false }: ProductFormProps) {
           </div>
 
           {/* Single Category Select Restoration */}
-          <div className="rounded-xl border bg-white shadow-sm p-6">
+          <div className="rounded-md border bg-white shadow-sm p-6">
             <h2 className="text-lg font-semibold mb-4">Category</h2>
             {isLoadingCategories ? (
-              <div className="flex justify-center p-4">
-                <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+              <div className="p-2">
+                <Skeleton className="h-10 w-full rounded-md" />
               </div>
             ) : (
               <div className="space-y-4">

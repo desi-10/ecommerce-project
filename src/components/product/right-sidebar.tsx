@@ -2,6 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useGetProducts } from "@/hooks/use-product";
 
+import { ProductListSkeleton } from "@/components/ui/skeletons";
+
 type Props = {
     product?: any;
     selectedVariant?: any;
@@ -33,7 +35,7 @@ export default function RightSidebar({ product }: Props) {
     return (
         <div className="space-y-4">
             {/* Service box */}
-            <div className="border border-neutral-200 bg-white p-4">
+            <div className="border border-neutral-200 bg-white p-4 rounded-md shadow-sm">
                 <ul className="space-y-3 text-xs text-muted-foreground">
                     <li className="flex gap-3">
                         <span className="mt-0.5">🌐</span> Shipping worldwide
@@ -54,7 +56,7 @@ export default function RightSidebar({ product }: Props) {
             </div>
 
             {/* Ad block */}
-            <div className="border border-neutral-200 bg-white p-4">
+            <div className="border border-neutral-200 bg-white p-4 rounded-md shadow-sm">
                 <div className="relative h-36 w-full">
                     <Image
                         src="/martfury/p/sidebar-ad.png"
@@ -66,14 +68,16 @@ export default function RightSidebar({ product }: Props) {
             </div>
 
             {/* Same category / Brand */}
-            <div className="border border-neutral-200 bg-white">
+            <div className="border border-neutral-200 bg-white rounded-md shadow-sm overflow-hidden">
                 <div className="px-4 py-3 font-semibold text-sm border-b">
                     {mainCategory ? `More from ${mainCategory.name}` : (isBrandAvailable ? "Same Brand" : "Related Products")}
                 </div>
 
                 <div className="divide-y relative min-h-[100px]">
                     {isLoading ? (
-                        <div className="p-4 text-center text-xs text-muted-foreground">Loading related items...</div>
+                        <div className="p-3">
+                            <ProductListSkeleton count={2} />
+                        </div>
                     ) : relatedProducts.length > 0 ? (
                         relatedProducts.map((p: any) => (
                             <Link href={`/shop/${p.id}`} key={p.id} className="block p-4 hover:bg-slate-50 transition-colors group">

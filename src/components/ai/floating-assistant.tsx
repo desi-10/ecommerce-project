@@ -31,7 +31,7 @@ export function FloatingAssistant() {
               <button
                 onClick={() => setOpen(true)}
                 aria-label="Open AI Assistant"
-                className="relative w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30 border-[3px] border-background flex items-center justify-center hover:scale-105 hover:shadow-xl hover:shadow-primary/40 active:scale-95 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                className="relative w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-sm border-[2px] border-background flex items-center justify-center hover:scale-105 active:scale-95 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
               >
                 <Bot className="w-6 h-6" />
 

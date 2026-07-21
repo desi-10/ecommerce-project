@@ -52,3 +52,19 @@ export const useGetUserOrderDetail = (orderId: string) => {
         enabled: !!orderId,
     });
 };
+
+export const usePayOrder = () => {
+    return useMutation({
+        mutationFn: async ({ orderId, gateway }: { orderId: string; gateway?: string }) => {
+            const res = await fetch(`/api/orders/mine/${orderId}/pay`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ gateway: gateway || "paystack" }),
+            });
+            const json = await res.json();
+            if (!res.ok) throw new Error(json.message || "Failed to initiate payment");
+            return json;
+        },
+    });
+};
+

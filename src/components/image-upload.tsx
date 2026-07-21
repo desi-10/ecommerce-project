@@ -114,7 +114,7 @@ export function ImageUpload({
           onDrop={handleDrop}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
-          className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition ${
+          className={`border-2 border-dashed rounded-md p-8 text-center cursor-pointer transition ${
             isDragging
               ? "border-indigo-500 bg-indigo-50"
               : "border-gray-300 hover:border-indigo-400 hover:bg-gray-50"
@@ -130,7 +130,7 @@ export function ImageUpload({
           />
           <label htmlFor="image-upload" className="cursor-pointer block">
             <div className="flex justify-center mb-3">
-              <div className="bg-indigo-100 p-3 rounded-xl">
+              <div className="bg-indigo-100 p-3 rounded-md">
                 <Upload className="h-6 w-6 text-indigo-600" />
               </div>
             </div>
@@ -148,7 +148,7 @@ export function ImageUpload({
       ) : null}
 
       {error && (
-        <div className="flex items-start gap-3 rounded-lg bg-red-50 p-4 border border-red-200">
+        <div className="flex items-start gap-3 rounded-md bg-red-50 p-4 border border-red-200 shadow-sm">
           <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
           <p className="text-sm text-red-700">{error}</p>
         </div>
@@ -156,7 +156,7 @@ export function ImageUpload({
 
       {preview && (
         <div className="space-y-3">
-          <div className="relative w-full h-56 bg-gray-100 rounded-xl overflow-hidden border border-gray-200 group">
+          <div className="relative w-full h-56 bg-gray-100 rounded-md overflow-hidden border border-gray-200 shadow-sm group">
             <img
               src={preview}
               alt="Preview"
@@ -168,13 +168,13 @@ export function ImageUpload({
               variant="secondary"
               size="sm"
               onClick={clearImage}
-              className="absolute top-3 right-3 rounded-lg shadow-md hover:bg-red-100"
+              className="absolute top-3 right-3 rounded-md shadow-sm hover:bg-red-100"
             >
               <X className="h-4 w-4" />
             </Button>
           </div>
 
-          <div className="flex items-start justify-between gap-3 p-3 rounded-lg bg-green-50 border border-green-200">
+          <div className="flex items-start justify-between gap-3 p-3 rounded-md bg-green-50 border border-green-200 shadow-sm">
             <div className="flex items-start gap-2 flex-1 min-w-0">
               <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
               <div className="min-w-0">

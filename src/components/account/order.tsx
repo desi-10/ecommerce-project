@@ -3,8 +3,9 @@
 
 import Link from "next/link";
 import { useGetUserOrders } from "@/hooks/use-account";
-import { Loader2, Package, ChevronRight, AlertCircle } from "lucide-react";
+import { Package, ChevronRight, AlertCircle } from "lucide-react";
 import { Button } from "../ui/button";
+import { ProductListSkeleton } from "../ui/skeletons";
 
 export default function OrdersPage() {
   const { data: ordersData, isLoading, isError } = useGetUserOrders();
@@ -26,12 +27,7 @@ export default function OrdersPage() {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-600 mb-4" />
-        <p className="text-neutral-500 font-medium">Fetching your orders...</p>
-      </div>
-    );
+    return <ProductListSkeleton count={4} />;
   }
 
   if (isError) {
@@ -47,7 +43,7 @@ export default function OrdersPage() {
         <Button
           onClick={() => window.location.reload()}
           variant="outline"
-          className="mt-6 rounded-xl"
+          className="mt-6 rounded-md shadow-sm"
         >
           Try Again
         </Button>
@@ -67,7 +63,7 @@ export default function OrdersPage() {
       </div>
 
       {orders.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-24 rounded-3xl border-2 border-dashed border-neutral-100 bg-neutral-50/30">
+        <div className="flex flex-col items-center justify-center py-24 rounded-md border-2 border-dashed border-neutral-200 bg-neutral-50/30 shadow-sm">
           <div className="h-20 w-20 rounded-full bg-neutral-100 flex items-center justify-center mb-6">
             <Package className="h-10 w-10 text-neutral-300" />
           </div>
@@ -78,7 +74,7 @@ export default function OrdersPage() {
           </p>
           <Button
             asChild
-            className="mt-8 rounded-xl bg-blue-600 hover:bg-blue-700 px-8"
+            className="mt-8 rounded-md bg-blue-600 hover:bg-blue-700 px-8 shadow-sm"
           >
             <Link href="/shop">Start Shopping</Link>
           </Button>
@@ -89,11 +85,11 @@ export default function OrdersPage() {
             <Link
               key={order.id}
               href={`/account/orders/${order.id}`}
-              className="group block bg-white border border-neutral-200 rounded-2xl p-5 hover:border-blue-200 hover:shadow-lg hover:shadow-blue-50/50 transition-all duration-200"
+              className="group block bg-white border border-neutral-200 rounded-md p-5 shadow-sm hover:border-blue-200 hover:shadow-md transition-all duration-200"
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-xl bg-neutral-50 flex items-center justify-center border border-neutral-100 shrink-0">
+                  <div className="h-12 w-12 rounded-md bg-neutral-50 flex items-center justify-center border border-neutral-100 shrink-0">
                     <Package className="h-6 w-6 text-neutral-400" />
                   </div>
                   <div>
@@ -124,7 +120,7 @@ export default function OrdersPage() {
 
                   <div className="flex items-center gap-4">
                     <div
-                      className={`px-3 py-1 rounded-full text-[10px] font-bold border uppercase tracking-wide ${getStatusColor(order.status)}`}
+                      className={`px-3 py-1 rounded-md text-[10px] font-bold border uppercase tracking-wide ${getStatusColor(order.status)}`}
                     >
                       {order.status}
                     </div>

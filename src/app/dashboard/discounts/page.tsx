@@ -28,7 +28,7 @@ export default function DiscountsDashboardPage() {
             </div>
             <Button 
               onClick={() => setAddOpen(true)} 
-              className="text-white rounded-xl gap-2"
+              className="text-white rounded-md shadow-sm gap-2"
               style={{ backgroundColor: 'var(--primary-600)' }}
               onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--primary-700)'}
               onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--primary-600)'}
@@ -40,14 +40,14 @@ export default function DiscountsDashboardPage() {
 
           {/* Active Discounts Card */}
           {!isLoading && discounts.length > 0 && (
-            <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6">
+            <div className="bg-white rounded-md border border-gray-200 p-4 mb-6 shadow-sm">
               <p className="text-xs font-medium text-gray-600 uppercase tracking-wide">Active Discounts</p>
               <p className="text-2xl font-bold text-gray-900 mt-2">{activeDiscounts}</p>
             </div>
           )}
 
           {isError && (
-            <div className="flex items-start gap-3 rounded-lg bg-red-50 p-4 border border-red-200 mb-6">
+            <div className="flex items-start gap-3 rounded-md bg-red-50 p-4 border border-red-200 mb-6 shadow-sm">
               <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
               <div>
                 <p className="font-medium text-red-900">Failed to load discounts</p>
@@ -58,14 +58,8 @@ export default function DiscountsDashboardPage() {
             </div>
           )}
 
-          {isLoading ? (
-            <div className="space-y-3">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="h-16 bg-gray-100 animate-pulse rounded-xl" />
-              ))}
-            </div>
-          ) : discounts.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 rounded-xl border border-dashed border-gray-300 bg-gray-50">
+          {!isLoading && discounts.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 rounded-md border border-dashed border-gray-300 bg-gray-50 shadow-sm">
               <BadgePercent className="h-12 w-12 text-gray-400 mb-4" />
               <h3 className="text-lg font-semibold text-gray-900 mb-2">No discounts yet</h3>
               <p className="text-sm text-gray-600 mb-6 text-center max-w-sm">
@@ -73,7 +67,7 @@ export default function DiscountsDashboardPage() {
               </p>
               <Button 
                 onClick={() => setAddOpen(true)} 
-                className="text-white rounded-xl gap-2"
+                className="text-white rounded-md shadow-sm gap-2"
                 style={{ backgroundColor: 'var(--primary-600)' }}
                 onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--primary-700)'}
                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--primary-600)'}
@@ -83,8 +77,8 @@ export default function DiscountsDashboardPage() {
               </Button>
             </div>
           ) : (
-            <div className="rounded-xl border bg-white p-4">
-              <DataTable columns={discountColumns} data={{ items: discounts }} />
+            <div className="rounded-md border bg-white p-4 shadow-sm">
+              <DataTable columns={discountColumns} data={{ items: discounts }} isLoading={isLoading} />
             </div>
           )}
         </div>

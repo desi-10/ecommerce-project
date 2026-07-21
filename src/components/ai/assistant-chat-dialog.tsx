@@ -187,12 +187,12 @@ export function AssistantChatDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent showCloseButton={false} className="sm:max-w-[480px] h-[640px] flex flex-col p-0 overflow-hidden border border-border/60 shadow-xl rounded-3xl bg-background">
+      <DialogContent showCloseButton={false} className="sm:max-w-[480px] h-[640px] flex flex-col p-0 overflow-hidden border border-border/60 shadow-sm rounded-md bg-background">
         {/* Header */}
         <DialogHeader className="px-5 py-4 border-b border-border/40 flex flex-row items-center justify-between space-y-0 shrink-0">
           <div className="flex items-center gap-3">
             <div className="relative">
-              <div className="w-9 h-9 rounded-2xl bg-primary flex items-center justify-center shadow-sm">
+              <div className="w-9 h-9 rounded-md bg-primary flex items-center justify-center shadow-sm">
                 <Sparkles className="w-4 h-4 text-primary-foreground" />
               </div>
               {/* Online dot */}
@@ -224,7 +224,7 @@ export function AssistantChatDialog({
                 exit={{ opacity: 0 }}
                 className="h-full flex flex-col items-center justify-center text-center py-8 space-y-5"
               >
-                <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center">
+                <div className="w-14 h-14 rounded-md bg-primary/10 flex items-center justify-center">
                   <Sparkles className="w-7 h-7 text-primary" />
                 </div>
                 <div className="space-y-1">
@@ -279,10 +279,10 @@ export function AssistantChatDialog({
                       className={cn(
                         "text-sm px-4 py-2.5 leading-relaxed",
                         m.role === "user"
-                          ? "bg-primary text-primary-foreground rounded-2xl rounded-br-sm"
+                          ? "bg-primary text-primary-foreground rounded-md rounded-br-sm"
                           : m.isError
-                          ? "bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/40 text-red-800 dark:text-red-300 rounded-2xl rounded-bl-sm"
-                          : "bg-secondary/60 border border-border/30 rounded-2xl rounded-bl-sm"
+                          ? "bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/40 text-red-800 dark:text-red-300 rounded-md rounded-bl-sm"
+                          : "bg-secondary/60 border border-border/30 rounded-md rounded-bl-sm"
                       )}
                     >
                       {m.isError && (
@@ -299,7 +299,7 @@ export function AssistantChatDialog({
                       <motion.div
                         initial={{ opacity: 0, scale: 0.97 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 p-4 rounded-2xl space-y-3"
+                        className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 p-4 rounded-md space-y-3"
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-1.5">
@@ -319,7 +319,7 @@ export function AssistantChatDialog({
                           href={m.checkoutUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center justify-center w-full h-9 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-colors"
+                          className="flex items-center justify-center w-full h-9 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-md transition-colors"
                         >
                           Pay Now
                         </a>
@@ -333,7 +333,7 @@ export function AssistantChatDialog({
                           <Link
                             key={product.id}
                             href={`/shop/${product.id}`}
-                            className="flex-shrink-0 w-[160px] bg-background border border-border/50 rounded-2xl overflow-hidden hover:border-primary/40 hover:shadow-md transition-all duration-200 group"
+                            className="flex-shrink-0 w-[160px] bg-background border border-border/50 rounded-md overflow-hidden hover:border-primary/40 hover:shadow-md transition-all duration-200 group"
                           >
                             <div className="relative h-[100px] bg-secondary/30">
                               {product.image ? (
@@ -381,7 +381,7 @@ export function AssistantChatDialog({
                 <div className="w-7 h-7 rounded-full bg-secondary border border-border/40 flex items-center justify-center shrink-0">
                   <Bot className="w-3.5 h-3.5" />
                 </div>
-                <div className="bg-secondary/60 border border-border/30 rounded-2xl rounded-bl-sm px-4 py-3 flex items-center gap-1.5">
+                <div className="bg-secondary/60 border border-border/30 rounded-md rounded-bl-sm px-4 py-3 flex items-center gap-1.5">
                   {[0, 0.15, 0.3].map((delay, i) => (
                     <motion.span
                       key={i}
@@ -400,7 +400,7 @@ export function AssistantChatDialog({
         <div className="px-4 pb-4 pt-3 border-t border-border/40 shrink-0 bg-background">
           <div
             className={cn(
-              "flex items-center gap-1 bg-secondary/40 rounded-2xl border transition-all duration-150",
+              "flex items-center gap-1 bg-secondary/40 rounded-md border transition-all duration-150",
               isListening ? "border-red-400/60" : "border-border/40 focus-within:border-primary/50"
             )}
           >

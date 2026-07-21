@@ -36,6 +36,7 @@ import { formatGHS } from "@/lib/currency";
 import axios from "axios";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { OrderDetailSkeleton } from "@/components/ui/skeletons";
 
 export default function OrderManagementPage() {
     const { id } = useParams() as { id: string };
@@ -101,9 +102,9 @@ export default function OrderManagementPage() {
 
     if (isLoading) {
         return (
-            <div className="flex h-[400px] items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-            </div>
+            <Wrapper>
+                <OrderDetailSkeleton />
+            </Wrapper>
         );
     }
 
@@ -165,7 +166,7 @@ export default function OrderManagementPage() {
                         <Button 
                             variant="outline" 
                             onClick={() => window.print()}
-                            className="bg-white border-gray-200 text-gray-700 hover:bg-gray-50 rounded-xl px-4 gap-2 font-semibold shadow-sm transition-all"
+                            className="bg-white border-gray-200 text-gray-700 hover:bg-gray-50 rounded-md px-4 gap-2 font-semibold shadow-sm transition-all"
                         >
                             <Printer className="h-4 w-4 text-gray-500" />
                             Print Invoice
@@ -174,17 +175,17 @@ export default function OrderManagementPage() {
                         {getAllowedTransitions(order.status).length > 0 && (
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button className="bg-blue-600 text-white hover:bg-blue-700 rounded-xl px-5 transition-all">
+                                    <Button className="bg-blue-600 text-white hover:bg-blue-700 rounded-md px-5 transition-all">
                                         {isUpdatingStatus ? "Updating..." : "Update Order Status"}
                                         <MoreHorizontal className="ml-2 h-4 w-4" />
                                     </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="w-48 bg-white border border-gray-100 shadow-xl rounded-xl p-1">
+                                <DropdownMenuContent align="end" className="w-48 bg-white border border-gray-100 shadow-sm rounded-md p-1">
                                     {getAllowedTransitions(order.status).map((status) => (
                                         <DropdownMenuItem 
                                             key={status}
                                             onClick={() => updateStatus({ id: order.id, status })}
-                                            className="rounded-lg cursor-pointer text-sm py-2"
+                                            className="rounded-md cursor-pointer text-sm py-2"
                                         >
                                             Mark as {status}
                                         </DropdownMenuItem>
@@ -199,7 +200,7 @@ export default function OrderManagementPage() {
                     {/* Left Column: Order details & Products */}
                     <div className="lg:col-span-2 space-y-6">
                         {/* Order Items */}
-                        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                        <div className="bg-white rounded-md border border-gray-100 shadow-sm overflow-hidden">
                             <div className="px-6 py-4 border-b border-gray-50 flex items-center justify-between bg-gray-50/50">
                                 <h3 className="font-bold text-gray-900 flex items-center gap-2">
                                     <ShoppingBag className="h-4 w-4 text-blue-500" />
@@ -210,7 +211,7 @@ export default function OrderManagementPage() {
                             <div className="divide-y divide-gray-50">
                                 {order.items.map((item: any) => (
                                     <div key={item.id} className="p-6 flex items-center gap-4 hover:bg-gray-50/30 transition-colors">
-                                        <div className="h-16 w-16 rounded-xl border border-gray-100 bg-gray-50 flex-shrink-0 overflow-hidden shadow-inner">
+                                        <div className="h-16 w-16 rounded-md border border-gray-100 bg-gray-50 flex-shrink-0 overflow-hidden shadow-inner">
                                             {item.variant.product.images?.[0] ? (
                                                 <img src={item.variant.product.images[0].url} alt={item.variant.product.name} className="h-full w-full object-cover" />
                                             ) : (
@@ -253,7 +254,7 @@ export default function OrderManagementPage() {
                         </div>
 
                         {/* Payment Transactions */}
-                        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                        <div className="bg-white rounded-md border border-gray-100 shadow-sm overflow-hidden">
                             <div className="px-6 py-4 border-b border-gray-50 flex items-center justify-between bg-gray-50/50">
                                 <h3 className="font-bold text-gray-900 flex items-center gap-2">
                                     <CreditCard className="h-4 w-4 text-emerald-500" />
@@ -285,15 +286,15 @@ export default function OrderManagementPage() {
                                                     <div className="flex items-center gap-3">
                                                         <DropdownMenu>
                                                             <DropdownMenuTrigger asChild>
-                                                                <Button variant="outline" size="sm" className="h-8 rounded-lg text-xs font-bold border-gray-200">
+                                                                <Button variant="outline" size="sm" className="h-8 rounded-md text-xs font-bold border-gray-200">
                                                                     {isUpdatingPayment ? "Processing..." : "Update Payment"}
                                                                 </Button>
                                                             </DropdownMenuTrigger>
-                                                            <DropdownMenuContent align="end" className="bg-white border rounded-xl shadow-lg p-1">
-                                                                <DropdownMenuItem onClick={() => handleUpdatePaymentStatus(payment.id, "SUCCESS")} className="rounded-lg cursor-pointer">
+                                                            <DropdownMenuContent align="end" className="bg-white border rounded-md shadow-sm p-1">
+                                                                <DropdownMenuItem onClick={() => handleUpdatePaymentStatus(payment.id, "SUCCESS")} className="rounded-md cursor-pointer">
                                                                     Mark as Completed
                                                                 </DropdownMenuItem>
-                                                                <DropdownMenuItem onClick={() => handleUpdatePaymentStatus(payment.id, "FAILED")} className="rounded-lg cursor-pointer text-red-600 hover:text-red-700">
+                                                                <DropdownMenuItem onClick={() => handleUpdatePaymentStatus(payment.id, "FAILED")} className="rounded-md cursor-pointer text-red-600 hover:text-red-700">
                                                                     Mark as Failed
                                                                 </DropdownMenuItem>
                                                             </DropdownMenuContent>
@@ -315,13 +316,13 @@ export default function OrderManagementPage() {
                     {/* Right Column: Customer & Status */}
                     <div className="space-y-6">
                         {/* Customer Info */}
-                        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+                        <div className="bg-white rounded-md border border-gray-100 shadow-sm p-6">
                             <h3 className="font-bold text-gray-900 flex items-center gap-2 mb-4">
                                 <User className="h-4 w-4 text-purple-500" />
                                 Customer Details
                             </h3>
                             <div className="space-y-4">
-                                <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 border border-gray-100">
+                                <div className="flex items-center gap-3 p-3 rounded-md bg-gray-50 border border-gray-100">
                                     <div className="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-black text-lg shadow-sm ring-2 ring-white">
                                         {(checkoutMeta?.firstName?.[0] || order.user?.name?.[0] || checkoutMeta?.email?.[0] || "C").toUpperCase()}
                                     </div>
@@ -336,13 +337,13 @@ export default function OrderManagementPage() {
                                 </div>
                                 <div className="space-y-2 text-xs">
                                     {checkoutMeta?.email && (
-                                        <div className="flex items-center gap-2 text-gray-600 bg-gray-50/50 p-2 rounded-lg border border-gray-100">
+                                        <div className="flex items-center gap-2 text-gray-600 bg-gray-50/50 p-2 rounded-md border border-gray-100">
                                             <Mail className="h-3.5 w-3.5 text-gray-400 shrink-0" />
                                             <span className="truncate">{checkoutMeta.email}</span>
                                         </div>
                                     )}
                                     {checkoutMeta?.phone && (
-                                        <div className="flex items-center gap-2 text-gray-600 bg-gray-50/50 p-2 rounded-lg border border-gray-100">
+                                        <div className="flex items-center gap-2 text-gray-600 bg-gray-50/50 p-2 rounded-md border border-gray-100">
                                             <Phone className="h-3.5 w-3.5 text-gray-400 shrink-0" />
                                             <span>{checkoutMeta.phone}</span>
                                         </div>
@@ -357,7 +358,7 @@ export default function OrderManagementPage() {
                         </div>
 
                         {/* Shipping Address */}
-                        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+                        <div className="bg-white rounded-md border border-gray-100 shadow-sm p-6">
                             <h3 className="font-bold text-gray-900 flex items-center gap-2 mb-4">
                                 <MapPin className="h-4 w-4 text-emerald-500" />
                                 Shipping Address
@@ -378,7 +379,7 @@ export default function OrderManagementPage() {
                                     )}
                                 </div>
                             ) : (
-                                <div className="p-4 rounded-xl bg-amber-50/60 border border-amber-100 text-xs text-amber-800 italic">
+                                <div className="p-4 rounded-md bg-amber-50/60 border border-amber-100 text-xs text-amber-800 italic">
                                     No shipping address recorded.
                                 </div>
                             )}
