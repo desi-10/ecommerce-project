@@ -10,6 +10,7 @@ import {
   type UpdateInventoryInput,
   type AdjustStockInput,
 } from "./inventory.validators";
+import { Prisma } from "../../../prisma/generated/client";
 
 /**
  * Create inventory row for a variant (fails if already exists because variantId is unique)
@@ -98,7 +99,7 @@ export const listInventoriesService = async (params?: {
   const limit = Math.min(50, Math.max(1, params?.limit ?? 20));
   const skip = (page - 1) * limit;
 
-  const where: any = {};
+  const where: Prisma.InventoryWhereInput = {};
 
   if (params?.variantId) where.variantId = params.variantId;
 

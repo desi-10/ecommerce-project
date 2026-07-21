@@ -12,7 +12,7 @@ export type Variant = {
   sku: string | null;
   price: string; // your API returns "1000" as string
   salePrice: string; // string
-  options: any;
+  options: unknown;
   inventory: Inventory;
 };
 
@@ -84,7 +84,7 @@ export type CreateProductDto = {
   defaultStock?: number;
   categoryIds?: string[];
   images?: { id: string; url: string }[];
-  variants?: any[];
+  variants?: Partial<Variant>[];
 };
 
 export type UpdateProductDto = Partial<CreateProductDto> & { id?: string };

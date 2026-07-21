@@ -28,10 +28,11 @@ interface UpdateOrderStatusProps {
 
 const ORDER_STATUSES = [
   { value: "PENDING", label: "Pending" },
-  { value: "PROCESSING", label: "Processing" },
-  { value: "SHIPPED", label: "Shipped" },
-  { value: "DELIVERED", label: "Delivered" },
+  { value: "PAID", label: "Paid" },
+  { value: "FULFILLED", label: "Fulfilled" },
+  { value: "REFUNDED", label: "Refunded" },
   { value: "CANCELLED", label: "Cancelled" },
+  { value: "FAILED", label: "Failed" },
 ];
 
 export function UpdateOrderStatusDialog({

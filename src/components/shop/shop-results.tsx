@@ -3,7 +3,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import ShopSidebar from "./shop-sidebar";
+import ShopSidebar, { FilterPayload } from "./shop-sidebar";
 import ShopToolbar from "./shop-toolbar";
 import ProductGridCard from "./product-grid";
 import ProductListRow from "./product-list";
@@ -61,7 +61,7 @@ export default function ShopResultsWithSidebar() {
     const products = useMemo(() => rawProducts.map(normalizeProduct), [rawProducts]);
     const totalPages = productsData?.data?.pagination?.totalPages ?? 1;
 
-    const handleApplyFilters = (payload: any) => {
+    const handleApplyFilters = (payload: FilterPayload) => {
         setFilters({
             q: payload.search,
             categories: payload.categories,

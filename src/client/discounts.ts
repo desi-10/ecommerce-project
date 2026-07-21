@@ -25,7 +25,7 @@ export async function createDiscount(data: {
   return res.data;
 }
 
-export async function updateDiscount(id: string, data: any) {
+export async function updateDiscount(id: string, data: Record<string, unknown>) {
   const res = await axios.patch(`/api/discounts/${id}`, data);
   return res.data;
 }

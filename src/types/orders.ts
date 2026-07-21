@@ -4,7 +4,8 @@ export type OrderStatus =
   | "PAID"
   | "FAILED"
   | "CANCELLED"
-  | "REFUNDED";
+  | "REFUNDED"
+  | "FULFILLED";
 
 export type PaymentProvider = "PAYSTACK" | "STRIPE" | "CASH" | "OTHER";
 export type PaymentStatus = "PENDING" | "SUCCESS" | "FAILED" | "CANCELLED";
@@ -53,7 +54,7 @@ export type Order = {
   items: OrderItem[];
   payments: OrderPayment[];
   user: OrderUser | null;
-  shippingAddress?: any;
+  shippingAddress?: unknown;
 };
 
 export type OrdersPagination = {

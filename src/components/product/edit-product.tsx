@@ -89,7 +89,11 @@ export function EditProductDialog({
   const onSubmit = async (values: UpdateProductInput) => {
     try {
       setSubmitError(null);
-      await mutateAsync({ id: product.id, payload: values });
+      const sanitizedPayload = {
+        ...values,
+        defaultSalePrice: values.defaultSalePrice ?? undefined,
+      };
+      await mutateAsync({ id: product.id, payload: sanitizedPayload as any });
       setShowSuccess(true);
       setTimeout(() => {
         onOpenChange(false);

@@ -163,9 +163,27 @@ export const sendNewsletterEmail = async (email: string) => {
   }
 };
 
-export const sendPurchaseEmail = async (email: string, orderDetails: any) => {
+export interface PurchaseOrderItem {
+  qty: number;
+  lineTotal: string | number;
+  variant: {
+    name: string;
+    product: {
+      name: string;
+    };
+  };
+}
+
+export interface PurchaseOrderDetails {
+  subtotal: string | number;
+  discountTotal: number;
+  total: string | number;
+  items: PurchaseOrderItem[];
+}
+
+export const sendPurchaseEmail = async (email: string, orderDetails: PurchaseOrderDetails) => {
   try {
-    const itemsHtml = orderDetails.items.map((item: any) => `
+    const itemsHtml = orderDetails.items.map((item: PurchaseOrderItem) => `
       <tr>
         <td style="padding: 10px; border-bottom: 1px solid #ddd;">${item.variant.product.name} (${item.variant.name})</td>
         <td style="padding: 10px; border-bottom: 1px solid #ddd; text-align: center;">${item.qty}</td>

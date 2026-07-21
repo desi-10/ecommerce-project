@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import { Separator } from "@/components/ui/separator";
@@ -11,7 +12,7 @@ import { useSearchParams } from "next/navigation";
 import { useGetCategories } from "@/hooks/use-category";
 import { cn } from "@/lib/utils";
 
-type FilterPayload = {
+export type FilterPayload = {
     search: string;
     categories: string[];
     rating: number | null;
@@ -38,7 +39,7 @@ export default function ShopSidebar({ onApply }: Props) {
     useEffect(() => {
         const q = searchParams.get("q");
         if (q) setSearch(q);
-        
+
         const cat = searchParams.get("category");
         if (cat) {
             setSelectedCats(new Set([cat]));
@@ -167,7 +168,7 @@ export default function ShopSidebar({ onApply }: Props) {
                                         ))}
                                     </div>
                                     <span className="text-xs text-neutral-600 font-medium group-hover:text-primary transition-colors">
-                                        {r === 5 ? "5 Stars" : `& Up`}
+                                        {r === 5 ? "5 Stars" : "& Up"}
                                     </span>
                                 </div>
                             </label>

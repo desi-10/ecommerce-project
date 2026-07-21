@@ -10,11 +10,11 @@ import {
 
 export const couponKeys = {
   all: ["coupons"] as const,
-  list: (params?: any) => ["coupons", "list", params ?? {}] as const,
+  list: (params?: Record<string, unknown>) => ["coupons", "list", params ?? {}] as const,
   detail: (id: string) => ["coupons", "detail", id] as const,
 };
 
-export function useGetCoupons(params?: any) {
+export function useGetCoupons(params?: Record<string, unknown>) {
   return useQuery({
     queryKey: couponKeys.list(params),
     queryFn: () => getCoupons(params),
@@ -32,7 +32,7 @@ export function useGetCoupon(id: string) {
 export function useCreateCoupon() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: any) => createCoupon(data),
+    mutationFn: (data: Record<string, unknown>) => createCoupon(data),
     onSuccess: async () => {
       await qc.invalidateQueries({ queryKey: couponKeys.all });
     },
@@ -42,7 +42,7 @@ export function useCreateCoupon() {
 export function useUpdateCoupon() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: any }) =>
+    mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) =>
       updateCoupon(id, data),
     onSuccess: async () => {
       await qc.invalidateQueries({ queryKey: couponKeys.all });

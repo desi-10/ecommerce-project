@@ -1,7 +1,7 @@
 // client/coupons.ts
 import axios from "axios";
 
-export async function getCoupons(params?: any) {
+export async function getCoupons(params?: Record<string, unknown>) {
   const res = await axios.get("/api/coupons", { params });
   return res.data;
 }
@@ -11,12 +11,12 @@ export async function getCouponById(id: string) {
   return res.data;
 }
 
-export async function createCoupon(data: any) {
+export async function createCoupon(data: Record<string, unknown>) {
   const res = await axios.post("/api/coupons", data);
   return res.data;
 }
 
-export async function updateCoupon(id: string, data: any) {
+export async function updateCoupon(id: string, data: Record<string, unknown>) {
   const res = await axios.patch(`/api/coupons/${id}`, data);
   return res.data;
 }

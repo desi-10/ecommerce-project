@@ -26,8 +26,9 @@ async function setup() {
       },
     });
     console.log("Index created successfully!");
-  } catch (error: any) {
-    if (error.name === "PineconeBadRequestError" && error.message.includes("already exists")) {
+  } catch (error: unknown) {
+    const err = error as { name?: string; message?: string };
+    if (err.name === "PineconeBadRequestError" && err.message?.includes("already exists")) {
       console.log("Index already exists.");
     } else {
       throw error;

@@ -213,11 +213,19 @@ export const createProductService = async (data: CreateProductInput) => {
   return apiResponse("Product created successfully", result);
 };
 
-const applyDynamicDiscounts = (product: any) => {
+const applyDynamicDiscounts = <T extends Record<string, unknown>>(product: T): T => {
   if (!product) return product;
 
   // Find active discount if any
-  const activeDiscount = product.discounts?.find((d: any) => {
+  const discounts = product.discounts as Array<{
+    status: string;
+    startsAt: string | Date | null;
+    endsAt: string | Date | null;
+    value: string | number;
+    type: "PERCENT" | "AMOUNT";
+  }> | undefined;
+
+  const activeDiscount = discounts?.find((d) => {
     const now = new Date();
     if (d.status !== "ACTIVE") return false;
     if (d.startsAt && now < new Date(d.startsAt)) return false;
@@ -228,23 +236,26 @@ const applyDynamicDiscounts = (product: any) => {
   if (activeDiscount) {
     const value = Number(activeDiscount.value);
     const type = activeDiscount.type;
+    const variants = product.variants as Array<{ price: number | string; salePrice?: number | string | Prisma.Decimal | null }> | undefined;
 
-    product.variants = product.variants.map((variant: any) => {
-      const price = Number(variant.price);
-      const currentSalePrice = variant.salePrice ? Number(variant.salePrice) : 0;
+    if (variants) {
+      product.variants = variants.map((variant) => {
+        const price = Number(variant.price);
+        const currentSalePrice = variant.salePrice ? Number(variant.salePrice) : 0;
 
-      // Only apply discount if salePrice is not already set manually
-      if (currentSalePrice <= 0) {
-        let computedSalePrice = 0;
-        if (type === "PERCENT") {
-          computedSalePrice = price * (1 - value / 100);
-        } else if (type === "AMOUNT") {
-          computedSalePrice = Math.max(0, price - value);
+        // Only apply discount if salePrice is not already set manually
+        if (currentSalePrice <= 0) {
+          let computedSalePrice = 0;
+          if (type === "PERCENT") {
+            computedSalePrice = price * (1 - value / 100);
+          } else if (type === "AMOUNT") {
+            computedSalePrice = Math.max(0, price - value);
+          }
+          variant.salePrice = new Prisma.Decimal(computedSalePrice.toFixed(2));
         }
-        variant.salePrice = new Prisma.Decimal(computedSalePrice.toFixed(2));
-      }
-      return variant;
-    });
+        return variant;
+      }) as unknown as T["variants"];
+    }
   }
 
   return product;
@@ -350,7 +361,7 @@ export const getProductsService = async (data: ListProductsInput) => {
     }),
   };
 
-  let orderBy: any = { createdAt: "desc" };
+  let orderBy: Prisma.ProductOrderByWithRelationInput = { createdAt: "desc" };
   if (sort === "name_asc") orderBy = { name: "asc" };
   else if (sort === "name_desc") orderBy = { name: "desc" };
   else if (sort === "oldest") orderBy = { createdAt: "asc" };
@@ -391,7 +402,7 @@ export const getProductsService = async (data: ListProductsInput) => {
       const productsMap = new Map(products.map((p) => [p.id, p]));
       const orderedProducts = productIds
         .map((id) => productsMap.get(id))
-        .filter(Boolean) as any[];
+        .filter(Boolean) as Record<string, unknown>[];
 
       const totalPages = Math.max(1, Math.ceil(total / limit));
       const processedProducts = orderedProducts.map(applyDynamicDiscounts);
@@ -407,8 +418,8 @@ export const getProductsService = async (data: ListProductsInput) => {
           hasPrev: page > 1,
         },
       });
-    } catch (error: any) {
-      console.error("[getProductsService] GroupBy Sort Failed:", error.message);
+    } catch (error: unknown) {
+      console.error("[getProductsService] GroupBy Sort Failed:", (error as Error).message);
       // Fallback below to safe mode
     }
   }
@@ -439,8 +450,8 @@ export const getProductsService = async (data: ListProductsInput) => {
         hasPrev: page > 1,
       },
     });
-  } catch (error: any) {
-    console.error("[getProductsService] Primary Query Failed:", error.message);
+  } catch (error: unknown) {
+    console.error("[getProductsService] Primary Query Failed:", (error as Error).message);
     
     // Fallback if aggregate sort or complex where failed
     const [total, products] = await Promise.all([

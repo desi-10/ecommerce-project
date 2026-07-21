@@ -57,7 +57,7 @@ export const listCouponsService = async (params?: {
   const limit = Math.min(50, Math.max(1, params?.limit ?? 20));
   const skip = (page - 1) * limit;
 
-  const where: any = {};
+  const where: Prisma.CouponWhereInput = {};
   if (params?.status) where.status = params.status;
   if (params?.q) where.code = { contains: params.q.trim().toUpperCase() };
 

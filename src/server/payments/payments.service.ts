@@ -31,7 +31,7 @@ export const initiateOrderService = async (
       line_items: [
         {
           price_data: {
-            currency: "GHS",
+            currency: "usd",
             product_data: {
               name: "Order Checkout",
             },
@@ -41,7 +41,7 @@ export const initiateOrderService = async (
         },
       ],
       mode: "payment",
-      success_url: `${process.env.BETTER_AUTH_BASE_URL}/checkout/success`,
+      success_url: `${process.env.BETTER_AUTH_BASE_URL}/checkout/success?reference={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.BETTER_AUTH_BASE_URL}/checkout`,
       customer_email: data.email,
     });

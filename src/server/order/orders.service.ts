@@ -478,7 +478,7 @@ export const getOrderByReferenceService = async (reference: string) => {
       let email = payment.user?.email;
       if (!email && payment.metadata) {
         const meta = typeof payment.metadata === 'string' ? JSON.parse(payment.metadata) : payment.metadata;
-        email = (meta as any).email;
+        email = (meta as { email?: string }).email;
       }
 
       if (email) {
