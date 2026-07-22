@@ -478,7 +478,7 @@ export const getOrderByReferenceService = async (reference: string) => {
       let email = payment.user?.email;
       if (!email && payment.metadata) {
         const meta = typeof payment.metadata === 'string' ? JSON.parse(payment.metadata) : payment.metadata;
-        email = (meta as any).email;
+        email = (meta as { email?: string }).email;
       }
 
       if (email) {
@@ -518,12 +518,26 @@ export const getUserOrderDetailService = async (
         include: {
           variant: {
             include: {
-              product: true,
+              product: {
+                include: {
+                  images: true,
+                },
+              },
             },
           },
         },
       },
-      payments: true,
+      payments: {
+        orderBy: { createdAt: "desc" },
+      },
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+      coupon: true,
     },
   });
 

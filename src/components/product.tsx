@@ -16,6 +16,7 @@ import { useWishlistStore } from "@/stores/wishlist.store";
 import { useCartStore } from "@/stores/cart.store";
 import { useGetProducts } from "@/hooks/use-product";
 import type { Product } from "@/types/product";
+import { ProductGridSkeleton } from "@/components/ui/skeletons";
 
 function pickDisplayVariant(p: Product) {
     if (!p.variants?.length) return null;
@@ -70,7 +71,7 @@ export default function ProductSection({
     const wishSet = useMemo(() => new Set(wishItems.map((i) => i.id)), [wishItems]);
 
     return (
-        <section className="mt-8 rounded-sm border bg-white">
+        <section className="mt-8 rounded-md border bg-white shadow-sm overflow-hidden">
             <div className="flex items-center justify-between gap-4 p-4">
                 <div className="mozilla-text text-xl font-bold lg:text-2xl">{title}</div>
                 <Link
@@ -83,7 +84,9 @@ export default function ProductSection({
 
             {/* States */}
             {isLoading ? (
-                <div className="border-t p-4 text-sm text-muted-foreground">Loading...</div>
+                <div className="border-t p-4">
+                    <ProductGridSkeleton count={5} />
+                </div>
             ) : isError ? (
                 <div className="border-t p-4 text-sm text-red-600">Failed to load products.</div>
             ) : cards.length === 0 ? (

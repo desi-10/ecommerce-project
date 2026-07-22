@@ -1,10 +1,34 @@
 import type { Product } from "@/types/product";
 
+export type RawProductData = {
+  id?: string | number;
+  brand?: string | null;
+  name?: string;
+  description?: string;
+  image?: string;
+  images?: Array<{ url: string } | string>;
+  price?: number | string;
+  salePrice?: number | string;
+  stock?: number;
+  inventory?: { stock: number };
+  variants?: Array<{
+    price?: number | string;
+    salePrice?: number | string;
+    inventory?: { stock: number };
+  }>;
+  rating?: number;
+  reviews?: number;
+  status?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  [key: string]: unknown;
+};
+
 /**
  * Normalizes API product data to ensure consistent field mapping
  * across the frontend (dashboard and storefront).
  */
-export function normalizeProduct(rawProduct: any): Product {
+export function normalizeProduct(rawProduct: RawProductData): Product {
   const firstVariant = rawProduct.variants?.[0];
   const priceVal = Number(firstVariant?.price ?? rawProduct.price ?? 0);
   const salePriceVal = firstVariant?.salePrice ? Number(firstVariant.salePrice) : (rawProduct.salePrice ? Number(rawProduct.salePrice) : undefined);
@@ -47,7 +71,7 @@ export function normalizeProduct(rawProduct: any): Product {
 /**
  * Normalizes an array of products
  */
-export function normalizeProducts(rawProducts: any[]): Product[] {
+export function normalizeProducts(rawProducts: RawProductData[]): Product[] {
   return rawProducts.map(normalizeProduct);
 }
 

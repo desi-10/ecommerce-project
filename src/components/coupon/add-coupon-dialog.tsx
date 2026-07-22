@@ -80,7 +80,7 @@ export function AddCouponDialog({ open, onOpenChange }: AddCouponDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden border-none shadow-2xl rounded-3xl">
+      <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden border border-gray-200 shadow-sm rounded-md">
         <div className="bg-blue-600 p-8 text-white relative">
             <Ticket className="absolute right-8 top-8 h-12 w-12 text-white/20 -rotate-12" />
             <DialogHeader>
@@ -98,7 +98,7 @@ export function AddCouponDialog({ open, onOpenChange }: AddCouponDialogProps) {
               <Input 
                 placeholder="E.G. SAVE20" 
                 {...register("code")} 
-                className="h-12 rounded-xl border-gray-100 bg-gray-50 focus:bg-white transition-all font-mono font-bold text-blue-600 uppercase" 
+                className="h-10 rounded-md border-gray-200 bg-gray-50 focus:bg-white transition-all font-mono font-bold text-blue-600 uppercase" 
               />
               {errors.code && <p className="text-xs text-red-500 font-semibold">{errors.code.message}</p>}
             </div>
@@ -106,10 +106,10 @@ export function AddCouponDialog({ open, onOpenChange }: AddCouponDialogProps) {
             <div className="space-y-2">
               <Label className="text-xs font-bold uppercase tracking-widest text-gray-500">Discount Type</Label>
               <Select onValueChange={(val: any) => setValue("type", val)} value={selectedType}>
-                <SelectTrigger className="h-12 rounded-xl border-gray-100 bg-gray-50">
+                <SelectTrigger className="h-10 rounded-md border-gray-200 bg-gray-50">
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
-                <SelectContent className="bg-white rounded-xl shadow-xl border-gray-100">
+                <SelectContent className="bg-white rounded-md shadow-sm border-gray-200">
                   <SelectItem value="PERCENT">Percentage (%)</SelectItem>
                   <SelectItem value="AMOUNT">Fixed Amount (GHS)</SelectItem>
                 </SelectContent>
@@ -119,31 +119,31 @@ export function AddCouponDialog({ open, onOpenChange }: AddCouponDialogProps) {
 
             <div className="space-y-2">
               <Label className="text-xs font-bold uppercase tracking-widest text-gray-500">Value</Label>
-              <Input type="number" step="0.01" {...register("value")} className="h-12 rounded-xl border-gray-100 bg-gray-50" />
+              <Input type="number" step="0.01" {...register("value")} className="h-10 rounded-md border-gray-200 bg-gray-50" />
               {errors.value && <p className="text-xs text-red-500 font-semibold">{errors.value.message}</p>}
             </div>
 
             <div className="space-y-2">
               <Label className="text-xs font-bold uppercase tracking-widest text-gray-500">Min. Spend (Optional)</Label>
-              <Input type="number" step="0.01" placeholder="0.00" {...register("minOrderValue")} className="h-12 rounded-xl border-gray-100 bg-gray-50" />
+              <Input type="number" step="0.01" placeholder="0.00" {...register("minOrderValue")} className="h-10 rounded-md border-gray-200 bg-gray-50" />
               {errors.minOrderValue && <p className="text-xs text-red-500 font-semibold">{errors.minOrderValue.message}</p>}
             </div>
 
             <div className="space-y-2">
               <Label className="text-xs font-bold uppercase tracking-widest text-gray-500">Max Uses (Optional)</Label>
-              <Input type="number" placeholder="Unlimited" {...register("maxUses")} className="h-12 rounded-xl border-gray-100 bg-gray-50" />
+              <Input type="number" placeholder="Unlimited" {...register("maxUses")} className="h-10 rounded-md border-gray-200 bg-gray-50" />
               {errors.maxUses && <p className="text-xs text-red-500 font-semibold">{errors.maxUses.message}</p>}
             </div>
 
             <div className="space-y-2">
               <Label className="text-xs font-bold uppercase tracking-widest text-gray-500">Start Date</Label>
-              <Input type="datetime-local" {...register("startsAt")} className="h-12 rounded-xl border-gray-100 bg-gray-50" />
+              <Input type="datetime-local" {...register("startsAt")} className="h-10 rounded-md border-gray-200 bg-gray-50" />
               {errors.startsAt && <p className="text-xs text-red-500 font-semibold">{errors.startsAt.message}</p>}
             </div>
 
             <div className="space-y-2">
               <Label className="text-xs font-bold uppercase tracking-widest text-gray-500">End Date</Label>
-              <Input type="datetime-local" {...register("endsAt")} className="h-12 rounded-xl border-gray-100 bg-gray-50" />
+              <Input type="datetime-local" {...register("endsAt")} className="h-10 rounded-md border-gray-200 bg-gray-50" />
               {errors.endsAt && <p className="text-xs text-red-500 font-semibold">{errors.endsAt.message}</p>}
             </div>
           </div>
@@ -153,14 +153,14 @@ export function AddCouponDialog({ open, onOpenChange }: AddCouponDialogProps) {
               type="button" 
               variant="ghost" 
               onClick={() => onOpenChange(false)}
-              className="rounded-xl h-12 font-bold text-gray-400 hover:text-gray-900"
+              className="rounded-md h-10 font-bold text-gray-400 hover:text-gray-900"
             >
               Cancel
             </Button>
             <Button 
               type="submit" 
               disabled={isPending}
-              className="bg-blue-600 text-white hover:bg-blue-700 h-12 px-8 rounded-xl shadow-lg shadow-blue-100 transition-all font-bold min-w-[140px]"
+              className="bg-blue-600 text-white hover:bg-blue-700 h-10 px-8 rounded-md shadow-sm transition-all font-bold min-w-[140px]"
             >
               {isPending ? (
                   <Loader2 className="h-5 w-5 animate-spin" />

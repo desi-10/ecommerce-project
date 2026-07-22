@@ -22,7 +22,7 @@ export default function CustomersDashboardPage() {
           </div>
 
           {isError && (
-            <div className="flex items-start gap-3 rounded-lg bg-red-50 p-4 border border-red-200 mb-6">
+            <div className="flex items-start gap-3 rounded-md bg-red-50 p-4 border border-red-200 mb-6 shadow-sm">
               <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
               <div>
                 <p className="font-medium text-red-900">Failed to load customers</p>
@@ -33,14 +33,8 @@ export default function CustomersDashboardPage() {
             </div>
           )}
 
-          {isLoading ? (
-            <div className="space-y-3">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="h-16 bg-gray-100 animate-pulse rounded-xl" />
-              ))}
-            </div>
-          ) : customers.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 rounded-xl border border-dashed border-gray-300 bg-gray-50">
+          {!isLoading && customers.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 rounded-md border border-dashed border-gray-300 bg-gray-50 shadow-sm">
               <Users className="h-12 w-12 text-gray-400 mb-4" />
               <h3 className="text-lg font-semibold text-gray-900 mb-2">No customers yet</h3>
               <p className="text-sm text-gray-600 mb-6 text-center max-w-sm">
@@ -48,7 +42,7 @@ export default function CustomersDashboardPage() {
               </p>
             </div>
           ) : (
-            <DataTable columns={customerColumns} data={{ items: customers }} />
+            <DataTable columns={customerColumns} data={{ items: customers }} isLoading={isLoading} />
           )}
         </div>
       </Wrapper>

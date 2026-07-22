@@ -13,10 +13,10 @@ export default function RefundPolicyPage() {
           Back to Shop
         </Link>
         
-        <div className="bg-white border border-neutral-100 p-8 md:p-12 rounded-2xl shadow-sm space-y-8">
+        <div className="bg-white border border-neutral-200 p-8 md:p-12 rounded-md shadow-sm space-y-8">
           <div className="border-b pb-6">
             <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
+              <div className="p-2 bg-emerald-50 text-emerald-600 rounded-md">
                 <ShieldCheck className="w-6 h-6" />
               </div>
               <span className="text-xs font-bold uppercase tracking-wider text-emerald-600">MartFury Trust</span>

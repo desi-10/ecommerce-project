@@ -63,7 +63,7 @@ function SuccessPageContent() {
   if (!reference || error || !order) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white rounded-2xl shadow-sm p-8 text-center border border-gray-100">
+        <div className="max-w-md w-full bg-white rounded-md shadow-sm p-8 text-center border border-gray-100">
           <div className="bg-red-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
             <ShoppingBag className="h-8 w-8 text-red-600" />
           </div>
@@ -107,7 +107,7 @@ function SuccessPageContent() {
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-6">
               {/* Order Items */}
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+              <div className="bg-white rounded-md shadow-sm border border-gray-100 overflow-hidden">
                 <div className="p-6 border-b border-gray-50 flex items-center gap-3">
                   <Package className="h-5 w-5 text-indigo-600" />
                   <h2 className="font-bold text-lg text-gray-900">
@@ -156,7 +156,7 @@ function SuccessPageContent() {
               </div>
 
               {/* Delivery Progress Mockup */}
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+              <div className="bg-white rounded-md shadow-sm border border-gray-100 p-6">
                 <div className="flex items-center gap-3 mb-6">
                   <Truck className="h-5 w-5 text-indigo-600" />
                   <h2 className="font-bold text-lg text-gray-900">
@@ -212,7 +212,7 @@ function SuccessPageContent() {
 
             {/* Sidebar Details */}
             <div className="space-y-6">
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+              <div className="bg-white rounded-md shadow-sm border border-gray-100 p-6">
                 <h2 className="font-bold text-gray-900 mb-4 pb-4 border-b border-gray-50">
                   Order Information
                 </h2>
@@ -264,24 +264,20 @@ function SuccessPageContent() {
                 </div>
               </div>
 
-              <div className="bg-indigo-600 rounded-2xl p-6 text-white text-center shadow-lg shadow-indigo-200">
-                <h3 className="font-bold text-xl mb-2">Need help?</h3>
-                <p className="text-indigo-100 text-sm mb-6">
-                  Our support team is available 24/7 for any questions.
+              <div className="bg-indigo-600 rounded-md p-6 text-white text-center shadow-sm">
+                <h3 className="font-bold text-lg mb-1">Need Assistance?</h3>
+                <p className="text-indigo-100 text-sm mb-4">
+                  Have questions about your order? Our support team is here to help 24/7.
                 </p>
-                <Button
-                  variant="secondary"
-                  className="w-full rounded-xl bg-white text-indigo-600 hover:bg-indigo-50 font-bold group"
-                >
+                <Button variant="secondary" className="bg-white text-indigo-600 hover:bg-indigo-50 rounded-md font-semibold">
                   Contact Support
-                  <ChevronRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </div>
 
               <Button
-                asChild
                 variant="outline"
-                className="w-full py-6 rounded-2xl border-gray-200 hover:bg-gray-50 font-semibold text-gray-700"
+                asChild
+                className="w-full py-6 rounded-md border-gray-200 hover:bg-gray-50 font-semibold text-gray-700 shadow-sm"
               >
                 <Link href="/">Continue Shopping</Link>
               </Button>

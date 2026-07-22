@@ -31,7 +31,7 @@ export const initiateOrderService = async (
       line_items: [
         {
           price_data: {
-            currency: "GHS",
+            currency: "usd",
             product_data: {
               name: "Order Checkout",
             },
@@ -41,7 +41,7 @@ export const initiateOrderService = async (
         },
       ],
       mode: "payment",
-      success_url: `${process.env.BETTER_AUTH_BASE_URL}/checkout/success`,
+      success_url: `${process.env.BETTER_AUTH_BASE_URL}/checkout/success?reference={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.BETTER_AUTH_BASE_URL}/checkout`,
       customer_email: data.email,
     });
@@ -270,4 +270,121 @@ export const deletePaymentService = async (id: string, userId: string) => {
   await prisma.payment.delete({ where: { id } });
 
   return apiResponse("Payment deleted successfully", null);
+};
+
+export const payExistingOrderService = async (
+  orderId: string,
+  userId: string,
+  gateway: string = "paystack",
+) => {
+  const order = await prisma.order.findFirst({
+    where: { id: orderId, userId },
+    include: {
+      payments: {
+        orderBy: { createdAt: "desc" },
+      },
+      user: true,
+    },
+  });
+
+  if (!order) {
+    throw new ApiError("Order not found", StatusCodes.NOT_FOUND);
+  }
+
+  if (order.status !== "PENDING") {
+    throw new ApiError(
+      "Payment can only be made for pending orders",
+      StatusCodes.BAD_REQUEST,
+    );
+  }
+
+  let authorizationUrl: string;
+  let reference: string;
+  let provider: "STRIPE" | "PAYSTACK";
+
+  const paymentWithMeta = order.payments?.find((p: any) => p.metadata);
+  let email = order.user?.email;
+
+  if (paymentWithMeta?.metadata) {
+    try {
+      const meta = typeof paymentWithMeta.metadata === "string"
+        ? JSON.parse(paymentWithMeta.metadata)
+        : paymentWithMeta.metadata;
+      if (meta?.email) email = meta.email;
+    } catch (e) {
+      console.error("Failed to parse metadata", e);
+    }
+  }
+
+  if (!email) {
+    throw new ApiError("Customer email missing", StatusCodes.BAD_REQUEST);
+  }
+
+  const amountNumber = Number(order.total);
+
+  if (gateway === "stripe") {
+    if (!process.env.STRIPE_SECRET_KEY) {
+      throw new ApiError("Stripe is not configured", StatusCodes.NOT_IMPLEMENTED);
+    }
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      line_items: [
+        {
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: `Order #${order.id.slice(-8).toUpperCase()}`,
+            },
+            unit_amount: Math.round(amountNumber * 100),
+          },
+          quantity: 1,
+        },
+      ],
+      mode: "payment",
+      success_url: `${process.env.BETTER_AUTH_BASE_URL}/checkout/success?reference={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.BETTER_AUTH_BASE_URL}/account/orders/${order.id}`,
+      customer_email: email,
+    });
+
+    if (!session.url || !session.id) {
+      throw new Error("Failed to create Stripe session");
+    }
+
+    authorizationUrl = session.url;
+    reference = session.id;
+    provider = "STRIPE";
+  } else {
+    const payment = await paystack.initiatePayment({
+      amount: Math.round(amountNumber * 100),
+      email: email,
+      currency: Currency.GHS,
+      callbackUrl: `${process.env.BETTER_AUTH_BASE_URL}/checkout/success`,
+    });
+
+    if (!payment.authorizationUrl || !payment.reference) {
+      throw new Error("Failed to initiate Paystack payment");
+    }
+
+    authorizationUrl = payment.authorizationUrl;
+    reference = payment.reference;
+    provider = "PAYSTACK";
+  }
+
+  await prisma.payment.create({
+    data: {
+      provider: provider,
+      amount: order.total,
+      metadata: paymentWithMeta?.metadata || null,
+      orderId: order.id,
+      userId: order.userId || null,
+      reference: reference,
+      status: "PENDING",
+    },
+  });
+
+  return apiResponse("Payment initiated", {
+    authorizationUrl,
+    reference,
+  });
 };

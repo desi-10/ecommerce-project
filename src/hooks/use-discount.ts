@@ -36,7 +36,7 @@ export function useGetDiscount(id: string) {
 export function useCreateDiscount() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (payload: any) => createDiscount(payload),
+    mutationFn: (payload: Parameters<typeof createDiscount>[0]) => createDiscount(payload),
     onSuccess: async () => {
       await qc.invalidateQueries({ queryKey: discountKeys.all });
     },
@@ -46,7 +46,7 @@ export function useCreateDiscount() {
 export function useUpdateDiscount() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: any }) =>
+    mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) =>
       updateDiscount(id, data),
     onSuccess: async () => {
       await qc.invalidateQueries({ queryKey: discountKeys.all });

@@ -63,7 +63,7 @@ export default function SecuritySection() {
   return (
     <div className="bg-white">
       <div className="flex items-center gap-3 mb-6">
-        <div className="h-12 w-12 rounded-2xl bg-blue-50 flex items-center justify-center border border-blue-100 shadow-sm">
+        <div className="h-12 w-12 rounded-md bg-blue-50 flex items-center justify-center border border-blue-100 shadow-sm">
           <ShieldCheck className="h-6 w-6 text-blue-600" />
         </div>
         <div>
@@ -77,7 +77,7 @@ export default function SecuritySection() {
       </div>
 
       <div className="grid gap-8 lg:grid-cols-[1fr_300px]">
-        <div className="bg-white rounded-2xl border border-neutral-200 overflow-hidden shadow-sm">
+        <div className="bg-white rounded-md border border-neutral-200 overflow-hidden shadow-sm">
           <div className="p-6 border-b border-neutral-100 bg-neutral-50/30 font-bold flex items-center justify-between">
             <span className="flex items-center gap-2">
               <Lock className="h-4 w-4 text-neutral-400" />
@@ -152,7 +152,7 @@ export default function SecuritySection() {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="rounded-xl bg-blue-600 hover:bg-blue-700 px-8 py-6 h-auto font-bold shadow-lg shadow-blue-100 disabled:opacity-70 transition-all hover:scale-[1.02]"
+                className="rounded-md bg-blue-600 hover:bg-blue-700 px-8 py-3 font-bold shadow-sm disabled:opacity-70 transition-all"
               >
                 {isLoading ? (
                   <>
@@ -168,7 +168,7 @@ export default function SecuritySection() {
         </div>
 
         <div className="space-y-6">
-          <div className="bg-blue-50/50 rounded-2xl border border-blue-100 p-6">
+          <div className="bg-blue-50/50 rounded-md border border-blue-100 p-6 shadow-sm">
             <h3 className="text-sm font-bold text-blue-900 flex items-center gap-2 mb-4">
               <ShieldCheck className="h-4 w-4" />
               Security Status
@@ -183,12 +183,12 @@ export default function SecuritySection() {
                 Two-factor authentication is not yet enabled.
               </li>
             </ul>
-            <button className="w-full mt-6 py-2.5 rounded-xl border border-blue-200 bg-white text-blue-600 text-xs font-bold hover:bg-blue-50 transition-colors shadow-sm">
+            <button className="w-full mt-6 py-2.5 rounded-md border border-blue-200 bg-white text-blue-600 text-xs font-bold hover:bg-blue-50 transition-colors shadow-sm">
               Enable 2FA
             </button>
           </div>
 
-          <div className="bg-neutral-50 rounded-2xl border border-neutral-200 p-6">
+          <div className="bg-neutral-50 rounded-md border border-neutral-200 p-6 shadow-sm">
             <h3 className="text-sm font-bold text-neutral-900 mb-2">
               Account Tip
             </h3>

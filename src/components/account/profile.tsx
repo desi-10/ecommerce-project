@@ -9,6 +9,7 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Loader2, Camera, User, Mail, Phone, MapPin, Globe, Save } from "lucide-react";
 import { uploadToCloudinary } from "@/lib/cloudinary";
+import { FormSkeleton } from "../ui/skeletons";
 
 export default function ProfilePage() {
     const fileRef = useRef<HTMLInputElement | null>(null);
@@ -79,12 +80,7 @@ export default function ProfilePage() {
     }
 
     if (isLoading) {
-        return (
-            <div className="flex flex-col items-center justify-center py-20 bg-white">
-                <Loader2 className="h-8 w-8 animate-spin text-blue-600 mb-4" />
-                <p className="text-neutral-500 font-medium animate-pulse">Loading your profile...</p>
-            </div>
-        );
+        return <FormSkeleton />;
     }
 
     return (
@@ -98,7 +94,7 @@ export default function ProfilePage() {
                         </p>
                     </div>
 
-                    <Button variant="outline" asChild className="rounded-xl border-neutral-200">
+                    <Button variant="outline" asChild className="rounded-md border-neutral-200 shadow-sm">
                         <Link href="/account/orders" className="gap-2">
                             View Order History →
                         </Link>
@@ -108,8 +104,8 @@ export default function ProfilePage() {
                 <div className="grid gap-8 lg:grid-cols-[260px_1fr]">
                     {/* Avatar card */}
                     <div className="space-y-4">
-                        <div className="bg-white rounded-2xl border border-neutral-200 p-6 flex flex-col items-center">
-                            <div className="group relative h-32 w-32 overflow-hidden rounded-full border-4 border-white shadow-md bg-neutral-100">
+                        <div className="bg-white rounded-md border border-neutral-200 p-6 flex flex-col items-center shadow-sm">
+                            <div className="group relative h-32 w-32 overflow-hidden rounded-full border-4 border-white shadow-sm bg-neutral-100">
                                 {avatarUrl ? (
                                     <Image src={avatarUrl} alt="Avatar" fill className="object-cover" />
                                 ) : (
@@ -145,7 +141,7 @@ export default function ProfilePage() {
                             />
                         </div>
 
-                        <div className="bg-blue-50/50 rounded-2xl p-4 border border-blue-100">
+                        <div className="bg-blue-50/50 rounded-md p-4 border border-blue-100 shadow-sm">
                             <p className="text-[10px] uppercase font-bold text-blue-600 tracking-wider">Account Role</p>
                             <p className="text-sm font-medium text-blue-900 mt-1 capitalize">{profileData?.data?.role || "Regular User"}</p>
                         </div>
@@ -153,7 +149,7 @@ export default function ProfilePage() {
 
                     {/* Details */}
                     <div className="space-y-6">
-                        <div className="bg-white rounded-2xl border border-neutral-200 overflow-hidden shadow-sm">
+                        <div className="bg-white rounded-md border border-neutral-200 overflow-hidden shadow-sm">
                             <div className="p-6 border-b border-neutral-100">
                                 <h2 className="text-lg font-semibold text-neutral-900 flex items-center gap-2">
                                     <User className="h-5 w-5 text-neutral-400" />
@@ -169,7 +165,7 @@ export default function ProfilePage() {
                                             <Input
                                                 value={formData.name}
                                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                                className="rounded-xl pl-10 focus-visible:ring-blue-500 focus-visible:border-blue-500 border-neutral-200"
+                                                className="rounded-md pl-10 focus-visible:ring-blue-500 focus-visible:border-blue-500 border-neutral-200"
                                                 placeholder="Enter your full name"
                                             />
                                             <User className="absolute left-3.5 top-3 h-4 w-4 text-neutral-400" />
@@ -182,7 +178,7 @@ export default function ProfilePage() {
                                             <Input
                                                 value={profileData?.data?.email}
                                                 disabled
-                                                className="rounded-xl pl-10 bg-neutral-50 border-neutral-100 text-neutral-500"
+                                                className="rounded-md pl-10 bg-neutral-50 border-neutral-100 text-neutral-500"
                                             />
                                             <Mail className="absolute left-3.5 top-3 h-4 w-4 text-neutral-300" />
                                         </div>
@@ -194,7 +190,7 @@ export default function ProfilePage() {
                                             <Input
                                                 value={formData.phone}
                                                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                                className="rounded-xl pl-10 focus-visible:ring-blue-500 focus-visible:border-blue-500 border-neutral-200"
+                                                className="rounded-md pl-10 focus-visible:ring-blue-500 focus-visible:border-blue-500 border-neutral-200"
                                                 placeholder="+1 (555) 000-0000"
                                             />
                                             <Phone className="absolute left-3.5 top-3 h-4 w-4 text-neutral-400" />
@@ -204,7 +200,7 @@ export default function ProfilePage() {
                             </div>
                         </div>
 
-                        <div className="bg-white rounded-2xl border border-neutral-200 overflow-hidden shadow-sm">
+                        <div className="bg-white rounded-md border border-neutral-200 overflow-hidden shadow-sm">
                             <div className="p-6 border-b border-neutral-100">
                                 <h2 className="text-lg font-semibold text-neutral-900 flex items-center gap-2">
                                     <MapPin className="h-5 w-5 text-neutral-400" />
@@ -219,7 +215,7 @@ export default function ProfilePage() {
                                         <Input
                                             value={formData.addressLine1}
                                             onChange={(e) => setFormData({ ...formData, addressLine1: e.target.value })}
-                                            className="rounded-xl pl-10 focus-visible:ring-blue-500 focus-visible:border-blue-500 border-neutral-200"
+                                            className="rounded-md pl-10 focus-visible:ring-blue-500 focus-visible:border-blue-500 border-neutral-200"
                                             placeholder="123 Shopping St, Apt 4"
                                         />
                                         <MapPin className="absolute left-3.5 top-3 h-4 w-4 text-neutral-400" />
@@ -232,7 +228,7 @@ export default function ProfilePage() {
                                         <Input
                                             value={formData.city}
                                             onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                                            className="rounded-xl focus-visible:ring-blue-500 border-neutral-200"
+                                            className="rounded-md focus-visible:ring-blue-500 border-neutral-200"
                                             placeholder="New York"
                                         />
                                     </div>
@@ -243,7 +239,7 @@ export default function ProfilePage() {
                                             <Input
                                                 value={formData.country}
                                                 onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                                                className="rounded-xl pl-10 focus-visible:ring-blue-500 border-neutral-200"
+                                                className="rounded-md pl-10 focus-visible:ring-blue-500 border-neutral-200"
                                                 placeholder="United States"
                                             />
                                             <Globe className="absolute left-3.5 top-3 h-4 w-4 text-neutral-400" />
@@ -255,7 +251,7 @@ export default function ProfilePage() {
                                         <Input
                                             value={formData.postalCode}
                                             onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
-                                            className="rounded-xl focus-visible:ring-blue-500 border-neutral-200"
+                                            className="rounded-md focus-visible:ring-blue-500 border-neutral-200"
                                             placeholder="10001"
                                         />
                                     </div>
@@ -267,7 +263,7 @@ export default function ProfilePage() {
                             <Button 
                                 onClick={onSave}
                                 disabled={updateProfile.isPending}
-                                className="rounded-xl bg-blue-600 hover:bg-blue-700 px-8 py-6 h-auto text-base font-semibold transition-all hover:shadow-lg hover:shadow-blue-200 disabled:opacity-70 gap-2"
+                                className="rounded-md bg-blue-600 hover:bg-blue-700 px-8 py-3 h-auto text-base font-semibold shadow-sm disabled:opacity-70 gap-2"
                             >
                                 {updateProfile.isPending ? (
                                     <>

@@ -124,12 +124,12 @@ function CouponActionRow({ coupon }: { coupon: any }) {
             <MoreHorizontal className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="bg-white border rounded-xl shadow-lg p-1">
-          <DropdownMenuItem onClick={() => setEditOpen(true)} className="rounded-lg cursor-pointer">
+        <DropdownMenuContent align="end" className="bg-white border rounded-md shadow-sm p-1">
+          <DropdownMenuItem onClick={() => setEditOpen(true)} className="rounded-md cursor-pointer">
             <Edit className="h-4 w-4 mr-2" />
             Edit Coupon
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleDelete} disabled={isPending} className="rounded-lg cursor-pointer text-red-600 hover:text-red-700">
+          <DropdownMenuItem onClick={handleDelete} disabled={isPending} className="rounded-md cursor-pointer text-red-600 hover:text-red-700">
             <Trash2 className="h-4 w-4 mr-2" />
             Delete
           </DropdownMenuItem>

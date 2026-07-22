@@ -26,6 +26,8 @@ import { useEffect, useState } from "react";
 // import { useSelectedRowsStore } from "@/features/products/product.store";
 import { Pagination } from "./pagination-component";
 
+import { TableSkeleton } from "@/components/ui/skeletons";
+
 export interface Pagination {
     page: number;
     limit: number;
@@ -41,6 +43,7 @@ interface DataTableProps<TData extends { id?: string }, TValue> {
         items: TData[];
         pagination?: Pagination | null;
     };
+    isLoading?: boolean;
 }
 
 type TRows = {
@@ -50,6 +53,7 @@ type TRows = {
 export function DataTable<TData extends { id?: string }, TValue>({
     columns,
     data,
+    isLoading,
 }: DataTableProps<TData, TValue>) {
     const [filtering, setFiltering] = useState("");
 
@@ -83,6 +87,10 @@ export function DataTable<TData extends { id?: string }, TValue>({
             },
         },
     });
+
+    if (isLoading) {
+        return <TableSkeleton columns={columns.length} rows={5} />;
+    }
 
     // const setSelected = useSelectedRowsStore((s) => s.setSelected);
 

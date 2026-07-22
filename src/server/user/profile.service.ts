@@ -3,6 +3,7 @@ import { ApiError } from "@/lib/api-error";
 import { apiResponse } from "@/lib/api-response";
 import { StatusCodes } from "http-status-codes";
 import { ProfileUpdateInput, ProfileUpdateSchema } from "./profile.validators";
+import { Prisma } from "../../../prisma/generated/client";
 
 export const getProfileService = async (userId: string) => {
   const user = await prisma.user.findUnique({
@@ -31,7 +32,7 @@ export const updateProfileService = async (userId: string, rawData: unknown) => 
 
   const result = await prisma.$transaction(async (tx) => {
     // 1. Update User basic info if provided
-    const userUpdate: any = {};
+    const userUpdate: Prisma.UserUpdateInput = {};
     if (data.name) userUpdate.name = data.name;
     if (data.image !== undefined) userUpdate.image = data.image;
 

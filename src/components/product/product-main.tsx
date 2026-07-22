@@ -10,6 +10,7 @@ import ProductGallery from "./product-gallery";
 import ProductInfo from "./product-info";
 import ProductTabs from "./products-tab";
 import RightSidebar from "./right-sidebar";
+import { ProductDetailSkeleton } from "@/components/ui/skeletons";
 
 export default function ProductMain() {
     const params = useParams<{ id: string }>();
@@ -31,7 +32,7 @@ export default function ProductMain() {
 
     if (!id) return null;
 
-    if (isLoading) return <div className="py-10">Loading…</div>;
+    if (isLoading) return <ProductDetailSkeleton />;
     if (isError || !product) return <div className="py-10">Product not found</div>;
 
     const mainCategory = product.categories?.[0]?.category;

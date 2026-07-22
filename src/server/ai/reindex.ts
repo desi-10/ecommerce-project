@@ -23,7 +23,7 @@ async function main() {
     console.log(`Processing batch ${i / batchSize + 1}...`);
 
     const vectors = await Promise.all(
-      batch.map(async (product: any) => {
+      batch.map(async (product: { id: string; name: string; description: string | null }) => {
         const embeddingText = `${product.name} ${product.description || ""}`;
         const embedding = await generateEmbedding(embeddingText);
         return {
@@ -34,7 +34,7 @@ async function main() {
       })
     );
 
-    await index.upsert({ records: vectors.filter((v: any) => v.values.length > 0) });
+    await index.upsert({ records: vectors.filter((v: { values: number[] }) => v.values.length > 0) });
   }
 
   console.log("Re-indexing complete!");

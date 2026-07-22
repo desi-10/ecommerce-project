@@ -26,10 +26,10 @@ function OrderActions({ order }: { order: Order }) {
           <MoreHorizontal className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="bg-white border-gray-100 shadow-xl rounded-xl p-1 w-44">
+      <DropdownMenuContent align="end" className="bg-white border-gray-100 shadow-sm rounded-md p-1 w-44">
         <DropdownMenuItem 
             onClick={() => router.push(`/dashboard/orders/${order.id}`)}
-            className="rounded-lg cursor-pointer py-2 font-medium"
+            className="rounded-md cursor-pointer py-2 font-medium"
         >
           <Eye className="h-4 w-4 mr-2 text-blue-500" />
           View Details
@@ -136,9 +136,10 @@ export const orderColumns: ColumnDef<Order>[] = [
             const colors: Record<string, string> = {
                 PENDING: "bg-amber-50 text-amber-700 border-amber-200",
                 PAID: "bg-blue-50 text-blue-700 border-blue-200",
-                SHIPPED: "bg-indigo-50 text-indigo-700 border-indigo-200",
                 FULFILLED: "bg-emerald-50 text-emerald-700 border-emerald-200",
                 CANCELLED: "bg-red-50 text-red-700 border-red-200",
+                REFUNDED: "bg-purple-50 text-purple-700 border-purple-200",
+                FAILED: "bg-rose-50 text-rose-700 border-rose-200",
             };
             return (
                 <Badge variant="outline" className={`${colors[status] || ""} uppercase text-[9px] font-black tracking-wider`}>

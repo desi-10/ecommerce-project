@@ -159,7 +159,7 @@ export function AddProductForm() {
                     <Button 
                         type="submit" 
                         disabled={isPending || showSuccess}
-                        className="text-white rounded-xl shadow-sm px-6"
+                        className="text-white rounded-md shadow-sm px-6"
                         style={{ backgroundColor: 'var(--primary-600)' }}
                         onMouseEnter={(e) => !isPending && !showSuccess && (e.currentTarget.style.backgroundColor = 'var(--primary-700)')}
                         onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--primary-600)'}
@@ -172,7 +172,7 @@ export function AddProductForm() {
             <div className="grid gap-6 md:grid-cols-3">
                 <div className="md:col-span-2 space-y-6">
                     {/* General Information */}
-                    <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
+                    <div className="rounded-md border bg-white shadow-sm overflow-hidden">
                         <div className="p-6">
                             <h2 className="text-lg font-semibold mb-4 text-gray-900 tracking-tight">General Information</h2>
                             <div className="grid gap-6">
@@ -181,7 +181,7 @@ export function AddProductForm() {
                                     <Input
                                         id="name"
                                         placeholder="e.g. MacBook Pro M3"
-                                        className="rounded-xl border-gray-200"
+                                        className="rounded-md border-gray-200"
                                         style={{ '--tw-ring-color': 'var(--primary-500)' } as React.CSSProperties}
                                         {...register("name")}
                                     />
@@ -192,7 +192,7 @@ export function AddProductForm() {
                                     <Textarea
                                         id="description"
                                         placeholder="Describe your product in detail..."
-                                        className="min-h-[150px] rounded-xl border-gray-200"
+                                        className="min-h-[150px] rounded-md border-gray-200"
                                         style={{ '--tw-ring-color': 'var(--primary-500)' } as React.CSSProperties}
                                         {...register("description")}
                                     />
@@ -202,7 +202,7 @@ export function AddProductForm() {
                     </div>
 
                     {/* Media */}
-                    <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
+                    <div className="rounded-md border bg-white shadow-sm overflow-hidden">
                         <div className="p-6">
                             <h2 className="text-lg font-semibold mb-1 text-gray-900 tracking-tight">Product Images</h2>
                             <p className="text-sm text-muted-foreground mb-4">
@@ -277,7 +277,7 @@ export function AddProductForm() {
                     </div>
 
                     {/* Pricing */}
-                    <div className="rounded-xl border bg-white shadow-sm">
+                    <div className="rounded-md border bg-white shadow-sm">
                         <div className="p-6">
                             <div className="flex items-center justify-between mb-4">
                                 <div>
@@ -334,7 +334,7 @@ export function AddProductForm() {
                     </div>
 
                     {/* Variants */}
-                    <div className="rounded-xl border bg-white shadow-sm">
+                    <div className="rounded-md border bg-white shadow-sm">
                         <div className="p-6">
                             <div className="flex items-center justify-between mb-4">
                                 <div>
@@ -502,7 +502,7 @@ export function AddProductForm() {
 
                 {/* Sidebar */}
                 <div className="space-y-6">
-                    <div className="rounded-xl border bg-white shadow-sm">
+                    <div className="rounded-md border bg-white shadow-sm">
                         <div className="p-6">
                             <h2 className="text-lg font-semibold mb-4">Status</h2>
                             <div className="grid gap-2">

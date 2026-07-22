@@ -80,10 +80,10 @@ async function calculateOrderTotal(items: { variantId: string; quantity: number 
 /* ------------------------------------------------------- */
 
 export async function chatWithAssistant(
-  history: any[],
+  history: Array<{ role: string; parts: Array<{ text?: string }> }>,
   message: string,
   isAdmin: boolean = false,
-  cartItems?: any[]
+  cartItems?: Array<{ id: string; qty: number }>
 ) {
   try {
     const requestHeaders = await headers();
@@ -225,9 +225,9 @@ export async function chatWithAssistant(
       },
     ];
 
-    const model = (genAI as any).getGenerativeModel({
+    const model = (genAI as unknown as { getGenerativeModel: Function }).getGenerativeModel({
       model: "gemini-2.5-flash",
-      tools: tools as any,
+      tools: tools as unknown[],
       systemInstruction: `
 You are a professional AI assistant for MartFury.
 ${!isAdmin ? "IMPORTANT: You are interacting with a regular user. You CANNOT create, update, or delete products. Only help them find and search for products, or complete a purchase/checkout." : "You are interacting with an ADMIN. You have full privileges to create, update, and manage products."}
@@ -265,7 +265,7 @@ RULES:
     let response = result.response;
 
     let functionCalls = response.functionCalls();
-    let products: any[] = [];
+    let products: Record<string, unknown>[] = [];
     let toolCallRound = 0;
     let checkoutUrl: string | undefined;
     let checkoutAmount: number | undefined;
@@ -279,11 +279,11 @@ RULES:
       const toolResponses = [];
 
       console.log(`\n--- Tool Call Round ${toolCallRound} ---`);
-      console.log("AI is calling:", functionCalls.map((c: any) => c.name));
+      console.log("AI is calling:", functionCalls.map((c: { name: string }) => c.name));
 
       for (const call of functionCalls) {
         const args = call.args || {};
-        let output: any = null;
+        let output: unknown = null;
 
         switch (call.name) {
           case "getStorePolicy":
@@ -337,7 +337,7 @@ RULES:
             let checkoutItems = args.items;
             if (!checkoutItems || checkoutItems.length === 0) {
               if (cartItems && cartItems.length > 0) {
-                checkoutItems = cartItems.map((item: any) => ({
+                checkoutItems = cartItems.map((item: { id: string; qty: number }) => ({
                   variantId: item.id,
                   quantity: item.qty,
                 }));
@@ -379,9 +379,9 @@ RULES:
               };
               checkoutUrl = checkoutResult.data.authorizationUrl;
               checkoutAmount = amount;
-            } catch (err: any) {
+            } catch (err: unknown) {
               console.error("Checkout error:", err);
-              output = { error: err?.message || "Failed to initiate checkout" };
+              output = { error: (err as Error)?.message || "Failed to initiate checkout" };
             }
             break;
 
@@ -458,12 +458,12 @@ RULES:
                name: "getProducts",
                response: {
                  data: {
-                   products: tr.functionResponse.response?.data?.products?.map((p: any) => ({
+                   products: tr.functionResponse.response?.data?.products?.map((p: { id: string; name: string; status: string; description: string; variants: Array<{ id: string; name: string; salePrice?: string | number; price: string | number }> }) => ({
                      id: p.id,
                      name: p.name,
                      status: p.status,
                      description: p.description ? p.description.substring(0, 100) + "..." : "",
-                     variants: p.variants?.map((v: any) => ({
+                     variants: p.variants?.map((v) => ({
                        id: v.id,
                        name: v.name,
                        price: v.salePrice ? Number(v.salePrice) : Number(v.price),
@@ -487,8 +487,8 @@ RULES:
     let resultText = "";
     try {
       resultText = response.text();
-    } catch (e: any) {
-      console.warn("Failed to retrieve text from Gemini response:", e.message || e);
+    } catch (e: unknown) {
+      console.warn("Failed to retrieve text from Gemini response:", (e as Error).message || e);
     }
 
     if (!resultText || resultText.trim() === "") {
@@ -510,10 +510,10 @@ RULES:
     };
 
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("AI Assistant Error:", error);
 
-    const errorMessage = error?.message || "";
+    const errorMessage = (error as Error)?.message || "";
     let friendlyError = "Sorry, I encountered an unexpected error. Please try again.";
 
     if (

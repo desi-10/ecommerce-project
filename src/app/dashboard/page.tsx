@@ -19,6 +19,8 @@ import { useGetDashboardStats } from "@/hooks/use-dashboard";
 import { useGetProducts } from "@/hooks/use-product";
 import { formatGHS } from "@/lib/currency";
 
+import { MetricCardSkeleton } from "@/components/ui/skeletons";
+
 const MetricCard = ({
   icon: Icon,
   label,
@@ -34,14 +36,14 @@ const MetricCard = ({
   trendValue?: string;
   usePrimaryColor?: boolean;
 }) => (
-  <div className="bg-card rounded-2xl border border-border/60 p-5 hover:shadow-sm hover:border-border transition-all duration-200 group">
+  <div className="bg-card rounded-md border border-border/60 p-5 shadow-sm hover:border-border transition-all duration-200 group">
     <div className="flex items-start justify-between mb-5">
-      <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/15 transition-colors">
+      <div className="w-10 h-10 rounded-md bg-primary/10 flex items-center justify-center group-hover:bg-primary/15 transition-colors">
         <Icon className="h-5 w-5 text-primary" />
       </div>
       {trend && trendValue && (
         <span
-          className={`flex items-center gap-0.5 text-[11px] font-bold px-2 py-1 rounded-lg ${trend === "up"
+          className={`flex items-center gap-0.5 text-[11px] font-bold px-2 py-1 rounded-md ${trend === "up"
               ? "text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 dark:text-emerald-400"
               : "text-red-600 bg-red-50 dark:bg-red-950/40 dark:text-red-400"
             }`}
@@ -108,31 +110,28 @@ export default function DashboardOverviewPage() {
       </div>
 
       {/* ── Metric cards ── */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {isLoading
-          ? Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-[120px] bg-muted/40 animate-pulse rounded-2xl border border-border/40" />
-          ))
-          : <>
-            <MetricCard icon={DollarSign} label="Total Revenue" value={formatGHS(data?.totalRevenue || 0)} trend={metrics[0]?.trend} trendValue={metrics[0]?.change || "0%"} />
-            <MetricCard icon={ShoppingCart} label="Total Orders" value={data?.totalOrders || 0} trend={metrics[2]?.trend} trendValue={metrics[2]?.change || "0%"} />
-            <MetricCard icon={Package} label="Total Products" value={allProducts.length} />
-            <MetricCard icon={Users} label="Active Customers" value={data?.activeUsers || 0} trend={metrics[1]?.trend} trendValue={metrics[1]?.change || "0%"} />
-          </>
-        }
-      </div>
+      {isLoading ? (
+        <MetricCardSkeleton count={4} />
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <MetricCard icon={DollarSign} label="Total Revenue" value={formatGHS(data?.totalRevenue || 0)} trend={metrics[0]?.trend} trendValue={metrics[0]?.change || "0%"} />
+          <MetricCard icon={ShoppingCart} label="Total Orders" value={data?.totalOrders || 0} trend={metrics[2]?.trend} trendValue={metrics[2]?.change || "0%"} />
+          <MetricCard icon={Package} label="Total Products" value={allProducts.length} />
+          <MetricCard icon={Users} label="Active Customers" value={data?.activeUsers || 0} trend={metrics[1]?.trend} trendValue={metrics[1]?.change || "0%"} />
+        </div>
+      )}
 
       {/* ── Revenue chart + Recent orders ── */}
       <div className="grid gap-5 lg:grid-cols-7">
 
         {/* Revenue chart */}
-        <div className="lg:col-span-4 bg-card rounded-2xl border border-border/60 p-6">
+        <div className="lg:col-span-4 bg-card rounded-md border border-border/60 p-6 shadow-sm">
           <div className="flex items-start justify-between mb-6">
             <div>
               <h2 className="text-sm font-semibold text-foreground">Revenue Overview</h2>
               <p className="text-xs text-muted-foreground mt-0.5">Monthly revenue trend</p>
             </div>
-            <button className="w-8 h-8 rounded-lg hover:bg-muted flex items-center justify-center text-muted-foreground transition-colors">
+            <button className="w-8 h-8 rounded-md hover:bg-muted flex items-center justify-center text-muted-foreground transition-colors">
               <MoreHorizontal className="w-4 h-4" />
             </button>
           </div>
@@ -151,7 +150,7 @@ export default function DashboardOverviewPage() {
         </div>
 
         {/* Recent orders */}
-        <div className="lg:col-span-3 bg-card rounded-2xl border border-border/60 flex flex-col">
+        <div className="lg:col-span-3 bg-card rounded-md border border-border/60 flex flex-col shadow-sm">
           <div className="px-5 py-4 border-b border-border/50 flex items-center justify-between">
             <div>
               <h2 className="text-sm font-semibold text-foreground">Recent Orders</h2>
@@ -220,7 +219,7 @@ export default function DashboardOverviewPage() {
       <div className="grid gap-5 lg:grid-cols-5">
 
         {/* Order status */}
-        <div className="lg:col-span-2 bg-card rounded-2xl border border-border/60 p-6">
+        <div className="lg:col-span-2 bg-card rounded-md border border-border/60 p-6 shadow-sm">
           <h2 className="text-sm font-semibold text-foreground mb-5">Order Status</h2>
           <div className="space-y-3">
             {[
@@ -228,7 +227,7 @@ export default function DashboardOverviewPage() {
               { icon: Clock, label: "Pending", count: orderStats.pending, color: "text-blue-600", bg: "bg-blue-50 dark:bg-blue-950/30 border-blue-200/60 dark:border-blue-800/30" },
               { icon: AlertCircle, label: "Cancelled", count: orderStats.cancelled, color: "text-red-600", bg: "bg-red-50 dark:bg-red-950/30 border-red-200/60 dark:border-red-800/30" },
             ].map(({ icon: StatusIcon, label, count, color, bg }) => (
-              <div key={label} className={`flex items-center justify-between px-4 py-3.5 rounded-xl border ${bg}`}>
+              <div key={label} className={`flex items-center justify-between px-4 py-3.5 rounded-md border ${bg}`}>
                 <div className="flex items-center gap-3">
                   <StatusIcon className={`h-4 w-4 ${color}`} />
                   <span className="text-sm font-medium text-foreground">{label}</span>
@@ -241,7 +240,7 @@ export default function DashboardOverviewPage() {
           {/* Mini donut-style bar */}
           {(orderStats.completed + orderStats.pending + orderStats.cancelled) > 0 && (
             <div className="mt-5">
-              <div className="flex h-2 rounded-full overflow-hidden gap-px bg-muted">
+              <div className="flex h-2 rounded-md overflow-hidden gap-px bg-muted">
                 {(() => {
                   const total = orderStats.completed + orderStats.pending + orderStats.cancelled || 1;
                   return [
@@ -261,12 +260,12 @@ export default function DashboardOverviewPage() {
         </div>
 
         {/* Top products */}
-        <div className="lg:col-span-3 bg-card rounded-2xl border border-border/60 p-6">
+        <div className="lg:col-span-3 bg-card rounded-md border border-border/60 p-6 shadow-sm">
           <h2 className="text-sm font-semibold text-foreground mb-5">Top Products by Stock</h2>
           {productsLoading ? (
             <div className="space-y-2.5">
               {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="h-11 bg-muted/40 animate-pulse rounded-xl" />
+                <div key={i} className="h-11 bg-muted/40 animate-pulse rounded-md" />
               ))}
             </div>
           ) : topProducts.length === 0 ? (
@@ -283,7 +282,7 @@ export default function DashboardOverviewPage() {
                 return (
                   <div
                     key={product.id}
-                    className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted/40 transition-colors cursor-pointer group"
+                    className="flex items-center gap-3 p-3 rounded-md hover:bg-muted/40 transition-colors cursor-pointer group"
                   >
                     <span className="w-5 text-xs font-bold text-muted-foreground text-center shrink-0">
                       {idx + 1}
@@ -293,9 +292,9 @@ export default function DashboardOverviewPage() {
                         <p className="text-sm font-medium text-foreground truncate pr-2">{product.name}</p>
                         <span className="text-xs font-semibold text-muted-foreground shrink-0">{stock} units</span>
                       </div>
-                      <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                      <div className="h-1.5 w-full bg-muted rounded-md overflow-hidden">
                         <div
-                          className="h-full bg-primary/60 group-hover:bg-primary rounded-full transition-all duration-300"
+                          className="h-full bg-primary/60 group-hover:bg-primary rounded-md transition-all duration-300"
                           style={{ width: `${barPct}%` }}
                         />
                       </div>

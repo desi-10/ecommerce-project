@@ -63,9 +63,10 @@ export default function CustomerProfilePage() {
     const orderStatusColors: Record<string, string> = {
         PENDING: "bg-amber-50 text-amber-700 border-amber-200",
         PAID: "bg-blue-50 text-blue-700 border-blue-200",
-        SHIPPED: "bg-indigo-50 text-indigo-700 border-indigo-200",
         FULFILLED: "bg-emerald-50 text-emerald-700 border-emerald-200",
         CANCELLED: "bg-red-50 text-red-700 border-red-200",
+        REFUNDED: "bg-purple-50 text-purple-700 border-purple-200",
+        FAILED: "bg-rose-50 text-rose-700 border-rose-200",
     };
 
     return (
@@ -94,9 +95,9 @@ export default function CustomerProfilePage() {
 
                 {/* Stats Grid */}
                 <div className="grid gap-6 md:grid-cols-3 mb-8">
-                    <div className="bg-white rounded-2xl border border-gray-200 p-6 hover:shadow-lg transition-all duration-300">
+                    <div className="bg-white rounded-md border border-gray-200 p-6 shadow-sm">
                         <div className="flex items-center justify-between mb-4">
-                            <div className="p-3 rounded-xl text-white bg-indigo-50 text-indigo-600">
+                            <div className="p-3 rounded-md text-white bg-indigo-50 text-indigo-600">
                                 <DollarSign className="h-6 w-6 text-indigo-600" />
                             </div>
                         </div>
@@ -104,9 +105,9 @@ export default function CustomerProfilePage() {
                         <p className="text-2xl font-bold text-gray-900">{formatGHS(totalSpent)}</p>
                     </div>
 
-                    <div className="bg-white rounded-2xl border border-gray-200 p-6 hover:shadow-lg transition-all duration-300">
+                    <div className="bg-white rounded-md border border-gray-200 p-6 shadow-sm">
                         <div className="flex items-center justify-between mb-4">
-                            <div className="p-3 rounded-xl text-white bg-blue-50 text-blue-600">
+                            <div className="p-3 rounded-md text-white bg-blue-50 text-blue-600">
                                 <ShoppingBag className="h-6 w-6 text-blue-600" />
                             </div>
                         </div>
@@ -114,9 +115,9 @@ export default function CustomerProfilePage() {
                         <p className="text-2xl font-bold text-gray-900">{totalOrders} orders</p>
                     </div>
 
-                    <div className="bg-white rounded-2xl border border-gray-200 p-6 hover:shadow-lg transition-all duration-300">
+                    <div className="bg-white rounded-md border border-gray-200 p-6 shadow-sm">
                         <div className="flex items-center justify-between mb-4">
-                            <div className="p-3 rounded-xl text-white bg-emerald-50 text-emerald-600">
+                            <div className="p-3 rounded-md text-white bg-emerald-50 text-emerald-600">
                                 <ShoppingBagIcon className="h-6 w-6 text-emerald-600" />
                             </div>
                         </div>
@@ -128,7 +129,7 @@ export default function CustomerProfilePage() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Left Column: Order History */}
                     <div className="lg:col-span-2 space-y-6">
-                        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                        <div className="bg-white rounded-md border border-gray-200 shadow-sm overflow-hidden">
                             <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
                                 <h3 className="font-bold text-gray-900 flex items-center gap-2">
                                     <ShoppingBag className="h-4 w-4 text-indigo-500" />
@@ -167,7 +168,7 @@ export default function CustomerProfilePage() {
                                                     variant="ghost" 
                                                     size="sm"
                                                     onClick={() => router.push(`/dashboard/orders/${order.id}`)}
-                                                    className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-xl"
+                                                    className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-md"
                                                 >
                                                     View Details
                                                     <ChevronRight className="h-4 w-4 ml-1" />
@@ -182,7 +183,7 @@ export default function CustomerProfilePage() {
 
                     {/* Right Column: Customer profile and contact */}
                     <div className="space-y-6">
-                        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+                        <div className="bg-white rounded-md border border-gray-200 shadow-sm p-6">
                             <h3 className="font-bold text-gray-900 flex items-center gap-2 mb-4">
                                 <User className="h-4 w-4 text-indigo-500" />
                                 Contact Information

@@ -76,7 +76,7 @@ html {
 }
 
 :root {
-  --radius: 0.625rem;
+  --radius: 0.375rem;
 
   /* Primary Blue Color Variants (from Tailwind blue palette) */
   --primary-50: #eff6ff;

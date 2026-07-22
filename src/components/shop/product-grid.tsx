@@ -46,7 +46,7 @@ export default function ProductGridCard({ p }: { p: Product }) {
   const productHref = `/shop/${p.id}`;
 
   return (
-    <div className="group border border-neutral-200 bg-white p-3 transition hover:shadow-sm">
+    <div className="group border border-neutral-200 bg-white p-3 transition shadow-sm hover:shadow-md rounded-md overflow-hidden">
       {/* Image + hover overlay */}
       <div className="relative aspect-square w-full overflow-hidden">
         <Image

@@ -89,7 +89,11 @@ export function EditProductDialog({
   const onSubmit = async (values: UpdateProductInput) => {
     try {
       setSubmitError(null);
-      await mutateAsync({ id: product.id, payload: values });
+      const sanitizedPayload = {
+        ...values,
+        defaultSalePrice: values.defaultSalePrice ?? undefined,
+      };
+      await mutateAsync({ id: product.id, payload: sanitizedPayload as any });
       setShowSuccess(true);
       setTimeout(() => {
         onOpenChange(false);
@@ -215,7 +219,7 @@ export function EditProductDialog({
             </div>
 
             {variantsArr.fields.length === 0 ? (
-              <div className="rounded-lg border bg-muted/20 p-4 text-sm text-muted-foreground">
+              <div className="rounded-md border bg-muted/20 p-4 text-sm text-muted-foreground shadow-sm">
                 No variants available.
               </div>
             ) : (
@@ -226,7 +230,7 @@ export function EditProductDialog({
                   return (
                     <div
                       key={field.id}
-                      className="rounded-xl border bg-white p-4"
+                      className="rounded-md border bg-white p-4 shadow-sm"
                     >
                       <div className="flex items-center justify-between gap-3">
                         <p className="font-semibold">

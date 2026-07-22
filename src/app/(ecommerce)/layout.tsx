@@ -12,11 +12,15 @@ export default function EcommercerLayout({
   return (
     <div>
       {/* <TopMiniBar /> */}
-      <Header />
+      <div className="print:hidden">
+        <Header />
+      </div>
       {/* <BlueNav /> */}
       <TooltipProvider>{children}</TooltipProvider>
-      <Footer />
-      <MobileBottomNav />
+      <div className="print:hidden">
+        <Footer />
+        <MobileBottomNav />
+      </div>
     </div>
   );
 }
