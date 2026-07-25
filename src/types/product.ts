@@ -1,4 +1,5 @@
 // types/products.ts
+import type { Review } from "./reviews";
 export type ProductStatus = "ACTIVE" | "INACTIVE";
 
 export type Inventory = {
@@ -12,7 +13,7 @@ export type Variant = {
   sku: string | null;
   price: string; // your API returns "1000" as string
   salePrice: string; // string
-  options: unknown;
+  options: Record<string, string>;
   inventory: Inventory;
 };
 
@@ -54,7 +55,10 @@ export type Product = {
     startsAt: string | null;
     endsAt: string | null;
   }[];
+  rating?: number;
+  reviews?: Review[];
 };
+
 
 export type ApiResponse<T> = {
   message: string;

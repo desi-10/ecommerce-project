@@ -482,7 +482,21 @@ export const getOrderByReferenceService = async (reference: string) => {
       }
 
       if (email) {
-        await sendPurchaseEmail(email, payment.order);
+        await sendPurchaseEmail(email, {
+          subtotal: payment.order.subtotal.toString(),
+          discountTotal: Number(payment.order.discountTotal),
+          total: payment.order.total.toString(),
+          items: payment.order.items.map((item) => ({
+            qty: item.qty,
+            lineTotal: item.lineTotal.toString(),
+            variant: {
+              name: item.variant.name,
+              product: {
+                name: item.variant.product.name,
+              },
+            },
+          })),
+        });
       }
     } catch (err) {
       console.error("Could not send purchase email:", err);

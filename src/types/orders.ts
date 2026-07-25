@@ -54,7 +54,14 @@ export type Order = {
   items: OrderItem[];
   payments: OrderPayment[];
   user: OrderUser | null;
-  shippingAddress?: unknown;
+  shippingAddress?: {
+    fullName?: string;
+    address?: string;
+    city?: string;
+    state?: string;
+    postalCode?: string;
+    country?: string;
+  } | null;
 };
 
 export type OrdersPagination = {

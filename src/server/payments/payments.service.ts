@@ -375,7 +375,7 @@ export const payExistingOrderService = async (
     data: {
       provider: provider,
       amount: order.total,
-      metadata: paymentWithMeta?.metadata || null,
+      metadata: (paymentWithMeta?.metadata as any) ?? undefined,
       orderId: order.id,
       userId: order.userId || null,
       reference: reference,
