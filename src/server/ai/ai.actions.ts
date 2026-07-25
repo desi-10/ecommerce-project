@@ -75,6 +75,23 @@ async function calculateOrderTotal(items: { variantId: string; quantity: number 
   return Math.max(0, subtotal - discount);
 }
 
+interface GetProductsToolResponse {
+  data?: {
+    products?: Array<{
+      id: string;
+      name: string;
+      status: string;
+      description: string;
+      variants: Array<{
+        id: string;
+        name: string;
+        price: string | number;
+        salePrice?: string | number | null;
+      }>;
+    }>;
+  };
+}
+
 /* ------------------------------------------------------- */
 /* 3. Main Chat Function                                   */
 /* ------------------------------------------------------- */
@@ -225,9 +242,9 @@ export async function chatWithAssistant(
       },
     ];
 
-    const model = (genAI as unknown as { getGenerativeModel: Function }).getGenerativeModel({
+    const model = genAI.getGenerativeModel({
       model: "gemini-2.5-flash",
-      tools: tools as unknown[],
+      tools: tools as any[],
       systemInstruction: `
 You are a professional AI assistant for MartFury.
 ${!isAdmin ? "IMPORTANT: You are interacting with a regular user. You CANNOT create, update, or delete products. Only help them find and search for products, or complete a purchase/checkout." : "You are interacting with an ADMIN. You have full privileges to create, update, and manage products."}
@@ -254,7 +271,7 @@ RULES:
     const chat = model.startChat({
       history: history.map((m) => ({
         role: m.role,
-        parts: m.parts,
+        parts: m.parts as any,
       })),
       generationConfig: {
         maxOutputTokens: 1000,
@@ -282,7 +299,7 @@ RULES:
       console.log("AI is calling:", functionCalls.map((c: { name: string }) => c.name));
 
       for (const call of functionCalls) {
-        const args = call.args || {};
+        const args = (call.args || {}) as any;
         let output: unknown = null;
 
         switch (call.name) {
@@ -445,7 +462,8 @@ RULES:
       /* --------------------------------------------- */
       const getProductsCall = toolResponses.find(r => r.functionResponse.name === "getProducts");
       if (getProductsCall) {
-        const fetchedProducts = getProductsCall.functionResponse.response?.data?.products;
+        const responseData = getProductsCall.functionResponse.response as GetProductsToolResponse;
+        const fetchedProducts = responseData?.data?.products;
         if (fetchedProducts && fetchedProducts.length > 0) {
           products = fetchedProducts;
         }
@@ -453,12 +471,13 @@ RULES:
 
       const simplifiedResponses = toolResponses.map(tr => {
         if (tr.functionResponse.name === "getProducts") {
+           const responseData = tr.functionResponse.response as GetProductsToolResponse;
            return {
              functionResponse: {
                name: "getProducts",
                response: {
                  data: {
-                   products: tr.functionResponse.response?.data?.products?.map((p: { id: string; name: string; status: string; description: string; variants: Array<{ id: string; name: string; salePrice?: string | number; price: string | number }> }) => ({
+                   products: responseData?.data?.products?.map((p) => ({
                      id: p.id,
                      name: p.name,
                      status: p.status,
@@ -479,7 +498,7 @@ RULES:
 
       console.log("Sending simplified responses back to Gemini:", JSON.stringify(simplifiedResponses).substring(0, 200) + "...");
 
-      result = await chat.sendMessage(simplifiedResponses);
+      result = await chat.sendMessage(simplifiedResponses as any);
       response = result.response;
       functionCalls = response.functionCalls();
     }

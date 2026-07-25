@@ -239,7 +239,7 @@ const applyDynamicDiscounts = <T extends Record<string, unknown>>(product: T): T
     const variants = product.variants as Array<{ price: number | string; salePrice?: number | string | Prisma.Decimal | null }> | undefined;
 
     if (variants) {
-      product.variants = variants.map((variant) => {
+      (product as any).variants = variants.map((variant) => {
         const price = Number(variant.price);
         const currentSalePrice = variant.salePrice ? Number(variant.salePrice) : 0;
 
@@ -254,7 +254,7 @@ const applyDynamicDiscounts = <T extends Record<string, unknown>>(product: T): T
           variant.salePrice = new Prisma.Decimal(computedSalePrice.toFixed(2));
         }
         return variant;
-      }) as unknown as T["variants"];
+      });
     }
   }
 
