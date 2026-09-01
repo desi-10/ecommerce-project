@@ -392,6 +392,7 @@ exports.OrderStatus = exports.$Enums.OrderStatus = {
 exports.PaymentProvider = exports.$Enums.PaymentProvider = {
   STRIPE: 'STRIPE',
   PAYSTACK: 'PAYSTACK',
+  CRYPTO: 'CRYPTO',
   FLUTTERWAVE: 'FLUTTERWAVE',
   CASH: 'CASH',
   OTHER: 'OTHER'

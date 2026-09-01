@@ -1,5 +1,6 @@
 import { paystack } from "@/cofigs/voltex";
 import { stripe } from "@/cofigs/stripe";
+import { createNowPaymentsInvoice } from "@/cofigs/nowpayments";
 import { apiResponse } from "@/lib/api-response";
 import { ApiError } from "@/lib/api-error";
 import prisma from "@/lib/db";
@@ -12,6 +13,7 @@ import {
 } from "./payment.validators";
 import StatusCodes from "http-status-codes";
 import { createOrderService } from "../order/orders.service";
+import { randomUUID } from "crypto";
 
 export const initiateOrderService = async (
   data: createOrderPaymentInput,
@@ -19,7 +21,7 @@ export const initiateOrderService = async (
 ) => {
   let authorizationUrl: string;
   let reference: string;
-  let provider: "STRIPE" | "PAYSTACK";
+  let provider: "STRIPE" | "PAYSTACK" | "CRYPTO";
 
   if (data.gateway === "stripe") {
     if (!process.env.STRIPE_SECRET_KEY) {
@@ -53,8 +55,7 @@ export const initiateOrderService = async (
     authorizationUrl = session.url;
     reference = session.id;
     provider = "STRIPE";
-  } else {
-    // Default to Paystack
+  } else if (data.gateway === "paystack") {
     const payment = await paystack.initiatePayment({
       amount: Math.round(Number(data.amount) * 100),
       email: data.email,
@@ -69,6 +70,32 @@ export const initiateOrderService = async (
     authorizationUrl = payment.authorizationUrl;
     reference = payment.reference;
     provider = "PAYSTACK";
+  } else if (data.gateway === "crypto") {
+    if (!process.env.NOWPAYMENTS_API_KEY) {
+      throw new ApiError("Crypto payment is not configured", StatusCodes.NOT_IMPLEMENTED);
+    }
+
+    // NOWPayments echoes order_id back on the IPN and lets us pick it
+    // ourselves, so we generate the reference up front instead of getting
+    // one back from the provider (unlike Stripe/Paystack above).
+    reference = randomUUID();
+
+    const invoice = await createNowPaymentsInvoice({
+      amount: Number(data.amount),
+      orderId: reference,
+      successUrl: `${process.env.BETTER_AUTH_BASE_URL}/checkout/success?reference=${reference}`,
+      cancelUrl: `${process.env.BETTER_AUTH_BASE_URL}/checkout`,
+      ipnCallbackUrl: `${process.env.BETTER_AUTH_BASE_URL}/api/webhooks/nowpayments`,
+    });
+
+    if (!invoice.invoice_url) {
+      throw new Error("Failed to create crypto invoice");
+    }
+
+    authorizationUrl = invoice.invoice_url;
+    provider = "CRYPTO";
+  } else {
+    throw new ApiError("Unsupported payment gateway", StatusCodes.BAD_REQUEST);
   }
 
   console.log("Initiating order");
@@ -300,7 +327,7 @@ export const payExistingOrderService = async (
 
   let authorizationUrl: string;
   let reference: string;
-  let provider: "STRIPE" | "PAYSTACK";
+  let provider: "STRIPE" | "PAYSTACK" | "CRYPTO";
 
   const paymentWithMeta = order.payments?.find((p: any) => p.metadata);
   let email = order.user?.email;
@@ -354,7 +381,7 @@ export const payExistingOrderService = async (
     authorizationUrl = session.url;
     reference = session.id;
     provider = "STRIPE";
-  } else {
+  } else if (gateway === "paystack") {
     const payment = await paystack.initiatePayment({
       amount: Math.round(amountNumber * 100),
       email: email,
@@ -369,6 +396,29 @@ export const payExistingOrderService = async (
     authorizationUrl = payment.authorizationUrl;
     reference = payment.reference;
     provider = "PAYSTACK";
+  } else if (gateway === "crypto") {
+    if (!process.env.NOWPAYMENTS_API_KEY) {
+      throw new ApiError("Crypto payment is not configured", StatusCodes.NOT_IMPLEMENTED);
+    }
+
+    reference = randomUUID();
+
+    const invoice = await createNowPaymentsInvoice({
+      amount: amountNumber,
+      orderId: reference,
+      successUrl: `${process.env.BETTER_AUTH_BASE_URL}/checkout/success?reference=${reference}`,
+      cancelUrl: `${process.env.BETTER_AUTH_BASE_URL}/account/orders/${order.id}`,
+      ipnCallbackUrl: `${process.env.BETTER_AUTH_BASE_URL}/api/webhooks/nowpayments`,
+    });
+
+    if (!invoice.invoice_url) {
+      throw new Error("Failed to create crypto invoice");
+    }
+
+    authorizationUrl = invoice.invoice_url;
+    provider = "CRYPTO";
+  } else {
+    throw new ApiError("Unsupported payment gateway", StatusCodes.BAD_REQUEST);
   }
 
   await prisma.payment.create({
