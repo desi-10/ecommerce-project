@@ -4,7 +4,7 @@ import { toInt } from "../products/products.utils";
 export const createOrderPayment = z.object({
   email: z.string().email(),
   amount: z.number().positive(),
-  gateway: z.enum(["stripe", "paystack"]),
+  gateway: z.enum(["stripe", "paystack", "crypto"]),
   orderId: z.string().optional(),
   metadata: z.string().optional(),
   userId: z.string().optional(),
@@ -33,7 +33,7 @@ export const createPayment = z.object({
 });
 
 export const createPaymentRecordSchema = z.object({
-  provider: z.enum(["STRIPE", "PAYSTACK", "FLUTTERWAVE", "CASH", "OTHER"]),
+  provider: z.enum(["STRIPE", "PAYSTACK", "CRYPTO", "FLUTTERWAVE", "CASH", "OTHER"]),
   status: z
     .enum(["PENDING", "SUCCEEDED", "FAILED", "CANCELLED", "REFUNDED"])
     .default("PENDING"),

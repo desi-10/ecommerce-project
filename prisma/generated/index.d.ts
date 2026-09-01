@@ -155,6 +155,7 @@ export type OrderStatus = (typeof OrderStatus)[keyof typeof OrderStatus]
 export const PaymentProvider: {
   STRIPE: 'STRIPE',
   PAYSTACK: 'PAYSTACK',
+  CRYPTO: 'CRYPTO',
   FLUTTERWAVE: 'FLUTTERWAVE',
   CASH: 'CASH',
   OTHER: 'OTHER'

@@ -373,6 +373,7 @@ model OrderItem {
 enum PaymentProvider {
   STRIPE
   PAYSTACK
+  CRYPTO
   FLUTTERWAVE
   CASH
   OTHER
