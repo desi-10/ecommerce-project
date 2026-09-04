@@ -7,7 +7,7 @@ import { Sheet, SheetContent } from "../ui/sheet";
 import { Button } from "../ui/button";
 import { useWishlistStore } from "@/stores/wishlist.store";
 import { useCartStore } from "@/stores/cart.store";
-
+import { useLanguage } from "@/context/language-context";
 
 type Props = {
     open: boolean;
@@ -15,6 +15,7 @@ type Props = {
 };
 
 export default function WishlistSheet({ open, setOpen }: Props) {
+    const { t } = useLanguage();
     const items = useWishlistStore((s) => s.items);
     const remove = useWishlistStore((s) => s.remove);
 
@@ -43,7 +44,7 @@ export default function WishlistSheet({ open, setOpen }: Props) {
                 {/* Header */}
                 <div className="px-4 py-4 border-b flex items-center justify-between">
                     <div>
-                        <div className="text-sm font-semibold">Wishlist</div>
+                        <div className="text-sm font-semibold">{t("wishlist.your_wishlist", "Your Wishlist")}</div>
                         <div className="text-xs text-muted-foreground">
                             {items.length} item{items.length === 1 ? "" : "s"}
                         </div>
@@ -71,10 +72,10 @@ export default function WishlistSheet({ open, setOpen }: Props) {
                                 />
                             </div>
 
-                            <div className="text-sm font-semibold mt-2">Your wishlist is empty</div>
-                            <p className="mt-2 text-sm text-muted-foreground">Save items you love for later.</p>
+                            <div className="text-sm font-semibold mt-2">{t("wishlist.empty", "Your wishlist is empty")}</div>
+                            <p className="mt-2 text-sm text-muted-foreground">{t("wishlist.empty_desc", "Save items you love for later.")}</p>
 
-                            <Button onClick={() => setOpen(false)}>Continue shopping</Button>
+                            <Button onClick={() => setOpen(false)}>{t("cart.continue_shopping", "Continue shopping")}</Button>
                         </div>
                     ) : (
                         items.map((item) => (
@@ -103,7 +104,7 @@ export default function WishlistSheet({ open, setOpen }: Props) {
                                                 </Link>
 
                                                 <div className="mt-1 text-sm font-semibold">
-                                                    ${Number(item.price).toFixed(2)}
+                                                    GH₵{Number(item.price).toFixed(2)}
                                                 </div>
                                             </div>
 
@@ -120,12 +121,12 @@ export default function WishlistSheet({ open, setOpen }: Props) {
                                         <div className="mt-3 flex gap-2">
                                             <Button onClick={() => moveToCart(item.id)}>
                                                 <ShoppingCart className="h-4 w-4 mr-1" />
-                                                Add to cart
+                                                {t("cart.add", "Add to cart")}
                                             </Button>
 
                                             <Button size="sm" variant="outline" className="rounded-sm" asChild>
                                                 <Link href={`/shop/${item.id}`} onClick={() => setOpen(false)}>
-                                                    View
+                                                    {t("wishlist.view", "View")}
                                                 </Link>
                                             </Button>
                                         </div>

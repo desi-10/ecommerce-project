@@ -1,17 +1,19 @@
-"use client"
+"use client";
 
 import { useGetCategories } from "../hooks/use-category";
 import Link from "next/link";
 import Image from "next/image";
+import { useLanguage } from "@/context/language-context";
 
 export default function CategoryMonth() {
-    const { data: categoryData } = useGetCategories()
-    const categories = categoryData?.data.categories || []
+    const { t } = useLanguage();
+    const { data: categoryData } = useGetCategories();
+    const categories = categoryData?.data.categories || [];
 
     return (
         <section className="mt-8 bg-white border rounded-sm p-4">
             <div className="mozilla-text text-xl lg:text-2xl font-bold mb-4">
-                Top categories of the month
+                {t("section.category_month", "Top categories of the month")}
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">

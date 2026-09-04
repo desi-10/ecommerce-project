@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ReactQuery } from "@/components/react-query";
 import { FloatingAssistant } from "@/components/ai/floating-assistant";
 import { Toaster } from "sonner";
+import { LanguageProvider } from "@/context/language-context";
 
 export const metadata: Metadata = {
   title: "MartFury",
@@ -19,13 +20,16 @@ export default function RootLayout({
     <html lang="en">
       <body className="antialiased font-sans">
         <ReactQuery>
-          <TooltipProvider>
-            {children}
-            <FloatingAssistant />
-            <Toaster richColors closeButton position="top-center" />
-          </TooltipProvider>
+          <LanguageProvider>
+            <TooltipProvider>
+              {children}
+              <FloatingAssistant />
+              <Toaster richColors closeButton position="top-center" />
+            </TooltipProvider>
+          </LanguageProvider>
         </ReactQuery>
       </body>
     </html>
   );
 }
+
