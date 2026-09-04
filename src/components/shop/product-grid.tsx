@@ -7,6 +7,7 @@ import { Heart, ShoppingCart, Check, BarChart3 } from "lucide-react";
 import { useCartStore } from "@/stores/cart.store";
 import { useWishlistStore } from "@/stores/wishlist.store";
 import type { Product } from "@/types/product";
+import { useLanguage } from "@/context/language-context";
 
 function pickDisplayVariant(p: Product) {
   if (!p.variants?.length) return null;
@@ -17,6 +18,7 @@ function pickDisplayVariant(p: Product) {
 }
 
 export default function ProductGridCard({ p }: { p: Product }) {
+  const { t } = useLanguage();
   const addItem = useCartStore((s) => s.addItem);
 
   const toggleWish = useWishlistStore((s) => s.toggle);
@@ -127,7 +129,7 @@ export default function ProductGridCard({ p }: { p: Product }) {
         {/* Sale badge */}
         {oldPrice !== null && oldPrice > price ? (
           <div className="absolute left-2 top-2 rounded bg-red-500 px-2 py-1 text-[10px] font-semibold text-white">
-            Sale
+            {t("product.sale", "Sale")}
           </div>
         ) : null}
       </div>
@@ -149,10 +151,10 @@ export default function ProductGridCard({ p }: { p: Product }) {
       </div>
 
       <div className="mt-1 flex items-center gap-2">
-        <div className="text-sm font-semibold">${price.toFixed(2)}</div>
+        <div className="text-sm font-semibold">GH₵{price.toFixed(2)}</div>
         {oldPrice !== null && oldPrice > price ? (
           <div className="text-xs text-muted-foreground line-through">
-            ${oldPrice.toFixed(2)}
+            GH₵{oldPrice.toFixed(2)}
           </div>
         ) : null}
       </div>
@@ -169,7 +171,11 @@ export default function ProductGridCard({ p }: { p: Product }) {
             }
           }}
         >
-          {disabled ? "Out of stock" : inCart ? "In cart ✓" : "Add to cart"}
+          {disabled
+            ? t("product.out_of_stock", "Out of stock")
+            : inCart
+            ? t("product.in_cart_badge", "In cart ✓")
+            : t("product.add_to_cart", "Add to cart")}
         </Button>
       </div>
     </div>

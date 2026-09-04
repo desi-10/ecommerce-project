@@ -11,8 +11,8 @@ export default function EcommercerLayout({
 }>) {
   return (
     <div>
-      {/* <TopMiniBar /> */}
       <div className="print:hidden">
+        <TopMiniBar />
         <Header />
       </div>
       {/* <BlueNav /> */}

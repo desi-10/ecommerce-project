@@ -7,6 +7,7 @@ import { Heart, ShoppingCart, Check } from "lucide-react";
 import { useCartStore } from "@/stores/cart.store";
 import { useWishlistStore } from "@/stores/wishlist.store";
 import type { Product } from "@/types/product";
+import { useLanguage } from "@/context/language-context";
 
 function money(n: number) {
     return n.toFixed(2);
@@ -19,6 +20,7 @@ function pickDisplayVariant(p: Product) {
 }
 
 export default function ProductListRow({ p }: { p: Product }) {
+    const { t } = useLanguage();
     const addItem = useCartStore((s) => s.addItem);
     const toggleWish = useWishlistStore((s) => s.toggle);
 
@@ -34,8 +36,9 @@ export default function ProductListRow({ p }: { p: Product }) {
     const stock = v?.inventory?.stock ?? 0;
     const disabled = !v || stock <= 0;
 
+    const firstImg = p.images?.[0];
     const imageSrc = p.image
-        ?? (p.images?.[0] && typeof p.images[0] === 'object' ? (p.images[0] as any).url : p.images?.[0])
+        ?? (typeof firstImg === 'object' && firstImg !== null && 'url' in firstImg ? (firstImg as { url: string }).url : typeof firstImg === 'string' ? firstImg : null)
         ?? "/martfury/product.png";
     const brand = ""; 
     const reviews = 0; 
@@ -85,10 +88,10 @@ export default function ProductListRow({ p }: { p: Product }) {
 
                 <div className="bg-neutral-50 p-4 rounded-md border border-neutral-100 h-full flex flex-col justify-between">
                     <div>
-                        <div className="text-lg font-bold text-neutral-900">${money(price)}</div>
+                        <div className="text-lg font-bold text-neutral-900">GH₵{money(price)}</div>
                         {oldPrice !== null && oldPrice > price ? (
                             <div className="text-sm text-muted-foreground line-through">
-                                ${money(oldPrice)}
+                                GH₵{money(oldPrice)}
                             </div>
                         ) : null}
                     </div>
@@ -104,7 +107,7 @@ export default function ProductListRow({ p }: { p: Product }) {
                                 }
                             }}
                         >
-                            {inCart ? <> <Check className="h-4 w-4" /> In Cart </> : <> <ShoppingCart className="h-4 w-4" /> Add to cart </>}
+                            {inCart ? <> <Check className="h-4 w-4" /> {t("product.in_cart_badge", "In Cart")} </> : <> <ShoppingCart className="h-4 w-4" /> {t("product.add_to_cart", "Add to cart")} </>}
                         </Button>
                         
                         <Button
@@ -113,7 +116,7 @@ export default function ProductListRow({ p }: { p: Product }) {
                             onClick={() => toggleWish({ id: keyId, name: p.name, price, image: imageSrc })}
                         >
                             <Heart className={`h-4 w-4 ${inWish ? "fill-red-500 text-red-500" : ""}`} />
-                            {inWish ? "Wishlisted" : "Add to wishlist"}
+                            {inWish ? t("product.wishlisted", "Wishlisted") : t("product.add_to_wishlist", "Add to wishlist")}
                         </Button>
                     </div>
                 </div>

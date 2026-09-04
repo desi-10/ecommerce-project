@@ -17,17 +17,12 @@ import { useWishlistStore } from "@/stores/wishlist.store";
 import { useSession } from "@/lib/auth-client";
 import { UserAvatar } from "./user/user-avatar";
 import { useGetCategories } from "@/hooks/use-category";
-
-const navLinks = [
-    { label: "Home", href: "/" },
-    { label: "Shop", href: "/shop" },
-    { label: "About Us", href: "/about" },
-    { label: "Blog", href: "/blog" },
-    { label: "Contact", href: "/contact" },
-];
+import { useLanguage } from "@/context/language-context";
+import { LanguageSwitcher } from "./language-switcher";
 
 export default function Header() {
     const router = useRouter();
+    const { t } = useLanguage();
     const { data: session } = useSession();
     const { data: categoryData } = useGetCategories();
     const categories = categoryData?.data?.categories ?? [];
@@ -41,6 +36,13 @@ export default function Header() {
 
     const cartCount = useCartStore((s) => s.getCount());
     const wishlistCount = useWishlistStore((s) => s.items.length);
+
+    const navLinks = [
+        { label: t("nav.home", "Home"), href: "/" },
+        { label: t("nav.shop", "Shop"), href: "/shop" },
+        { label: t("nav.about", "About Us"), href: "/about" },
+        { label: t("nav.contact", "Contact"), href: "/contact" },
+    ];
 
     const handleSearch = (e?: React.FormEvent) => {
         if (e) e.preventDefault();
@@ -84,11 +86,11 @@ export default function Header() {
                             <div className="hidden md:flex flex-1 items-center max-w-2xl mx-auto">
                                 <form onSubmit={handleSearch} className="flex w-full">
                                     <Select value={category} onValueChange={setCategory}>
-                                        <SelectTrigger className="w-40 rounded-r-none border-r-0 text-xs min-h-11">
-                                            <SelectValue placeholder="All Categories" />
+                                        <SelectTrigger className="w-44 rounded-r-none border-r-0 text-xs min-h-11">
+                                            <SelectValue placeholder={t("search.all_categories", "All Categories")} />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="all">All Categories</SelectItem>
+                                            <SelectItem value="all">{t("search.all_categories", "All Categories")}</SelectItem>
                                             {categories.map((c) => (
                                                 <SelectItem key={c.id} value={c.slug}>
                                                     {c.name}
@@ -99,7 +101,7 @@ export default function Header() {
 
                                     <Input 
                                         className="rounded-none border-l-0 border-r-0 h-11" 
-                                        placeholder="I'm shopping for..." 
+                                        placeholder={t("search.placeholder", "I'm shopping for...")} 
                                         value={query}
                                         onChange={(e) => setQuery(e.target.value)}
                                     />
@@ -108,12 +110,12 @@ export default function Header() {
                                         type="submit"
                                         className="rounded-l-none bg-primary h-11 px-8"
                                     >
-                                        Search
+                                        {t("search.button", "Search")}
                                     </Button>
                                 </form>
                             </div>
 
-                            {/* Icons */}
+                            {/* Icons & Actions */}
                             <div className="ml-auto flex items-center gap-4 lg:gap-6">
                                 {/* Wishlist */}
                                 <button onClick={() => setWishlistOpen(true)} className="relative size-7 lg:size-8 cursor-pointer" aria-label="Open wishlist">
@@ -163,10 +165,10 @@ export default function Header() {
 
                                             <div className="text-left leading-tight">
                                                 <Link href="/auth/sign-in" className="block text-xs text-muted-foreground hover:text-primary transition">
-                                                    Login
+                                                    {t("auth.login", "Login")}
                                                 </Link>
                                                 <Link href="/auth/sign-up" className="block text-xs font-semibold hover:text-primary transition">
-                                                    Register
+                                                    {t("auth.register", "Register")}
                                                 </Link>
                                             </div>
                                         </div>
@@ -184,14 +186,14 @@ export default function Header() {
                     <form onSubmit={handleSearch} className="flex">
                         <Input 
                             className="rounded-r-none h-10" 
-                            placeholder="Search something..." 
+                            placeholder={t("search.mobile_placeholder", "Search something...")} 
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
                         />
                         <Button 
                             type="submit"
                             className="rounded-l-none bg-blue-600 hover:bg-blue-700 px-4 h-10" 
-                            aria-label="Search"
+                            aria-label={t("search.button", "Search")}
                         >
                             <Search className="h-4 w-4" />
                         </Button>
@@ -201,9 +203,15 @@ export default function Header() {
                 {/* Mobile Menu Content */}
                 {open && (
                     <div className="md:hidden fixed inset-0 top-[76px] bg-white z-50 overflow-y-auto border-t">
-                        <div className="p-4 space-y-2">
+                        <div className="p-4 space-y-4">
+                            {/* Mobile Language Switcher */}
+                            <div className="flex items-center justify-between pb-3 border-b">
+                                <span className="text-xs font-semibold text-muted-foreground">{t("language.title", "Language")}</span>
+                                <LanguageSwitcher variant="pills" />
+                            </div>
+
                             {/* Auth Mobile */}
-                            <div className="pb-4 mb-4 border-b">
+                            <div className="pb-4 border-b">
                                 {session ? (
                                     <div className="flex items-center gap-3">
                                         <UserAvatar />
@@ -215,20 +223,22 @@ export default function Header() {
                                 ) : (
                                     <div className="grid grid-cols-2 gap-3">
                                         <Button asChild variant="outline" className="rounded-sm h-10">
-                                            <Link href="/auth/sign-in">Login</Link>
+                                            <Link href="/auth/sign-in">{t("auth.login", "Login")}</Link>
                                         </Button>
                                         <Button asChild className="rounded-sm h-10">
-                                            <Link href="/auth/sign-up">Register</Link>
+                                            <Link href="/auth/sign-up">{t("auth.register", "Register")}</Link>
                                         </Button>
                                     </div>
                                 )}
                             </div>
 
-                            <p className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase pb-2">Navigation</p>
+                            <p className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase pb-1">
+                                {t("nav.navigation", "Navigation")}
+                            </p>
                             <nav className="space-y-1">
                                 {navLinks.map((link) => (
                                     <Link 
-                                        key={link.label}
+                                        key={link.href}
                                         href={link.href}
                                         onClick={() => setOpen(false)}
                                         className="flex items-center justify-between p-3 rounded-sm hover:bg-neutral-50 transition border border-transparent hover:border-neutral-100"
@@ -243,7 +253,7 @@ export default function Header() {
                                         onClick={() => setOpen(false)}
                                         className="flex items-center justify-between p-3 rounded-sm bg-blue-50 text-blue-700 transition"
                                     >
-                                        <span className="text-sm font-bold">Admin Dashboard</span>
+                                        <span className="text-sm font-bold">{t("nav.admin_dashboard", "Admin Dashboard")}</span>
                                         <ChevronRight className="h-4 w-4" />
                                     </Link>
                                 )}

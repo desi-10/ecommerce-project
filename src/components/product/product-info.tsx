@@ -6,6 +6,7 @@ import { Heart } from "lucide-react";
 import { Input } from "../ui/input";
 import { useRouter } from "next/navigation";
 import { useCartStore } from "@/stores/cart.store";
+import { useLanguage } from "@/context/language-context";
 
 import {
     Select,
@@ -65,6 +66,7 @@ export default function ProductInfo({
     selectedVariantId,
     onSelectVariant,
 }: Props) {
+    const { t } = useLanguage();
     const [qty, setQty] = useState(1);
     const router = useRouter();
     const addItemWithQty = useCartStore((s) => s.addItemWithQty);
@@ -205,11 +207,11 @@ export default function ProductInfo({
                     </div>
 
                     <Button onClick={addToCart} type="button" disabled={outOfStock}>
-                        {outOfStock ? "Out of stock" : "Add to cart"}
+                        {outOfStock ? t("product.out_of_stock", "Out of stock") : t("product.add_to_cart", "Add to cart")}
                     </Button>
 
                     <Button variant="outline" onClick={buyNow} type="button" disabled={outOfStock}>
-                        Buy Now
+                        {t("product.buy_now", "Buy Now")}
                     </Button>
                 </div>
             </div>

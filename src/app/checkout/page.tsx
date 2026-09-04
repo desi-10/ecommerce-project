@@ -2,7 +2,7 @@
 
 import { Checkbox } from "@/components/ui/checkbox";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ShoppingBag, Loader2 } from "lucide-react";
+import { ShoppingBag, Loader2, Bitcoin } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -34,7 +34,7 @@ type CheckoutType = z.infer<typeof checkoutSchema>;
 export default function CheckoutPage() {
   const cartItems = useCartStore((state) => state.items);
   const cartSubtotal = useCartStore((state) => state.getTotal());
-  const [gateway, setGateway] = useState("stripe");
+  const [gateway, setGateway] = useState<"stripe" | "paystack" | "crypto">("stripe");
 
   const [coupon, setCoupon] = useState<{ id: string; code: string; type: string; value: number } | null>(null);
   const [couponInput, setCouponInput] = useState("");
@@ -116,11 +116,13 @@ export default function CheckoutPage() {
 
       // ✅ Redirect properly
       window.location.href = url;
-    } catch (error: any) {
+    } catch (error: unknown) {
       setIsRedirecting(false);
       console.error("Payment error:", error);
-      const msg = error.response?.data?.message || "Something went wrong while processing payment. Please try again.";
-      toast.error(msg);
+      const msg = axios.isAxiosError(error)
+        ? error.response?.data?.message
+        : "Something went wrong while processing payment. Please try again.";
+      toast.error(msg || "Something went wrong while processing payment. Please try again.");
     }
   };
 
@@ -149,7 +151,7 @@ export default function CheckoutPage() {
                   <div className="flex items-center gap-2">
                     <span className="h-2.5 w-2.5 rounded-full bg-blue-600 animate-pulse" />
                     <span className="text-sm font-semibold text-blue-900">
-                      Processing payment with {gateway === "stripe" ? "Stripe" : "Paystack"}...
+                      Processing payment with {gateway === "stripe" ? "Stripe" : gateway === "paystack" ? "Paystack" : "Crypto"}...
                     </span>
                   </div>
                   <span className="text-xs text-blue-600 font-medium">Please wait</span>
@@ -391,7 +393,7 @@ export default function CheckoutPage() {
                     </div>
 
                     <div className="text-sm text-neutral-900">
-                      ${(item.price * item.qty).toFixed(2)}
+                      GH₵{(item.price * item.qty).toFixed(2)}
                     </div>
                   </div>
                 ))}
@@ -424,8 +426,9 @@ export default function CheckoutPage() {
                           });
                           toast.success("Coupon applied!");
                         },
-                        onError: (err: any) => {
-                          toast.error(err.response?.data?.message || "Invalid coupon");
+                        onError: (err: unknown) => {
+                          const msg = axios.isAxiosError(err) ? err.response?.data?.message : null;
+                          toast.error(msg || "Invalid coupon");
                           setCoupon(null);
                         },
                       }
@@ -443,7 +446,7 @@ export default function CheckoutPage() {
                     <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100 uppercase font-mono tracking-wider">{coupon.code}</span>
                     <button onClick={() => { setCoupon(null); setCouponInput(""); }} className="text-xs text-neutral-400 hover:text-red-500 underline">Remove</button>
                   </div>
-                  <span className="text-sm font-medium text-emerald-600">-${discountAmount.toFixed(2)}</span>
+                  <span className="text-sm font-medium text-emerald-600">-GH₵{discountAmount.toFixed(2)}</span>
                 </div>
               )}
 
@@ -453,13 +456,13 @@ export default function CheckoutPage() {
               <div className="space-y-2 text-sm">
                 <div className="flex items-center justify-between text-neutral-700 font-medium">
                   <span>Subtotal</span>
-                  <span>${cartSubtotal.toFixed(2)}</span>
+                  <span>GH₵{cartSubtotal.toFixed(2)}</span>
                 </div>
 
                 {coupon && (
                   <div className="flex items-center justify-between text-emerald-600">
                     <span>Discount ({coupon.code})</span>
-                    <span>-${discountAmount.toFixed(2)}</span>
+                    <span>-GH₵{discountAmount.toFixed(2)}</span>
                   </div>
                 )}
 
@@ -478,14 +481,14 @@ export default function CheckoutPage() {
                       Total
                     </div>
                     <div className="text-xs text-neutral-500">
-                      Including ${tax.toFixed(2)} in taxes
+                      Including GH₵{tax.toFixed(2)} in taxes
                     </div>
                   </div>
 
                   <div className="text-right">
-                    <div className="text-xs text-neutral-500">GHS</div>
+                    <div className="text-xs text-neutral-500 font-bold text-blue-600">GHS</div>
                     <div className="text-2xl font-semibold text-neutral-900">
-                      ${total.toFixed(2)}
+                      GH₵{total.toFixed(2)}
                     </div>
                   </div>
                 </div>
@@ -551,6 +554,31 @@ export default function CheckoutPage() {
                   ) : (
                     <span className="text-neutral-700 font-medium text-xs">
                       Checkout with Paystack
+                    </span>
+                  )}
+                </button>
+
+                <button
+                  type="submit"
+                  onClick={() => setGateway("crypto")}
+                  disabled={isProcessing}
+                  className={[
+                    "flex flex-1 sm:flex-initial flex-col items-center justify-center gap-2 rounded-md border px-4 py-3 text-sm cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed",
+                    gateway === "crypto"
+                      ? "border-orange-500 bg-orange-50/20 ring-1 ring-orange-500"
+                      : "border-neutral-200 hover:border-neutral-300",
+                  ].join(" ")}
+                  aria-pressed={gateway === "crypto"}
+                >
+                  <Bitcoin className="h-10 w-10 text-orange-500" />
+                  {isProcessing && gateway === "crypto" ? (
+                    <div className="flex flex-col items-center gap-1">
+                      <span className="text-xs font-semibold text-orange-600">Connecting...</span>
+                      <Skeleton className="h-1.5 w-20 rounded-md bg-orange-200" />
+                    </div>
+                  ) : (
+                    <span className="text-neutral-700 font-medium text-xs">
+                      Checkout with Crypto
                     </span>
                   )}
                 </button>

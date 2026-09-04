@@ -27,7 +27,7 @@ export default function OrderDetailPage() {
     const { id } = useParams() as { id: string };
     const { data: orderResponse, isLoading, isError } = useGetUserOrderDetail(id);
     const { mutate: payOrder, isPending: isPaying } = usePayOrder();
-    const [selectedGateway, setSelectedGateway] = useState<"paystack" | "stripe">("paystack");
+    const [selectedGateway, setSelectedGateway] = useState<"paystack" | "stripe" | "crypto">("paystack");
 
     const order = orderResponse?.data;
 
@@ -166,11 +166,12 @@ export default function OrderDetailPage() {
                                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                                     <select 
                                         value={selectedGateway} 
-                                        onChange={(e) => setSelectedGateway(e.target.value as any)}
+                                        onChange={(e) => setSelectedGateway(e.target.value as "paystack" | "stripe" | "crypto")}
                                         className="px-3 py-2.5 bg-white border border-amber-200 rounded-md text-sm font-semibold text-neutral-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
                                     >
                                         <option value="paystack">Paystack (MoMo / Card)</option>
                                         <option value="stripe">Stripe (Card)</option>
+                                        <option value="crypto">Crypto (BTC / USDT / etc.)</option>
                                     </select>
                                     <Button 
                                         onClick={handlePayOrder} 

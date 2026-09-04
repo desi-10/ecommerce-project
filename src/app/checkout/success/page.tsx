@@ -9,6 +9,7 @@ import { useCartStore } from "@/stores/cart.store";
 import {
   CheckCircle2,
   ChevronRight,
+  Clock,
   Package,
   ShoppingBag,
   Truck,
@@ -85,22 +86,42 @@ function SuccessPageContent() {
     );
   }
 
+  const isPending = order.status === "PENDING";
+
   return (
     <div className="min-h-screen bg-gray-50 py-12 md:py-20">
       <Wrapper>
         <div className="max-w-4xl mx-auto">
           {/* Header Section */}
           <div className="text-center mb-12">
-            <div className="bg-green-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 animate-in zoom-in duration-500">
-              <CheckCircle2 className="h-10 w-10 text-green-600" />
-            </div>
-            <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4 tracking-tight">
-              Thank You for Your Order!
-            </h1>
-            <p className="text-lg text-gray-600 max-w-lg mx-auto leading-relaxed">
-              Your payment was successful and your order has been confirmed.
-              We've sent a receipt to your email.
-            </p>
+            {isPending ? (
+              <>
+                <div className="bg-amber-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 animate-in zoom-in duration-500">
+                  <Clock className="h-10 w-10 text-amber-600" />
+                </div>
+                <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4 tracking-tight">
+                  Payment Pending
+                </h1>
+                <p className="text-lg text-gray-600 max-w-lg mx-auto leading-relaxed">
+                  We're confirming your crypto payment on the network. This can
+                  take a few minutes — we'll email you a receipt as soon as it
+                  clears.
+                </p>
+              </>
+            ) : (
+              <>
+                <div className="bg-green-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 animate-in zoom-in duration-500">
+                  <CheckCircle2 className="h-10 w-10 text-green-600" />
+                </div>
+                <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4 tracking-tight">
+                  Thank You for Your Order!
+                </h1>
+                <p className="text-lg text-gray-600 max-w-lg mx-auto leading-relaxed">
+                  Your payment was successful and your order has been confirmed.
+                  We've sent a receipt to your email.
+                </p>
+              </>
+            )}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

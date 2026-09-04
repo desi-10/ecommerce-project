@@ -11,9 +11,10 @@ import ProductListRow from "@/components/shop/product-list";
 import Wrapper from "@/components/wrapper";
 import { useGetProducts } from "@/hooks/use-product";
 import Image from "next/image";
-import { useMemo } from "react";
+import { useLanguage } from "@/context/language-context";
 
 export default function Page() {
+  const { t } = useLanguage();
   const { data: fashionData } = useGetProducts({
     category: "fashion",
     limit: 4,
@@ -23,9 +24,7 @@ export default function Page() {
   return (
     <div className="min-h-screen bg-gray-100">
       <main className="pb-20 md:pb-0">
-        {/* <Hero /> */}
         <HeroBannerPlusPromos />
-        {/* <HeroWithCategories /> */}
         <FeatureRow />
 
         <Wrapper>
@@ -35,13 +34,9 @@ export default function Page() {
             <DealOfDay />
 
             <ProductSection
-              title="Fresh Groceries & Daily Essentials"
+              title={t("section.groceries", "Fresh Groceries & Daily Essentials")}
               category="groceries"
             />
-            {/* <ProductSection
-            title="Best Seller Laptops & Sounds"
-            tabs={["Apple", "Laptop", "Asus", "Marshall", "Speaker"]}
-            /> */}
 
             <section className="py-10">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
@@ -57,14 +52,14 @@ export default function Page() {
                       quality={85}
                     />
 
-                    {/* Optional overlay */}
+                    {/* Overlay */}
                     <div className="absolute inset-0 bg-black/40 flex items-end p-6">
                       <div>
                         <h2 className="text-white text-2xl font-bold">
-                          Summer Fashion
+                          {t("banner.summer_fashion", "Summer Fashion")}
                         </h2>
                         <p className="text-white/80 text-sm">
-                          Up to 40% off selected styles
+                          {t("banner.summer_discount", "Up to 40% off selected styles")}
                         </p>
                       </div>
                     </div>
@@ -78,7 +73,7 @@ export default function Page() {
                   ))}
                   {fashionProducts.length === 0 && (
                     <div className="text-muted-foreground italic">
-                      Fetching the latest styles...
+                      {t("status.fetching_styles", "Fetching the latest styles...")}
                     </div>
                   )}
                 </div>
@@ -92,7 +87,7 @@ export default function Page() {
             </section>
 
             <ProductSection
-              title="Digital Electronics & Accessories"
+              title={t("section.electronics", "Digital Electronics & Accessories")}
               category="electronics"
             />
           </div>

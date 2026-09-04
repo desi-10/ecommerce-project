@@ -7,6 +7,7 @@ import { Sheet, SheetContent } from "../ui/sheet";
 import { Button } from "../ui/button";
 import { Separator } from "../ui/separator";
 import { useCartStore } from "@/stores/cart.store";
+import { useLanguage } from "@/context/language-context";
 
 type Props = {
     open: boolean;
@@ -14,6 +15,7 @@ type Props = {
 };
 
 export default function CartSheet({ open, setOpen }: Props) {
+    const { t } = useLanguage();
     const items = useCartStore((s) => s.items);
     const increaseQty = useCartStore((s) => s.increaseQty);
     const decreaseQty = useCartStore((s) => s.decreaseQty);
@@ -25,11 +27,10 @@ export default function CartSheet({ open, setOpen }: Props) {
 
     const inc = (id: string) => increaseQty(id);
 
-    // Keep your UX: prevent going below 1 (instead of removing at 0)
     const dec = (id: string) => {
         const current = items.find((i) => i.id === id);
         if (!current) return;
-        if (current.qty <= 1) return; // stop at 1
+        if (current.qty <= 1) return;
         decreaseQty(id);
     };
 
@@ -45,7 +46,7 @@ export default function CartSheet({ open, setOpen }: Props) {
                 {/* Header */}
                 <div className="px-4 py-4 border-b flex items-center justify-between">
                     <div>
-                        <div className="text-sm font-semibold">Shopping Cart</div>
+                        <div className="text-sm font-semibold">{t("cart.your_cart", "Your Cart")}</div>
                         <div className="text-xs text-muted-foreground">
                             {items.length} item{items.length === 1 ? "" : "s"}
                         </div>
@@ -72,7 +73,7 @@ export default function CartSheet({ open, setOpen }: Props) {
                                     alt="shopping-cart"
                                 />
                             </div>
-                            <div className="text-sm font-semibold">Your cart is empty</div>
+                            <div className="text-sm font-semibold">{t("cart.empty", "Your cart is empty")}</div>
                             <p className="mt-2 text-sm text-muted-foreground">
                                 Add items to your cart to see them here.
                             </p>
@@ -107,7 +108,7 @@ export default function CartSheet({ open, setOpen }: Props) {
                                                         {item.name}
                                                     </Link>
                                                     <div className="mt-1 text-xs text-muted-foreground">
-                                                        ${item.price.toFixed(2)} each
+                                                        GH₵{item.price.toFixed(2)} {t("product.each", "each")}
                                                     </div>
                                                 </div>
 
@@ -143,7 +144,7 @@ export default function CartSheet({ open, setOpen }: Props) {
                                                 </div>
 
                                                 <div className="text-sm font-semibold">
-                                                    ${itemSubtotal.toFixed(2)}
+                                                    GH₵{itemSubtotal.toFixed(2)}
                                                 </div>
                                             </div>
                                         </div>
@@ -159,29 +160,29 @@ export default function CartSheet({ open, setOpen }: Props) {
                     <div className="border-t px-4 py-4 bg-white">
                         <div className="space-y-2 text-sm">
                             <div className="flex items-center justify-between text-muted-foreground">
-                                <span>Subtotal</span>
+                                <span>{t("cart.subtotal", "Subtotal")}</span>
                                 <span className="text-foreground font-medium">
-                                    ${subtotal.toFixed(2)}
+                                    GH₵{subtotal.toFixed(2)}
                                 </span>
                             </div>
 
                             <div className="flex items-center justify-between text-muted-foreground">
-                                <span>Shipping</span>
+                                <span>{t("footer.shipping", "Shipping")}</span>
                                 <span className="text-foreground font-medium">—</span>
                             </div>
 
                             <Separator />
 
                             <div className="flex items-center justify-between">
-                                <span className="font-semibold">Total</span>
-                                <span className="font-semibold">${total.toFixed(2)}</span>
+                                <span className="font-semibold">{t("cart.total", "Total")}</span>
+                                <span className="font-semibold">GH₵{total.toFixed(2)}</span>
                             </div>
                         </div>
 
                         <div className="mt-4 grid gap-2">
                             <Button asChild>
                                 <Link href="/checkout" onClick={() => setOpen(false)}>
-                                    Proceed to checkout
+                                    {t("cart.checkout", "Checkout")}
                                 </Link>
                             </Button>
 

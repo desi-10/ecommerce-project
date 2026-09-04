@@ -17,6 +17,7 @@ import { useCartStore } from "@/stores/cart.store";
 import { useWishlistStore } from "@/stores/wishlist.store";
 import { useGetProducts } from "@/hooks/use-product";
 import { CountdownTimer } from "./countdown-timer";
+import { useLanguage } from "@/context/language-context";
 
 const toNumberPrice = (value: string | number) => {
     if (typeof value === "number") return value;
@@ -25,6 +26,7 @@ const toNumberPrice = (value: string | number) => {
 };
 
 export default function DealOfDay() {
+    const { t } = useLanguage();
     // Fetch products with active discounts
     const { data: productsData } = useGetProducts({
         onDiscount: true,
@@ -58,21 +60,23 @@ export default function DealOfDay() {
         return earliest;
     }, null as Date | null);
 
+    // Default fallback end time initialized once on mount
+    const [defaultEndTime] = useState(() => new Date(Date.now() + 24 * 60 * 60 * 1000));
+    const dealEndTime = earliestEndTime || defaultEndTime;
+
     if (products.length === 0) {
         return null;
     }
 
-    const dealEndTime = earliestEndTime || new Date(Date.now() + 24 * 60 * 60 * 1000); // Default to 24 hours from now
-
     return (
         <section className="mt-6 bg-white border rounded-sm">
             <div className="flex items-center justify-between px-4 py-3">
-                <div className="mozilla-text text-xl lg:text-2xl font-bold">Deal of the day</div>
+                <div className="mozilla-text text-xl lg:text-2xl font-bold">{t("section.deal_of_day", "Deal of the day")}</div>
                 <div className="flex items-center gap-3">
-                    <span className="text-sm text-muted-foreground hidden sm:inline">End in:</span>
+                    <span className="text-sm text-muted-foreground hidden sm:inline">{t("section.end_in", "End in:")}</span>
                     <CountdownTimer endTime={dealEndTime} />
                     <Button variant="link" className="p-0 text-sm text-muted-foreground hover:text-foreground">
-                        View all
+                        {t("section.view_all", "View all")}
                     </Button>
                 </div>
             </div>
@@ -91,8 +95,9 @@ export default function DealOfDay() {
                             const isInCart = cartSet.has(id);
                             const isInWish = wishSet.has(id);
                             const showActions = activeId === id;
+                            const firstImg = p.images?.[0];
                             const imageSrc = p.image
-                                ?? (p.images?.[0] && typeof p.images[0] === 'object' ? (p.images[0] as any).url : p.images?.[0])
+                                ?? (typeof firstImg === 'object' && firstImg !== null && 'url' in firstImg ? (firstImg as { url: string }).url : typeof firstImg === 'string' ? firstImg : null)
                                 ?? "/martfury/product.png";
 
                             return (
@@ -192,9 +197,9 @@ export default function DealOfDay() {
                                         </Link>
 
                                         <div className="mt-2 flex items-center gap-2">
-                                            <div className="text-sm font-bold text-green-600">${priceNum.toFixed(2)}</div>
+                                            <div className="text-sm font-bold text-green-600">GH₵{priceNum.toFixed(2)}</div>
                                             {oldPrice !== null && oldPrice > priceNum ? (
-                                                <div className="text-xs text-muted-foreground line-through">${oldPrice.toFixed(2)}</div>
+                                                <div className="text-xs text-muted-foreground line-through">GH₵{oldPrice.toFixed(2)}</div>
                                             ) : null}
                                         </div>
                                     </div>

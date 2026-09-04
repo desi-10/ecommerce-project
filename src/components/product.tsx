@@ -17,6 +17,7 @@ import { useCartStore } from "@/stores/cart.store";
 import { useGetProducts } from "@/hooks/use-product";
 import type { Product } from "@/types/product";
 import { ProductGridSkeleton } from "@/components/ui/skeletons";
+import { useLanguage } from "@/context/language-context";
 
 function pickDisplayVariant(p: Product) {
     if (!p.variants?.length) return null;
@@ -42,7 +43,7 @@ function toCard(p: Product) {
         name: p.name,
         brand,
         priceNum,
-        priceText: `$${priceNum.toFixed(2)}`,
+        priceText: `GH₵${priceNum.toFixed(2)}`,
         image,
     };
 }
@@ -54,6 +55,7 @@ export default function ProductSection({
     title: string;
     category: string;
 }) {
+    const { t } = useLanguage();
     const { data: productsData, isLoading, isError } = useGetProducts({ category });
     const products = productsData?.data?.products ?? [];
 
@@ -78,7 +80,7 @@ export default function ProductSection({
                     href={`/shop?category=${category}`}
                     className="text-sm font-medium text-blue-600 hover:underline"
                 >
-                    View All
+                    {t("section.view_all", "View All")}
                 </Link>
             </div>
 
@@ -88,9 +90,9 @@ export default function ProductSection({
                     <ProductGridSkeleton count={5} />
                 </div>
             ) : isError ? (
-                <div className="border-t p-4 text-sm text-red-600">Failed to load products.</div>
+                <div className="border-t p-4 text-sm text-red-600">{t("status.failed_load", "Failed to load products.")}</div>
             ) : cards.length === 0 ? (
-                <div className="border-t p-4 text-sm text-muted-foreground">No products found.</div>
+                <div className="border-t p-4 text-sm text-muted-foreground">{t("status.no_products", "No products found.")}</div>
             ) : (
                 <>
                     {/* Desktop grid */}
