@@ -386,6 +386,57 @@ export const markOrderPaidService = async (
   });
 };
 
+/**
+ * Marks an order FAILED when the provider gives a definitive "this payment
+ * did not go through" answer (Paystack status FAILED, a NOWPayments IPN of
+ * "failed"/"expired"/"refunded") — releasing the reserved stock, same as
+ * cancelOrderService. Without this, a declined/cancelled payment just left
+ * the order PENDING forever: stock stayed reserved indefinitely, and the
+ * checkout success page had nothing to poll toward but PENDING, so it kept
+ * showing "Confirming your payment..." even after giving up.
+ *
+ * Idempotent like markOrderPaidService — safe if called on an order that's
+ * already past PENDING.
+ */
+export const markOrderFailedService = async (
+  orderId: string,
+  opts?: { paymentId?: string },
+) => {
+  return prisma.$transaction(async (tx) => {
+    const order = await tx.order.findUnique({
+      where: { id: orderId },
+      include: { items: true },
+    });
+
+    if (!order) throw new ApiError("Order not found", StatusCodes.NOT_FOUND);
+
+    if (order.status !== "PENDING") {
+      return { order, alreadyResolved: true };
+    }
+
+    validateStatusTransition(order.status, "FAILED");
+
+    await releaseStockTx(
+      tx,
+      order.items.map((it) => ({ variantId: it.variantId, qty: it.qty })),
+    );
+
+    const updated = await tx.order.update({
+      where: { id: orderId },
+      data: { status: "FAILED" },
+    });
+
+    if (opts?.paymentId) {
+      await tx.payment.update({
+        where: { id: opts.paymentId },
+        data: { status: "FAILED" },
+      });
+    }
+
+    return { order: updated, alreadyResolved: false };
+  });
+};
+
 export const getOrdersService = async (
   data: ListOrderInput,
   // Vendor management: a vendor's Orders tab only shows orders containing

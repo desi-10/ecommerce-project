@@ -15,6 +15,7 @@ import StatusCodes from "http-status-codes";
 import {
   cancelOrderService,
   createOrderService,
+  markOrderFailedService,
   markOrderPaidService,
 } from "../order/orders.service";
 import { sendPurchaseEmail } from "@/lib/email";
@@ -533,17 +534,45 @@ export const confirmPaymentByReferenceService = async (reference: string) => {
   }
 
   let verifiedPaid = false;
+  // A definitive "this will never be paid" answer, as opposed to just not
+  // being paid *yet*. Without this distinction, a declined/cancelled
+  // Paystack payment left the order PENDING forever — reserved stock never
+  // released, and the success page polling toward a status that would
+  // never arrive (see markOrderFailedService's doc comment).
+  let verifiedFailed = false;
 
   if (payment.provider === "STRIPE") {
     if (process.env.STRIPE_SECRET_KEY) {
       const session = await stripe.checkout.sessions.retrieve(reference);
       verifiedPaid = session.payment_status === "paid";
+      // "expired" = the checkout session's time limit passed with no
+      // payment — definitively dead. "open" just means still in progress
+      // elsewhere; Stripe only ever sends the browser back to this
+      // success_url once complete, so "open" shouldn't normally reach
+      // here at all.
+      verifiedFailed = session.status === "expired";
     }
   } else if (payment.provider === "PAYSTACK") {
     const result = await paystack.verifyTransaction(reference);
     verifiedPaid = result.status === VoltaxPaymentStatus.SUCCESS;
+    // Paystack uses one callback URL for both success AND cancel/decline
+    // (unlike Stripe's separate success/cancel URLs), so a cancelled
+    // checkout lands right here just like a real one — this is what
+    // actually resolves it instead of leaving it pending forever.
+    verifiedFailed = result.status === VoltaxPaymentStatus.FAILED;
   }
-  // CRYPTO: verifiedPaid stays false — see doc comment above.
+  // CRYPTO: both stay false — see doc comment above; only the webhook
+  // resolves crypto orders, in either direction.
+
+  if (verifiedFailed) {
+    const { order: updatedOrder } = await markOrderFailedService(payment.order.id, {
+      paymentId: payment.id,
+    });
+    return apiResponse("Order fetched successfully", {
+      ...payment.order,
+      status: updatedOrder.status,
+    });
+  }
 
   if (!verifiedPaid) {
     return apiResponse("Order fetched successfully", payment.order);

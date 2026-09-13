@@ -35,6 +35,14 @@ function SuccessPageContent() {
   const [order, setOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Distinguishes "still actively polling, might still resolve" from "gave
+  // up after ~2 minutes" — without this the page kept showing a spinner
+  // and "Confirming..." even after polling had silently stopped, with no
+  // way to tell the two states apart (this is what a cancelled Paystack
+  // payment looked like: the order stays PENDING since a cancelled/expired
+  // provider payment never used to be resolved to anything, and polling
+  // eventually exhausted quietly).
+  const [pollExhausted, setPollExhausted] = useState(false);
   const clearCart = useCartStore((state) => state.clearCart);
 
   useEffect(() => {
@@ -63,10 +71,14 @@ function SuccessPageContent() {
         }
 
         attempts += 1;
-        if (fetchedOrder.status === "PENDING" && attempts < MAX_POLL_ATTEMPTS) {
-          setTimeout(() => {
-            if (!cancelled) fetchOrder();
-          }, POLL_INTERVAL_MS);
+        if (fetchedOrder.status === "PENDING") {
+          if (attempts < MAX_POLL_ATTEMPTS) {
+            setTimeout(() => {
+              if (!cancelled) fetchOrder();
+            }, POLL_INTERVAL_MS);
+          } else {
+            setPollExhausted(true);
+          }
         }
       } catch (err: any) {
         if (cancelled) return;
@@ -122,6 +134,33 @@ function SuccessPageContent() {
   }
 
   const isPending = order.status === "PENDING";
+  const isFailed = order.status === "FAILED" || order.status === "CANCELLED";
+
+  if (isFailed) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white rounded-md shadow-sm p-8 text-center border border-gray-100">
+          <div className="bg-red-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
+            <ShoppingBag className="h-8 w-8 text-red-600" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            Payment Didn't Go Through
+          </h1>
+          <p className="text-gray-600 mb-8">
+            This order wasn't completed — the payment was cancelled or declined.
+            Nothing was charged, and any reserved stock has been released. You
+            can try again from your cart whenever you're ready.
+          </p>
+          <Button
+            asChild
+            className="w-full rounded-xl py-6 bg-indigo-600 hover:bg-indigo-700"
+          >
+            <Link href="/checkout">Try Checkout Again</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 md:py-20">
@@ -135,14 +174,12 @@ function SuccessPageContent() {
                   <Clock className="h-10 w-10 text-amber-600" />
                 </div>
                 <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4 tracking-tight">
-                  Confirming Your Payment
+                  {pollExhausted ? "Still Waiting on Confirmation" : "Confirming Your Payment"}
                 </h1>
                 <p className="text-lg text-gray-600 max-w-lg mx-auto leading-relaxed">
-                  We haven't received confirmation yet — for crypto this can take
-                  a few minutes to settle on the network. This page will update
-                  automatically, and we'll email you a receipt as soon as it's
-                  confirmed. If you closed the payment page without completing
-                  it, you can safely return to checkout and try again.
+                  {pollExhausted
+                    ? "This is taking longer than usual. If you completed a crypto payment, it can still arrive — check My Orders in a few minutes, or refresh this page. If you cancelled or closed the payment page, you can safely return to checkout and try again."
+                    : "We haven't received confirmation yet — for crypto this can take a few minutes to settle on the network. This page will update automatically, and we'll email you a receipt as soon as it's confirmed. If you closed the payment page without completing it, you can safely return to checkout and try again."}
                 </p>
               </>
             ) : (

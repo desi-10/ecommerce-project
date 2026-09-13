@@ -2,7 +2,17 @@ import { NextResponse } from "next/server";
 import { verifyNowPaymentsSignature } from "@/cofigs/nowpayments";
 import prisma from "@/lib/db";
 import { sendPurchaseEmail } from "@/lib/email";
-import { markOrderPaidService } from "@/server/order/orders.service";
+import { markOrderFailedService, markOrderPaidService } from "@/server/order/orders.service";
+
+// NOWPayments statuses: waiting, confirming, confirmed, sending,
+// partially_paid, finished, failed, refunded, expired. "finished" is the
+// only one meaning funds actually settled; failed/expired/refunded are
+// definitive dead ends (as opposed to waiting/confirming, which just mean
+// "not resolved yet" and get another IPN later) — those used to be lumped
+// in with "ignore and wait", which left the order PENDING (and its stock
+// reserved) forever for an on-chain payment that was never going to
+// complete.
+const TERMINAL_FAILURE_STATUSES = new Set(["failed", "expired", "refunded"]);
 
 /**
  * NOWPayments IPN callback. Unlike the Stripe/Paystack flow (confirmed by
@@ -39,11 +49,10 @@ export const POST = async (req: Request) => {
     return NextResponse.json({ message: "Missing order_id" }, { status: 400 });
   }
 
-  // NOWPayments statuses: waiting, confirming, confirmed, sending,
-  // partially_paid, finished, failed, refunded, expired. Only "finished"
-  // means the funds have actually settled.
-  if (paymentStatus !== "finished") {
-    return NextResponse.json({ message: "Ignored (not finished)" }, { status: 200 });
+  if (paymentStatus !== "finished" && !TERMINAL_FAILURE_STATUSES.has(paymentStatus ?? "")) {
+    // Still in progress (waiting/confirming/etc) — not resolved either way
+    // yet, a later IPN will follow up.
+    return NextResponse.json({ message: "Ignored (not resolved yet)" }, { status: 200 });
   }
 
   const payment = await prisma.payment.findUnique({
@@ -71,6 +80,11 @@ export const POST = async (req: Request) => {
     // reference we don't recognize isn't something retrying will fix.
     console.error("NOWPayments IPN: no payment found for reference", reference);
     return NextResponse.json({ message: "Payment not found" }, { status: 200 });
+  }
+
+  if (paymentStatus !== "finished") {
+    await markOrderFailedService(payment.order.id, { paymentId: payment.id });
+    return NextResponse.json({ message: "OK" }, { status: 200 });
   }
 
   const { alreadyPaid } = await markOrderPaidService(payment.order.id, {
