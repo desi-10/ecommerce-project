@@ -163,6 +163,54 @@ export const sendNewsletterEmail = async (email: string) => {
   }
 };
 
+export const sendPasswordResetEmail = async (params: {
+  email: string;
+  name?: string | null;
+  url: string;
+}) => {
+  try {
+    await transporter.sendMail({
+      from: process.env.NODEMAILER_FROM_EMAIL,
+      to: params.email,
+      subject: "Reset your Martfury password",
+      html: `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="UTF-8">
+            <style>
+              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+              .container { max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; }
+              .header { background-color: #2563eb; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+              .content { background-color: white; padding: 20px; border-radius: 0 0 8px 8px; }
+              .btn { display: inline-block; margin-top: 16px; padding: 12px 24px; background-color: #2563eb; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: bold; }
+              .muted { color: #666; font-size: 12px; margin-top: 24px; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>Reset Your Password</h1>
+              </div>
+              <div class="content">
+                <p>Hi${params.name ? ` ${params.name}` : ""},</p>
+                <p>We received a request to reset your Martfury account password. Click the button below to choose a new one. This link expires in 1 hour.</p>
+                <p><a class="btn" href="${params.url}">Reset Password</a></p>
+                <p class="muted">If you didn't request this, you can safely ignore this email — your password will stay the same.</p>
+              </div>
+            </div>
+          </body>
+        </html>
+      `,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to send password reset email:", error);
+    throw error;
+  }
+};
+
 export interface PurchaseOrderItem {
   qty: number;
   lineTotal: string | number;

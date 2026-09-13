@@ -10,7 +10,10 @@ export default function EditProductPage() {
     const params = useParams();
     const id = params.id as string;
     
-    const { data: productData, isLoading, isError, error } = useGetProduct(id);
+    // mine:true tells the API this is a dashboard request, so a vendor's own
+    // (possibly INACTIVE) product resolves — see /api/products/[id]'s GET
+    // handler. Harmless for admins, who see everything either way.
+    const { data: productData, isLoading, isError, error } = useGetProduct(id, { mine: true });
 
     return (
         <main>

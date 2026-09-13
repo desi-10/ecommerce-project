@@ -4,12 +4,14 @@ import * as React from "react";
 import { useParams } from "next/navigation";
 
 import { useGetProduct } from "@/hooks/use-product";
+import { trackProductView } from "@/client/recommendations";
 import Breadcrumbs from "./breadcrumbs";
 import MobileStickyBuyBar from "./mobile-sticky-bar";
 import ProductGallery from "./product-gallery";
 import ProductInfo from "./product-info";
 import ProductTabs from "./products-tab";
 import RightSidebar from "./right-sidebar";
+import RecommendedForYou from "./recommended-for-you";
 import { ProductDetailSkeleton } from "@/components/ui/skeletons";
 
 export default function ProductMain() {
@@ -25,6 +27,13 @@ export default function ProductMain() {
         if (!product?.variants?.length) return;
         setSelectedVariantId((prev) => prev || product.variants[0].id);
     }, [product?.variants]);
+
+    // Browsing-history signal for the recommendation engine — fires once
+    // per product load, not per render.
+    React.useEffect(() => {
+        if (!id) return;
+        trackProductView(id);
+    }, [id]);
 
     const selectedVariant =
         product?.variants?.find((v: any) => v.id === selectedVariantId) ??
@@ -76,6 +85,8 @@ export default function ProductMain() {
                     </div>
                 </aside>
             </section>
+
+            <RecommendedForYou excludeProductId={product.id} />
 
             {/* Mobile sticky buy bar */}
             {/* <MobileStickyBuyBar product={product} selectedVariant={selectedVariant} /> */}

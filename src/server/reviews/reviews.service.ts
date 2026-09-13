@@ -57,10 +57,19 @@ export const createReviewService = async (
   return apiResponse("Review submitted successfully", review);
 };
 
-export const getReviewsService = async (page: number = 1, limit: number = 20) => {
+export const getReviewsService = async (
+  page: number = 1,
+  limit: number = 20,
+  // Vendor management: a vendor's Reviews tab only shows reviews on their
+  // own products.
+  vendorId?: string,
+) => {
+  const where = vendorId ? { product: { vendorId } } : {};
+
   const [total, reviews] = await Promise.all([
-    prisma.review.count(),
+    prisma.review.count({ where }),
     prisma.review.findMany({
+      where,
       orderBy: { createdAt: "desc" },
       skip: (page - 1) * limit,
       take: limit,

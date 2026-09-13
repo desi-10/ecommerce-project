@@ -73,7 +73,7 @@ export default function ProductSection({
     const wishSet = useMemo(() => new Set(wishItems.map((i) => i.id)), [wishItems]);
 
     return (
-        <section className="mt-8 rounded-md border bg-white shadow-sm overflow-hidden">
+        <section className="mt-8 rounded-lg border bg-white shadow-sm overflow-hidden">
             <div className="flex items-center justify-between gap-4 p-4">
                 <div className="mozilla-text text-xl font-bold lg:text-2xl">{title}</div>
                 <Link
@@ -137,7 +137,7 @@ export default function ProductSection({
                             <CarouselContent className="-ml-3">
                                 {cards.map((p) => (
                                     <CarouselItem key={p.id} className="basis-1/2 pl-3">
-                                        <div className="rounded-sm border bg-white p-3">
+                                        <div className="rounded-lg border bg-white p-3">
                                             <div className="relative h-40">
                                                 <Image
                                                     src={p.image}

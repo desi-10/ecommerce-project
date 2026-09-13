@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { handleApiError } from "@/lib/api-handler";
-import { getOrderByReferenceService } from "@/server/order/orders.service";
+import { confirmPaymentByReferenceService } from "@/server/payments/payments.service";
 
 export const GET = async (
   req: Request,
@@ -8,7 +8,9 @@ export const GET = async (
 ) => {
   try {
     const { ref } = await params;
-    const result = await getOrderByReferenceService(ref);
+    // Verifies with the payment provider before marking anything paid —
+    // see confirmPaymentByReferenceService's doc comment.
+    const result = await confirmPaymentByReferenceService(ref);
     return NextResponse.json(result);
   } catch (error) {
     return handleApiError(error);

@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useState } from "react";
 import { useCreateReview } from "@/client/reviews";
+import { useTranslatedText } from "@/hooks/use-translated-text";
+import { useLanguage } from "@/context/language-context";
 
 type Variant = {
     id: string;
@@ -40,9 +42,11 @@ type Props = {
 };
 
 export default function ProductTabs({ product, selectedVariant }: Props) {
+    const { t } = useLanguage();
     const [rating, setRating] = useState(5);
     const [comment, setComment] = useState("");
     const reviewMutation = useCreateReview();
+    const { text: translatedDescription } = useTranslatedText(product.description);
 
     const handleSubmitReview = () => {
         reviewMutation.mutate({ productId: product.id, rating, comment }, {
@@ -59,11 +63,11 @@ export default function ProductTabs({ product, selectedVariant }: Props) {
                 <div className="p-4 border-b overflow-x-auto">
                     <TabsList className="bg-transparent flex gap-6 min-w-max">
                         {[
-                            ["description", "Description"],
-                            ["spec", "Specification"],
-                            ["vendor", "Vendor"],
-                            ["reviews", "Reviews"],
-                            ["qa", "Questions & Answers"],
+                            ["description", t("tabs.description", "Description")],
+                            ["spec", t("tabs.specification", "Specification")],
+                            ["vendor", t("tabs.vendor", "Vendor")],
+                            ["reviews", t("tabs.reviews", "Reviews")],
+                            ["qa", t("tabs.qa", "Questions & Answers")],
                         ].map(([v, label]) => (
                             <TabsTrigger
                                 key={v}
@@ -80,10 +84,10 @@ export default function ProductTabs({ product, selectedVariant }: Props) {
                 <TabsContent value="description" className="pt-6">
                     <div className="prose prose-sm max-w-none">
                         {product.description ? (
-                            <p>{product.description}</p>
+                            <p>{translatedDescription}</p>
                         ) : (
                             <p className="text-muted-foreground">
-                                No description available for this product.
+                                {t("tabs.no_description", "No description available for this product.")}
                             </p>
                         )}
 

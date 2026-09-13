@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { validateOrThrow } from "@/lib/validator";
 import { handleApiError } from "@/lib/api-handler";
-import { requireAdminServerSession } from "@/lib/auth-guards";
+import { requireDashboardServerSession } from "@/lib/auth-guards";
 import {
   deleteProductService,
   getProductByIdService,
@@ -19,14 +19,25 @@ type RouteContext = {
 export const GET = async (req: Request, context: RouteContext) => {
   try {
     const { id } = await context.params;
+    const { searchParams } = new URL(req.url);
+    // Set only by the dashboard edit page (see use-product.ts's
+    // useGetProduct) — the storefront product page calls this same route
+    // and must never be vendor-scoped, or every vendor account gets 404s
+    // browsing other vendors' products while shopping normally.
+    const mine = searchParams.get("mine") === "true";
 
     const requestHeaders = await headers();
     const session = await auth.api.getSession({
       headers: requestHeaders,
     });
     const isAdmin = session?.user?.role === "admin";
+    const isVendor = mine && session?.user?.role === "vendor";
 
-    const result = await getProductByIdService(id, isAdmin);
+    const result = await getProductByIdService(
+      id,
+      isAdmin || isVendor, // vendors can also load their own INACTIVE products to edit
+      isVendor ? session!.user.id : undefined,
+    );
     return NextResponse.json(result);
   } catch (error) {
     return handleApiError(error);
@@ -35,7 +46,8 @@ export const GET = async (req: Request, context: RouteContext) => {
 
 export const PATCH = async (req: Request, context: RouteContext) => {
   try {
-    await requireAdminServerSession();
+    const session = await requireDashboardServerSession();
+    const vendorId = session.user.role === "vendor" ? session.user.id : undefined;
     const { id: productId } = await context.params;
 
     // Check if it's FormData or JSON
@@ -77,7 +89,7 @@ export const PATCH = async (req: Request, context: RouteContext) => {
     }
 
     const valid = validateOrThrow(updateProductSchema, payload);
-    const result = await updateProductService(productId, valid);
+    const result = await updateProductService(productId, valid, vendorId);
 
     return NextResponse.json(result);
   } catch (error) {
@@ -88,10 +100,11 @@ export const PATCH = async (req: Request, context: RouteContext) => {
 
 export const DELETE = async (req: Request, context: RouteContext) => {
   try {
-    await requireAdminServerSession();
+    const session = await requireDashboardServerSession();
+    const vendorId = session.user.role === "vendor" ? session.user.id : undefined;
     const { id } = await context.params;
 
-    const result = await deleteProductService(id);
+    const result = await deleteProductService(id, { vendorId });
     return NextResponse.json(result);
   } catch (error) {
     return handleApiError(error);

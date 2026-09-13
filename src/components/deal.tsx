@@ -69,7 +69,7 @@ export default function DealOfDay() {
     }
 
     return (
-        <section className="mt-6 bg-white border rounded-sm">
+        <section className="mt-6 bg-white border rounded-lg">
             <div className="flex items-center justify-between px-4 py-3">
                 <div className="mozilla-text text-xl lg:text-2xl font-bold">{t("section.deal_of_day", "Deal of the day")}</div>
                 <div className="flex items-center gap-3">
@@ -107,7 +107,7 @@ export default function DealOfDay() {
                                 >
                                     {/* wrapper that enables tap-to-show on mobile */}
                                     <div
-                                        className="group border rounded-sm p-3 hover:shadow-sm transition bg-white relative"
+                                        className="group border rounded-lg p-3 hover:shadow-sm transition bg-white relative"
                                         onClick={() => setActiveId((curr) => (curr === id ? null : id))}
                                     >
                                         {/* Image */}

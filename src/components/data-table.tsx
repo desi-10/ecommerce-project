@@ -105,16 +105,16 @@ export function DataTable<TData extends { id?: string }, TValue>({
     return (
         <div className="text-xs">
             <div className="">
-                <div className="rounded-lg border mt-4 overflow-hidden">
+                <div className="rounded-md border border-border/60 mt-4 overflow-hidden shadow-sm">
                     <Table className="">
-                        <TableHeader className="bg-gray-100 dark:bg-gray-800">
+                        <TableHeader className="bg-muted/50">
                             {table.getHeaderGroups().map((headerGroup) => (
-                                <TableRow key={headerGroup.id}>
+                                <TableRow key={headerGroup.id} className="hover:bg-transparent">
                                     {headerGroup.headers.map((header) => {
                                         return (
                                             <TableHead
                                                 key={header.id}
-                                                className="text-gray-800 font-normal dark:text-gray-200"
+                                                className="text-foreground/80 font-semibold uppercase tracking-wide text-[11px] h-11"
                                             >
                                                 {header.isPlaceholder
                                                     ? null
@@ -128,15 +128,16 @@ export function DataTable<TData extends { id?: string }, TValue>({
                                 </TableRow>
                             ))}
                         </TableHeader>
-                        <TableBody className="text-xs bg-white dark:bg-gray-900">
+                        <TableBody className="text-xs bg-card">
                             {table.getRowModel().rows?.length ? (
                                 table.getRowModel().rows.map((row) => (
                                     <TableRow
                                         key={row.id}
                                         data-state={row.getIsSelected() && "selected"}
+                                        className="hover:bg-muted/40 transition-colors"
                                     >
                                         {row.getVisibleCells().map((cell) => (
-                                            <TableCell key={cell.id}>
+                                            <TableCell key={cell.id} className="py-3">
                                                 {flexRender(
                                                     cell.column.columnDef.cell,
                                                     cell.getContext()
@@ -146,12 +147,12 @@ export function DataTable<TData extends { id?: string }, TValue>({
                                     </TableRow>
                                 ))
                             ) : (
-                                <TableRow>
+                                <TableRow className="hover:bg-transparent">
                                     <TableCell
                                         colSpan={columns.length}
-                                        className="h-24 text-center"
+                                        className="h-32 text-center text-muted-foreground"
                                     >
-                                        No results.
+                                        No results found.
                                     </TableCell>
                                 </TableRow>
                             )}
@@ -159,7 +160,7 @@ export function DataTable<TData extends { id?: string }, TValue>({
                     </Table>
                 </div>
             </div>
-            <div className="mt-8">
+            <div className="mt-6">
                 {data?.pagination && <Pagination table={table} {...data?.pagination} />}
             </div>
         </div>

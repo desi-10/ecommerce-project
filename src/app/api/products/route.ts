@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
+import { requireDashboardServerSession } from "@/lib/auth-guards";
 import {
   createProductService,
   getProductsService,
@@ -19,18 +20,28 @@ export const GET = async (req: Request) => {
     const rawQuery = Object.fromEntries(searchParams.entries());
 
     const query = validateOrThrow(listProductsSchema, rawQuery);
-    
+
     const requestHeaders = await headers();
     const session = await auth.api.getSession({
       headers: requestHeaders,
     });
-    const isAdmin = session?.user?.role === "admin";
+    const role = session?.user?.role;
+    const isAdmin = role === "admin";
+    const isVendor = role === "vendor";
 
     if (!isAdmin) {
       query.status = "ACTIVE";
     }
 
-    const result = await getProductsService(query);
+    // Vendor management: a vendor's own dashboard view of /api/products
+    // (?mine=true) only lists their products; storefront and admin see all.
+    const mine = searchParams.get("mine") === "true";
+    const scope = isVendor && mine && session?.user?.id
+      ? { vendorId: session.user.id }
+      : undefined;
+    if (scope) query.status = undefined; // vendors manage both ACTIVE and INACTIVE of their own
+
+    const result = await getProductsService(query, scope);
 
     return NextResponse.json(result);
   } catch (err) {
@@ -41,6 +52,11 @@ export const GET = async (req: Request) => {
 
 export const POST = async (req: Request) => {
   try {
+    // Was previously wide open — anyone could create products. Dashboard
+    // write access, same as every other /api/products mutation.
+    const session = await requireDashboardServerSession();
+    const vendorId = session.user.role === "vendor" ? session.user.id : undefined;
+
     const formData = await req.formData();
 
     const additionalImageFiles = formData.getAll("images") as File[];
@@ -96,7 +112,7 @@ export const POST = async (req: Request) => {
     };
 
     const valid = validateOrThrow(createProductSchema, payload);
-    const result = await createProductService(valid);
+    const result = await createProductService(valid, vendorId);
 
     return NextResponse.json(result);
   } catch (err) {

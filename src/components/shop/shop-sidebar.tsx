@@ -11,6 +11,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { useGetCategories } from "@/hooks/use-category";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/context/language-context";
 
 export type FilterPayload = {
     search: string;
@@ -25,6 +26,7 @@ type Props = {
 };
 
 export default function ShopSidebar({ onApply }: Props) {
+    const { t } = useLanguage();
     const { data: categoryData } = useGetCategories();
     const categories = categoryData?.data?.categories ?? [];
 
@@ -91,7 +93,7 @@ export default function ShopSidebar({ onApply }: Props) {
             {/* SEARCH */}
             <div>
                 <div className="text-xs font-semibold tracking-wide text-muted-foreground">
-                    SEARCH
+                    {t("shop.search_heading", "Search").toUpperCase()}
                 </div>
                 <Separator className="my-3" />
                 <div className="relative">
@@ -99,7 +101,7 @@ export default function ShopSidebar({ onApply }: Props) {
                     <Input
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        placeholder="Search products..."
+                        placeholder={t("shop.search_placeholder", "Search products...")}
                         className="pl-9"
                     />
                 </div>
@@ -108,7 +110,7 @@ export default function ShopSidebar({ onApply }: Props) {
             {/* CATEGORIES */}
             <div>
                 <div className="text-xs font-semibold tracking-wide text-muted-foreground">
-                    CATEGORIES
+                    {t("shop.categories", "Categories").toUpperCase()}
                 </div>
                 <Separator className="my-3" />
                 <div className="space-y-2 max-h-48 overflow-auto">
@@ -137,7 +139,7 @@ export default function ShopSidebar({ onApply }: Props) {
             {/* RATING */}
             <div>
                 <div className="text-xs font-semibold tracking-wide text-muted-foreground">
-                    BY RATING
+                    {t("shop.by_rating", "By Rating").toUpperCase()}
                 </div>
                 <Separator className="my-3" />
                 <div className="space-y-2.5">
@@ -168,7 +170,7 @@ export default function ShopSidebar({ onApply }: Props) {
                                         ))}
                                     </div>
                                     <span className="text-xs text-neutral-600 font-medium group-hover:text-primary transition-colors">
-                                        {r === 5 ? "5 Stars" : "& Up"}
+                                        {r === 5 ? `5 ${t("shop.stars", "Stars")}` : t("shop.and_up", "& Up")}
                                     </span>
                                 </div>
                             </label>
@@ -180,7 +182,7 @@ export default function ShopSidebar({ onApply }: Props) {
             {/* PRICE */}
             <div>
                 <div className="text-xs font-semibold tracking-wide text-muted-foreground">
-                    BY PRICE
+                    {t("shop.by_price", "By Price").toUpperCase()}
                 </div>
                 <Separator className="my-3" />
                 <div className="px-1">
@@ -192,7 +194,7 @@ export default function ShopSidebar({ onApply }: Props) {
                         step={10}
                     />
                     <div className="mt-3 text-xs text-muted-foreground">
-                        Price:{" "}
+                        {t("shop.price_prefix", "Price:")}{" "}
                         <span className="font-medium text-foreground">${price[0]}</span> —{" "}
                         <span className="font-medium text-foreground">${price[1]}</span>
                     </div>
@@ -202,11 +204,11 @@ export default function ShopSidebar({ onApply }: Props) {
             {/* ACTION BUTTONS */}
             <div className="space-y-2 pt-4 border-t">
                 <Button className="w-full" onClick={handleApply}>
-                    Apply Filters
+                    {t("shop.apply_filters", "Apply Filters")}
                 </Button>
 
                 <Button variant="outline" className="w-full" onClick={handleReset}>
-                    Reset
+                    {t("shop.reset", "Reset")}
                 </Button>
             </div>
         </div>

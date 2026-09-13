@@ -18,6 +18,16 @@ import Image from "next/image";
 import Link from "next/link";
 import { formatGHS } from "@/lib/currency";
 
+// GET /api/orders/reference/[ref] now verifies with the payment provider
+// before marking anything PAID (see confirmPaymentByReferenceService), so
+// an order can legitimately still be PENDING here — a crypto payment
+// awaiting the NOWPayments webhook, or a Stripe/Paystack payment that
+// wasn't actually completed. Poll for a bit so a crypto order that gets
+// confirmed moments after redirect updates without the shopper having to
+// manually refresh.
+const POLL_INTERVAL_MS = 5000;
+const MAX_POLL_ATTEMPTS = 24; // ~2 minutes
+
 function SuccessPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -33,21 +43,46 @@ function SuccessPageContent() {
       return;
     }
 
+    let cancelled = false;
+    let attempts = 0;
+
     const fetchOrder = async () => {
       try {
         const res = await axios.get(`/api/orders/reference/${reference}`);
-        setOrder(res.data.data);
-        clearCart();
+        if (cancelled) return;
+
+        const fetchedOrder = res.data.data;
+        setOrder(fetchedOrder);
+
+        // Only clear the cart once the order is actually confirmed paid —
+        // clearing it for a still-PENDING order would lose the cart for a
+        // payment that may never complete.
+        if (fetchedOrder.status === "PAID" || fetchedOrder.status === "FULFILLED") {
+          clearCart();
+          return;
+        }
+
+        attempts += 1;
+        if (fetchedOrder.status === "PENDING" && attempts < MAX_POLL_ATTEMPTS) {
+          setTimeout(() => {
+            if (!cancelled) fetchOrder();
+          }, POLL_INTERVAL_MS);
+        }
       } catch (err: any) {
+        if (cancelled) return;
         setError(
           err.response?.data?.message || "Failed to fetch order details",
         );
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
     fetchOrder();
+
+    return () => {
+      cancelled = true;
+    };
   }, [reference]);
 
   if (loading) {
@@ -100,12 +135,14 @@ function SuccessPageContent() {
                   <Clock className="h-10 w-10 text-amber-600" />
                 </div>
                 <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4 tracking-tight">
-                  Payment Pending
+                  Confirming Your Payment
                 </h1>
                 <p className="text-lg text-gray-600 max-w-lg mx-auto leading-relaxed">
-                  We're confirming your crypto payment on the network. This can
-                  take a few minutes — we'll email you a receipt as soon as it
-                  clears.
+                  We haven't received confirmation yet — for crypto this can take
+                  a few minutes to settle on the network. This page will update
+                  automatically, and we'll email you a receipt as soon as it's
+                  confirmed. If you closed the payment page without completing
+                  it, you can safely return to checkout and try again.
                 </p>
               </>
             ) : (

@@ -35,24 +35,71 @@ type NavItem = {
   title: string;
   url: string;
   icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
+  // Which roles see this item. Omitted = admin only. Vendors get a scoped
+  // dashboard — their own products/inventory/orders/reviews — with no
+  // access to store-wide data (customers, categories, coupons, payments,
+  // contacts) that belongs to the admin managing the whole marketplace.
+  roles?: Array<"admin" | "vendor">;
 };
 
-const navItems: NavItem[] = [
-  { title: "Overview", url: "/dashboard", icon: LayoutDashboard },
-  { title: "Products", url: "/dashboard/products", icon: Package },
-  { title: "Orders", url: "/dashboard/orders", icon: ShoppingBag },
-  { title: "Customers", url: "/dashboard/customers", icon: Users },
-  { title: "Categories", url: "/dashboard/categories", icon: Tags },
-  { title: "Inventory", url: "/dashboard/inventory", icon: Package },
-  { title: "Coupons", url: "/dashboard/coupons", icon: BadgePercent },
-  { title: "Payments", url: "/dashboard/payments", icon: CreditCard },
-  { title: "Reviews", url: "/dashboard/reviews", icon: MessageSquare },
-  { title: "Contacts", url: "/dashboard/contacts", icon: MessageSquare },
+type NavGroup = {
+  label: string;
+  items: NavItem[];
+};
+
+// Grouped instead of one flat list — makes a 10-item menu scannable instead
+// of just a stack of icons.
+const navGroups: NavGroup[] = [
+  {
+    label: "General",
+    items: [
+      { title: "Overview", url: "/dashboard", icon: LayoutDashboard, roles: ["admin", "vendor"] },
+    ],
+  },
+  {
+    label: "Catalog",
+    items: [
+      { title: "Products", url: "/dashboard/products", icon: Package, roles: ["admin", "vendor"] },
+      { title: "Categories", url: "/dashboard/categories", icon: Tags },
+      { title: "Inventory", url: "/dashboard/inventory", icon: Package, roles: ["admin", "vendor"] },
+    ],
+  },
+  {
+    label: "Sales",
+    items: [
+      { title: "Orders", url: "/dashboard/orders", icon: ShoppingBag, roles: ["admin", "vendor"] },
+      { title: "Coupons", url: "/dashboard/coupons", icon: BadgePercent },
+      { title: "Payments", url: "/dashboard/payments", icon: CreditCard },
+    ],
+  },
+  {
+    label: "People",
+    items: [
+      { title: "Customers", url: "/dashboard/customers", icon: Users },
+      { title: "Reviews", url: "/dashboard/reviews", icon: MessageSquare, roles: ["admin", "vendor"] },
+      { title: "Contacts", url: "/dashboard/contacts", icon: MessageSquare },
+    ],
+  },
 ];
 
-export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebar({
+  userRole,
+  ...props
+}: React.ComponentProps<typeof Sidebar> & { userRole?: string | null }) {
   const pathname = usePathname();
   const { data: session } = useSession();
+  // Named userRole, not role — Sidebar's underlying element already has a
+  // native `role` (ARIA) prop of a different, incompatible type.
+  const effectiveRole = userRole ?? session?.user?.role ?? "admin";
+
+  const visibleGroups = navGroups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter(
+        (item) => !item.roles || item.roles.includes(effectiveRole as "admin" | "vendor"),
+      ),
+    }))
+    .filter((group) => group.items.length > 0);
 
   // safer active check
   const isActive = (url: string) =>
@@ -69,50 +116,60 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
             <div className="text-lg font-bold text-gray-900 tracking-tight">
               mart<span className="text-blue-600">fury</span>
             </div>
-            <div className="text-xs font-medium text-gray-400">Admin Platform</div>
+            <div className="text-xs font-medium text-gray-400">
+              {effectiveRole === "vendor" ? "Vendor Platform" : "Admin Platform"}
+            </div>
           </div>
         </Link>
       </SidebarHeader>
 
       <SidebarContent className="px-4">
-        <SidebarGroup>
-          <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-2 mt-4">
-            Menu
-          </div>
-          <SidebarGroupContent>
-            <SidebarMenu className="gap-1.5">
-              {navItems.map((item) => {
-                const Icon = item.icon;
-                const active = isActive(item.url);
-                return (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton 
-                      asChild 
-                      isActive={active}
-                      className={`h-11 px-3 py-2 rounded-md transition-all font-medium text-sm ${
-                        active 
-                          ? "text-gray-700 hover:text-gray-900" 
-                          : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
-                      }`}
-                      style={active ? { backgroundColor: 'var(--primary-50)' } : {}}
-                    >
-                      <Link
-                        href={item.url}
-                        className="flex items-center gap-3 w-full"
+        {visibleGroups.map((group) => (
+          <SidebarGroup key={group.label}>
+            <div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-2 px-2 mt-3">
+              {group.label}
+            </div>
+            <SidebarGroupContent>
+              <SidebarMenu className="gap-1">
+                {group.items.map((item) => {
+                  const Icon = item.icon;
+                  const active = isActive(item.url);
+                  return (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={active}
+                        className={`relative h-10 px-3 py-2 rounded-md transition-all font-medium text-sm ${
+                          active
+                            ? "text-gray-900 hover:text-gray-900"
+                            : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
+                        }`}
+                        style={active ? { backgroundColor: "var(--primary-50)" } : {}}
                       >
-                        <Icon 
-                          className="h-5 w-5 transition-colors"
-                          style={active ? { color: 'var(--primary-600)' } : {}}
-                        />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+                        <Link
+                          href={item.url}
+                          className="flex items-center gap-3 w-full"
+                        >
+                          {active && (
+                            <span
+                              className="absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-r-full"
+                              style={{ backgroundColor: "var(--primary-600)" }}
+                            />
+                          )}
+                          <Icon
+                            className="h-4.5 w-4.5 transition-colors"
+                            style={active ? { color: "var(--primary-600)" } : {}}
+                          />
+                          <span>{item.title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
       </SidebarContent>
       <SidebarFooter className="border-t border-gray-100 p-4 space-y-3">
         <Link 

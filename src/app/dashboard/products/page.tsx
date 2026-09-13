@@ -4,12 +4,15 @@ import { productColumns } from "@/columns/products";
 import { DataTable } from "@/components/data-table";
 import Wrapper from "@/components/wrapper";
 import { useGetProducts } from "@/hooks/use-product";
+import { useSession } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Plus, AlertCircle, Package } from "lucide-react";
 
 export default function ProductsDashboardPage() {
-  const { data: productsData, isLoading, isError, error } = useGetProducts();
+  const { data: session } = useSession();
+  const isVendor = session?.user?.role === "vendor";
+  const { data: productsData, isLoading, isError, error } = useGetProducts({ mine: isVendor });
   const products = productsData?.data.products || [];
 
   return (

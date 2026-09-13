@@ -44,7 +44,7 @@ export default function ProductListRow({ p }: { p: Product }) {
     const reviews = 0; 
 
     return (
-        <div className="border border-neutral-200 bg-white p-4 shadow-sm hover:shadow-md transition rounded-md overflow-hidden">
+        <div className="border border-neutral-200 bg-white p-4 shadow-sm hover:shadow-md transition rounded-lg overflow-hidden">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-[150px_1fr_200px] md:items-start">
                 <div className="relative aspect-square w-full">
                     <Image

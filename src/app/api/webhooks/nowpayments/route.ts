@@ -2,18 +2,20 @@ import { NextResponse } from "next/server";
 import { verifyNowPaymentsSignature } from "@/cofigs/nowpayments";
 import prisma from "@/lib/db";
 import { sendPurchaseEmail } from "@/lib/email";
+import { markOrderPaidService } from "@/server/order/orders.service";
 
 /**
- * NOWPayments IPN callback. Unlike the Stripe/Paystack flow (confirmed only
- * by the client hitting GET /api/orders/reference/[ref] once the in-app
- * browser closes — see getOrderByReferenceService), this is a real
- * server-to-server, signature-verified confirmation: crypto payments are
- * irreversible, so trusting an unauthenticated client GET alone is a bigger
- * risk here than it is for card payments.
+ * NOWPayments IPN callback. Unlike the Stripe/Paystack flow (confirmed by
+ * GET /api/orders/reference/[ref] verifying with Stripe/Paystack's own API
+ * — see confirmPaymentByReferenceService in payments.service.ts), this is
+ * the ONLY confirmation crypto orders ever get: a real, signature-verified,
+ * server-to-server call. Crypto payments are irreversible, so a client GET
+ * alone is never trusted for them — confirmPaymentByReferenceService
+ * deliberately never marks a crypto order paid.
  *
- * The client-driven confirm-by-reference flow still runs afterwards and is
- * left untouched (see src/server/order/orders.service.ts) — it's a no-op if
- * this webhook already flipped the order to PAID.
+ * Goes through the same markOrderPaidService as the card-payment path so
+ * crypto orders get the same coupon usedCount increment and idempotency
+ * (safe to run twice, e.g. NOWPayments retrying the IPN).
  */
 export const POST = async (req: Request) => {
   const rawBody = await req.text();
@@ -44,9 +46,6 @@ export const POST = async (req: Request) => {
     return NextResponse.json({ message: "Ignored (not finished)" }, { status: 200 });
   }
 
-  // Mirrors getOrderByReferenceService's query shape (src/server/order/orders.service.ts)
-  // so the two confirmation paths behave identically regardless of which
-  // one wins the race — including sending the purchase email exactly once.
   const payment = await prisma.payment.findUnique({
     where: { reference },
     include: {
@@ -74,18 +73,11 @@ export const POST = async (req: Request) => {
     return NextResponse.json({ message: "Payment not found" }, { status: 200 });
   }
 
-  if (payment.order.status === "PENDING") {
-    await prisma.$transaction([
-      prisma.order.update({
-        where: { id: payment.order.id },
-        data: { status: "PAID" },
-      }),
-      prisma.payment.update({
-        where: { id: payment.id },
-        data: { status: "SUCCEEDED" },
-      }),
-    ]);
+  const { alreadyPaid } = await markOrderPaidService(payment.order.id, {
+    paymentId: payment.id,
+  });
 
+  if (!alreadyPaid) {
     try {
       let email = payment.user?.email;
       if (!email && payment.metadata) {
@@ -112,7 +104,7 @@ export const POST = async (req: Request) => {
         });
       }
     } catch (e) {
-      // Same trade-off as getOrderByReferenceService: a failed email
+      // Same trade-off as confirmPaymentByReferenceService: a failed email
       // shouldn't fail the payment confirmation.
       console.error("NOWPayments IPN: failed to send purchase email", e);
     }

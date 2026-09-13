@@ -7,6 +7,7 @@ import { Input } from "../ui/input";
 import { useRouter } from "next/navigation";
 import { useCartStore } from "@/stores/cart.store";
 import { useLanguage } from "@/context/language-context";
+import { useTranslatedText } from "@/hooks/use-translated-text";
 
 import {
     Select,
@@ -70,6 +71,8 @@ export default function ProductInfo({
     const [qty, setQty] = useState(1);
     const router = useRouter();
     const addItemWithQty = useCartStore((s) => s.addItemWithQty);
+    const { text: translatedName } = useTranslatedText(product.name);
+    const { text: translatedDescription } = useTranslatedText(product.description);
 
     const safeQty = useMemo(() => Math.max(1, Math.min(99, qty)), [qty]);
 
@@ -104,7 +107,7 @@ export default function ProductInfo({
         <div className="min-w-0">
             <div className="flex items-center justify-between gap-3">
                 <h1 className="text-xl md:text-2xl font-semibold leading-snug">
-                    {product.name}
+                    {translatedName}
                 </h1>
 
                 <Button
@@ -163,7 +166,7 @@ export default function ProductInfo({
             </div>
 
             {product.description ? (
-                <p className="mt-4 text-sm text-muted-foreground">{product.description}</p>
+                <p className="mt-4 text-sm text-muted-foreground">{translatedDescription}</p>
             ) : null}
 
             {/* Quantity + actions */}

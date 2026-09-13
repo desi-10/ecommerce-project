@@ -1,6 +1,8 @@
-ignoredBuiltDependencies:
-  - '@prisma/engines'
-  - esbuild
-  - prisma
-  - sharp
-  - unrs-resolver
+allowBuilds:
+  '@prisma/engines': true
+  bcrypt: true
+  esbuild: true
+  msw: true
+  prisma: true
+  sharp: true
+  unrs-resolver: true

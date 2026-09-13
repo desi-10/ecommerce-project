@@ -37,3 +37,20 @@ export const requireAdminServerSession = async () => {
 
   return session;
 };
+
+// Dashboard access for the vendor management system: admins see everything,
+// vendors get a scoped view of their own products/inventory/orders (see
+// src/server/products/products.service.ts and orders.service.ts for the
+// vendorId filtering this gates access to).
+export const requireDashboardServerSession = async () => {
+  const session = await requireServerSession();
+
+  if (session.user.role !== "admin" && session.user.role !== "vendor") {
+    throw new ApiError("Forbidden", 403);
+  }
+
+  return session;
+};
+
+export const isAdminRole = (role: string | null | undefined) => role === "admin";
+export const isVendorRole = (role: string | null | undefined) => role === "vendor";

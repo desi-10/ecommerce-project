@@ -16,7 +16,7 @@ export const decimal = (n: number) => new Prisma.Decimal(n);
 // --------------------------
 // Common selectors
 // --------------------------
-const productSelect = {
+export const productSelect = {
   id: true,
   name: true,
   description: true,
@@ -25,6 +25,7 @@ const productSelect = {
   createdAt: true,
   updatedAt: true,
   brand: true,
+  vendorId: true,
   categories: {
     select: {
       category: {
@@ -87,7 +88,13 @@ const productSelect = {
 // Services
 // --------------------------
 
-export const createProductService = async (data: CreateProductInput) => {
+export const createProductService = async (
+  data: CreateProductInput,
+  // Vendor management: a vendor's products are always attributed to
+  // themselves — never trust a vendorId from the request body. Admins pass
+  // undefined here, leaving the product storewide (vendorId null).
+  vendorId?: string | null,
+) => {
   const hasVariants = data.variants.length > 0;
 
   // Generate embedding for search
@@ -113,6 +120,7 @@ export const createProductService = async (data: CreateProductInput) => {
         description: data.description ?? null,
         image: data.images?.[0]?.url ?? null,
         status: data.status,
+        vendorId: vendorId ?? null,
       },
       select: { id: true },
     });
@@ -213,7 +221,7 @@ export const createProductService = async (data: CreateProductInput) => {
   return apiResponse("Product created successfully", result);
 };
 
-const applyDynamicDiscounts = <T extends Record<string, unknown>>(product: T): T => {
+export const applyDynamicDiscounts = <T extends Record<string, unknown>>(product: T): T => {
   if (!product) return product;
 
   // Find active discount if any
@@ -261,7 +269,12 @@ const applyDynamicDiscounts = <T extends Record<string, unknown>>(product: T): T
   return product;
 };
 
-export const getProductsService = async (data: ListProductsInput) => {
+export const getProductsService = async (
+  data: ListProductsInput,
+  // Vendor management: a vendor's dashboard only lists their own products.
+  // Left undefined for admins and for the public storefront (all vendors).
+  scope?: { vendorId?: string },
+) => {
   const {
     page,
     limit,
@@ -310,6 +323,7 @@ export const getProductsService = async (data: ListProductsInput) => {
         ? { id: { in: ratedProductIds } }
         : {}),
     ...(status && { status }),
+    ...(scope?.vendorId && { vendorId: scope.vendorId }),
     ...(q && {
       name: {
         contains: q,
@@ -453,11 +467,18 @@ export const getProductsService = async (data: ListProductsInput) => {
   } catch (error: unknown) {
     console.error("[getProductsService] Primary Query Failed:", (error as Error).message);
     
-    // Fallback if aggregate sort or complex where failed
+    // Fallback if aggregate sort or complex where failed. Keeps the
+    // vendor scope (and caller-requested status) from the primary query —
+    // dropping it here would leak every vendor's products into a vendor's
+    // dashboard list the moment the primary query hits any error.
+    const fallbackWhere: Prisma.ProductWhereInput = {
+      status: status ?? "ACTIVE",
+      ...(scope?.vendorId && { vendorId: scope.vendorId }),
+    };
     const [total, products] = await Promise.all([
-      prisma.product.count({ where: { status: "ACTIVE" } }),
+      prisma.product.count({ where: fallbackWhere }),
       prisma.product.findMany({
-        where: { status: "ACTIVE" },
+        where: fallbackWhere,
         orderBy: { createdAt: "desc" },
         skip: (page - 1) * limit,
         take: limit,
@@ -482,7 +503,11 @@ export const getProductsService = async (data: ListProductsInput) => {
   }
 };
 
-export const getProductByIdService = async (id: string, isAdmin: boolean = false) => {
+export const getProductByIdService = async (
+  id: string,
+  isAdmin: boolean = false,
+  vendorId?: string | null,
+) => {
   const product = await prisma.product.findUnique({
     where: { id },
     select: productSelect,
@@ -492,20 +517,33 @@ export const getProductByIdService = async (id: string, isAdmin: boolean = false
     throw new ApiError("Product not found", StatusCodes.NOT_FOUND);
   }
 
+  // Vendor management: a vendor can look up their own product (including
+  // while INACTIVE, to edit it) but not another vendor's.
+  if (vendorId && product.vendorId !== vendorId) {
+    throw new ApiError("Product not found", StatusCodes.NOT_FOUND);
+  }
+
   return apiResponse("Product fetched successfully", applyDynamicDiscounts(product));
 };
 
 export const updateProductService = async (
   id: string,
   data: UpdateProductInput,
+  // Vendor management: when set, the update is refused unless this product
+  // belongs to that vendor.
+  vendorId?: string | null,
 ) => {
   const existingProduct = await prisma.product.findUnique({
     where: { id },
-    select: { name: true, description: true, status: true },
+    select: { name: true, description: true, status: true, vendorId: true },
   });
 
   if (!existingProduct) {
     throw new ApiError("Product not found", StatusCodes.NOT_FOUND);
+  }
+
+  if (vendorId && existingProduct.vendorId !== vendorId) {
+    throw new ApiError("You do not have access to this product", StatusCodes.FORBIDDEN);
   }
 
   // Regenerate embedding if name or description changed, OR if status is changing from INACTIVE to ACTIVE
@@ -785,14 +823,18 @@ export const updateProductService = async (
  */
 export const deleteProductService = async (
   id: string,
-  opts?: { soft?: boolean },
+  opts?: { soft?: boolean; vendorId?: string | null },
 ) => {
   const exists = await prisma.product.findUnique({
     where: { id },
-    select: { id: true, status: true },
+    select: { id: true, status: true, vendorId: true },
   });
 
   if (!exists) throw new ApiError("Product not found", StatusCodes.NOT_FOUND);
+
+  if (opts?.vendorId && exists.vendorId !== opts.vendorId) {
+    throw new ApiError("You do not have access to this product", StatusCodes.FORBIDDEN);
+  }
 
   if (opts?.soft) {
     const updated = await prisma.product.update({

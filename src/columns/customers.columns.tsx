@@ -4,10 +4,12 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Eye, User } from "lucide-react";
+import { MoreHorizontal, Eye, User, Store, ShieldCheck, UserCog } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { formatGHS } from "@/lib/currency";
+import { useUpdateCustomerRole } from "@/hooks/use-customer";
+import { toast } from "sonner";
 
 function IndeterminateCheckbox({
   checked,
@@ -29,8 +31,19 @@ function IndeterminateCheckbox({
   );
 }
 
-function CustomerActions({ customerId }: { customerId: string }) {
+function CustomerActions({ customerId, role }: { customerId: string; role: string | null }) {
   const router = useRouter();
+  const updateRole = useUpdateCustomerRole();
+
+  const setRole = (next: "customer" | "vendor" | "admin") => {
+    updateRole.mutate(
+      { id: customerId, role: next },
+      {
+        onSuccess: () => toast.success(`Role updated to ${next}`),
+        onError: () => toast.error("Failed to update role"),
+      },
+    );
+  };
 
   return (
     <DropdownMenu>
@@ -40,14 +53,32 @@ function CustomerActions({ customerId }: { customerId: string }) {
           <MoreHorizontal className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="bg-white border-gray-100 shadow-sm rounded-md p-1 w-44">
-        <DropdownMenuItem 
+      <DropdownMenuContent align="end" className="bg-white border-gray-100 shadow-sm rounded-md p-1 w-52">
+        <DropdownMenuItem
           onClick={() => router.push(`/dashboard/customers/${customerId}`)}
           className="rounded-md cursor-pointer py-2 font-medium"
         >
           <Eye className="h-4 w-4 mr-2 text-blue-500" />
           View History
         </DropdownMenuItem>
+        {role !== "vendor" && (
+          <DropdownMenuItem onClick={() => setRole("vendor")} className="rounded-md cursor-pointer py-2 font-medium">
+            <Store className="h-4 w-4 mr-2 text-emerald-500" />
+            Make Vendor
+          </DropdownMenuItem>
+        )}
+        {role !== "admin" && (
+          <DropdownMenuItem onClick={() => setRole("admin")} className="rounded-md cursor-pointer py-2 font-medium">
+            <ShieldCheck className="h-4 w-4 mr-2 text-purple-500" />
+            Make Admin
+          </DropdownMenuItem>
+        )}
+        {role !== "customer" && (
+          <DropdownMenuItem onClick={() => setRole("customer")} className="rounded-md cursor-pointer py-2 font-medium">
+            <UserCog className="h-4 w-4 mr-2 text-gray-500" />
+            Reset to Customer
+          </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -136,9 +167,26 @@ export const customerColumns: ColumnDef<Customer>[] = [
     },
   },
   {
+    accessorKey: "role",
+    header: "Role",
+    cell: ({ row }) => {
+      const role = row.original.role ?? "customer";
+      const styles: Record<string, string> = {
+        admin: "bg-purple-50 text-purple-600 border-purple-100",
+        vendor: "bg-emerald-50 text-emerald-600 border-emerald-100",
+        customer: "bg-gray-50 text-gray-600 border-gray-100",
+      };
+      return (
+        <span className={`text-[10px] font-bold uppercase tracking-wide px-2 py-1 rounded-full border ${styles[role] ?? styles.customer}`}>
+          {role}
+        </span>
+      );
+    },
+  },
+  {
     id: "actions",
     header: "",
-    cell: ({ row }) => <CustomerActions customerId={row.original.id} />,
+    cell: ({ row }) => <CustomerActions customerId={row.original.id} role={row.original.role} />,
     enableSorting: false,
     enableHiding: false,
     size: 40,

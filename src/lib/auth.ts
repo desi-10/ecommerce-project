@@ -3,6 +3,7 @@ import { admin } from "better-auth/plugins";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import prisma from "./db";
 import { nextCookies } from "better-auth/next-js";
+import { sendPasswordResetEmail } from "./email";
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -10,6 +11,14 @@ export const auth = betterAuth({
   }),
   emailAndPassword: {
     enabled: true,
+    // Forgot-password flow: better-auth generates the token/URL, we just
+    // deliver it. Without this callback, requestPasswordReset() on the
+    // client still succeeds silently but no email is ever sent — the UI
+    // had a "Forgot password?" link pointing at a page that didn't exist
+    // and wouldn't have worked anyway.
+    sendResetPassword: async ({ user, url }) => {
+      await sendPasswordResetEmail({ email: user.email, name: user.name, url });
+    },
   },
   plugins: [
     nextCookies(),

@@ -26,11 +26,12 @@ model User {
   banExpires    DateTime?
 
   // App relations
-  profile  Profile?
-  orders   Order[]
-  payments Payment[]
-  products Product[] @relation("ProductVendor")
-  reviews  Review[]
+  profile      Profile?
+  orders       Order[]
+  payments     Payment[]
+  products     Product[]     @relation("ProductVendor")
+  reviews      Review[]
+  productViews ProductView[]
 
   @@unique([email])
   @@map("user")
@@ -106,6 +107,7 @@ model Product {
   variants   ProductVariant[]
   discounts  ProductDiscount[]
   reviews    Review[]
+  views      ProductView[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -132,6 +134,27 @@ model Review {
   @@index([productId])
   @@index([userId])
   @@map("review")
+}
+
+// Browsing-history signal for the personalized recommendation engine —
+// distinct from Review (opinion) and OrderItem (purchase): this is a
+// lightweight "user looked at this" event. Guests are tracked by
+// sessionId only (userId null) so recommendations still work pre-login;
+// once they sign in, later views carry userId.
+model ProductView {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId    String?
+  user      User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessionId String?
+
+  createdAt DateTime @default(now())
+
+  @@index([productId])
+  @@index([userId, createdAt])
+  @@index([sessionId, createdAt])
+  @@map("product_view")
 }
 
 model ProductVariant {

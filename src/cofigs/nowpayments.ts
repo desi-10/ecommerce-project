@@ -31,6 +31,16 @@ if (!apiKey) {
   );
 }
 
+// The "is crypto configured" check callers actually need — payments.service.ts
+// used to check `process.env.NOWPAYMENTS_API_KEY` directly, which only ever
+// looks at the LIVE key and ignores NOWPAYMENTS_SANDBOX entirely. That meant
+// a correctly-configured sandbox setup (NOWPAYMENTS_SANDBOX=true +
+// NOWPAYMENTS_SANDBOX_API_KEY set, no live key) was always rejected as "not
+// configured" even though createNowPaymentsInvoice below would have worked
+// fine. This mirrors the same isSandbox branching so the guard and the
+// actual client agree on which key pair is in play.
+export const isNowPaymentsConfigured = Boolean(apiKey);
+
 const client = axios.create({
   baseURL: NOWPAYMENTS_API_BASE,
   headers: {

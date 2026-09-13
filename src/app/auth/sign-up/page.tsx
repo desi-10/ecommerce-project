@@ -5,11 +5,12 @@ import { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import Wrapper from "@/components/wrapper";
-import { signUp } from "@/lib/auth-client";
+import { User, Mail, Lock, AlertCircle, Loader2 } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
+import AuthShell from "@/components/auth/auth-shell";
+import { IconField, PasswordField } from "@/components/auth/form-field";
+import { signUp } from "@/lib/auth-client";
 
 const signUpSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -28,11 +29,6 @@ export default function SignUpSection() {
     formState: { errors, isSubmitting },
   } = useForm<SignUpValues>({
     resolver: zodResolver(signUpSchema),
-    // defaultValues: {
-    //   name: "",
-    //   email: "",
-    //   password: "",
-    // },
   });
 
   const onSubmit = async (data: SignUpValues) => {
@@ -41,14 +37,10 @@ export default function SignUpSection() {
     const result = await signUp.email({
       email: data.email,
       password: data.password,
-      name: data.name, // keep if your provider accepts it
+      name: data.name,
       callbackURL: "/",
-
     });
 
-    console.log(result, "result");
-
-    // Better-auth usually returns something like { error } when it fails
     if (result.error) {
       setServerError(result.error?.message || "Signup failed");
       return;
@@ -56,77 +48,82 @@ export default function SignUpSection() {
   };
 
   return (
-    <section className="bg-white min-h-screen w-full">
-      <Wrapper>
-        <div className="py-8 md:py-12">
-          <div className="mx-auto max-w-md border border-neutral-200 bg-white p-6 md:p-8">
-            <p className="text-xs font-semibold text-primary">Account</p>
-            <h1 className="mt-2 text-2xl font-bold">Sign up</h1>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Create an account to start shopping.
-            </p>
-
-            {serverError ? (
-              <div className="mt-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-                {serverError}
-              </div>
-            ) : null}
-
-            <form className="mt-6 space-y-4" onSubmit={handleSubmit(onSubmit)}>
-              <div className="space-y-1">
-                <Input
-                  className="rounded-sm"
-                  placeholder="Full name"
-                  {...register("name")}
-                />
-                {errors.name ? (
-                  <p className="text-xs text-red-600">{errors.name.message}</p>
-                ) : null}
-              </div>
-
-              <div className="space-y-1">
-                <Input
-                  className="rounded-sm"
-                  placeholder="Email address"
-                  type="email"
-                  {...register("email")}
-                />
-                {errors.email ? (
-                  <p className="text-xs text-red-600">{errors.email.message}</p>
-                ) : null}
-              </div>
-
-              <div className="space-y-1">
-                <Input
-                  className="rounded-sm"
-                  placeholder="Password"
-                  type="password"
-                  {...register("password")}
-                />
-                {errors.password ? (
-                  <p className="text-xs text-red-600">
-                    {errors.password.message}
-                  </p>
-                ) : null}
-              </div>
-
-              <Button type="submit" disabled={isSubmitting} className="w-full">
-                {isSubmitting ? "Creating account..." : "Create account"}
-              </Button>
-
-              <div className="text-center text-sm text-muted-foreground">
-                Already have an account?{" "}
-                <Link
-                  href="/auth/sign-in"
-                  className="text-blue-600 hover:underline"
-                >
-                  Sign in
-                </Link>
-              </div>
-            </form>
-          </div>
+    <AuthShell
+      eyebrow="Get started"
+      title="Create your account"
+      subtitle="Sign up in seconds and start shopping today."
+    >
+      {serverError ? (
+        <div className="mb-4 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+          <span>{serverError}</span>
         </div>
-      </Wrapper>
-    </section>
+      ) : null}
+
+      <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
+        <IconField
+          icon={User}
+          label="Full name"
+          placeholder="Jane Doe"
+          error={errors.name?.message}
+          {...register("name")}
+        />
+
+        <IconField
+          icon={Mail}
+          label="Email address"
+          type="email"
+          placeholder="you@example.com"
+          error={errors.email?.message}
+          {...register("email")}
+        />
+
+        <PasswordField
+          icon={Lock}
+          label="Password"
+          placeholder="At least 8 characters"
+          error={errors.password?.message}
+          {...register("password")}
+        />
+
+        <p className="text-xs text-muted-foreground">
+          By creating an account, you agree to our{" "}
+          <Link href="/terms" className="underline">
+            Terms
+          </Link>{" "}
+          and{" "}
+          <Link href="/privacy-policy" className="underline">
+            Privacy Policy
+          </Link>
+          .
+        </p>
+
+        <Button
+          type="submit"
+          disabled={isSubmitting}
+          className="h-11 w-full rounded-lg text-white"
+          style={{ backgroundColor: "var(--primary-600)" }}
+        >
+          {isSubmitting ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating account...
+            </>
+          ) : (
+            "Create account"
+          )}
+        </Button>
+
+        <div className="text-center text-sm text-muted-foreground">
+          Already have an account?{" "}
+          <Link
+            href="/auth/sign-in"
+            className="font-medium hover:underline"
+            style={{ color: "var(--primary-600)" }}
+          >
+            Sign in
+          </Link>
+        </div>
+      </form>
+    </AuthShell>
   );
 }

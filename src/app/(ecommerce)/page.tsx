@@ -5,6 +5,7 @@ import DealOfDay from "@/components/deal";
 import FeatureRow from "@/components/feature";
 import { HeroBannerPlusPromos } from "@/components/hero-b";
 import ProductSection from "@/components/product";
+import RecommendedForYou from "@/components/product/recommended-for-you";
 import PromoBanners from "@/components/promo";
 import ProductGridCard from "@/components/shop/product-grid";
 import ProductListRow from "@/components/shop/product-list";
@@ -32,6 +33,7 @@ export default function Page() {
             <CategoryMonth />
             <PromoBanners />
             <DealOfDay />
+            <RecommendedForYou />
 
             <ProductSection
               title={t("section.groceries", "Fresh Groceries & Daily Essentials")}

@@ -8,8 +8,8 @@ import type {
   UpdateProductDto,
 } from "@/types/product";
 
-export async function getProducts(params?: { 
-  page?: number; 
+export async function getProducts(params?: {
+  page?: number;
   limit?: number;
   q?: string;
   category?: string;
@@ -17,6 +17,9 @@ export async function getProducts(params?: {
   status?: string;
   sort?: string;
   rating?: number;
+  // Vendor management: the dashboard products page sets this so a vendor
+  // only sees their own products (see /api/products' GET handler).
+  mine?: boolean;
 }) {
   const query = { ...params } as Record<string, any>;
   
@@ -28,8 +31,10 @@ export async function getProducts(params?: {
   return res.data;
 }
 
-export async function getProductById(id: string) {
-  const res = await axios.get<ApiResponse<Product>>(`/api/products/${id}`);
+export async function getProductById(id: string, opts?: { mine?: boolean }) {
+  const res = await axios.get<ApiResponse<Product>>(`/api/products/${id}`, {
+    params: opts?.mine ? { mine: "true" } : undefined,
+  });
   return res.data;
 }
 

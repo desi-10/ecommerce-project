@@ -1,9 +1,3 @@
-@import url("https://fonts.googleapis.com/css2?family=Stack+Sans+Text:wght@200..700&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Mozilla+Text:wght@200..700&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap");
-
-@import url("https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap");
-
 @import "tailwindcss";
 /* @import "tw-animate-css"; */
 @import "shadcn/tailwind.css";
@@ -17,16 +11,18 @@
   font-style: normal;
 } */
 
+/* Matches the mobile app (martfury/src/constants/theme.ts Fonts.sans) —
+   the native OS font stack instead of a loaded webfont, so the web and
+   mobile apps read as the same product instead of two different ones. */
 html {
-  font-family: "Rubik", sans-serif;
-  /* font-family: "Stack Sans Text", sans-serif; */
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-optical-sizing: auto;
   font-weight: 400;
   font-style: normal;
 }
 
 .mozilla-text {
-  font-family: "Plus Jakarta Sans", sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-optical-sizing: auto;
   font-weight: 400;
   font-style: normal;

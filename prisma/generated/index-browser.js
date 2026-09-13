@@ -195,6 +195,14 @@ exports.Prisma.ReviewScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.ProductViewScalarFieldEnum = {
+  id: 'id',
+  productId: 'productId',
+  userId: 'userId',
+  sessionId: 'sessionId',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.ProductVariantScalarFieldEnum = {
   id: 'id',
   productId: 'productId',
@@ -419,6 +427,7 @@ exports.Prisma.ModelName = {
   Verification: 'Verification',
   Product: 'Product',
   Review: 'Review',
+  ProductView: 'ProductView',
   ProductVariant: 'ProductVariant',
   Inventory: 'Inventory',
   Category: 'Category',

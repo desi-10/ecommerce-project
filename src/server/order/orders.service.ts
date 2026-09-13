@@ -5,7 +5,6 @@ import { StatusCodes } from "http-status-codes";
 import { ListOrderInput, OrderSchema, OrderType } from "./orders.validators";
 import { validateStatusTransition } from "./orders.utils";
 import { OrderStatus, Prisma } from "../../../prisma/generated/client";
-import { sendPurchaseEmail } from "@/lib/email";
 
 const D = (n: number | string | Prisma.Decimal) => new Prisma.Decimal(n);
 
@@ -339,38 +338,61 @@ export const cancelOrderService = async (orderId: string) => {
   );
 };
 
-export const markOrderPaidService = async (orderId: string) => {
-  const updatedOrder = await prisma.$transaction(async (tx) => {
-    const order = await tx.order.findUnique({
-      where: { id: orderId },
-      include: { coupon: true },
-    });
+/**
+ * The single place an order actually transitions PENDING -> PAID and a
+ * coupon's usedCount gets incremented. Callers: confirmPaymentByReferenceService
+ * (Stripe/Paystack, after verifying with the provider) and the NOWPayments
+ * webhook (crypto) — both can race for the same order, so this is
+ * idempotent: called again on an already-PAID (or later) order, it's a
+ * no-op rather than an error.
+ */
+export const markOrderPaidService = async (
+  orderId: string,
+  opts?: { paymentId?: string },
+) => {
+  return prisma.$transaction(async (tx) => {
+    const order = await tx.order.findUnique({ where: { id: orderId } });
 
     if (!order) throw new ApiError("Order not found", StatusCodes.NOT_FOUND);
+
+    if (order.status !== "PENDING") {
+      // Already paid (or moved past PENDING some other way) — nothing to do.
+      return { order, alreadyPaid: true };
+    }
 
     validateStatusTransition(order.status, "PAID");
 
     const updated = await tx.order.update({
       where: { id: orderId },
       data: { status: "PAID" },
-      include: { coupon: true },
     });
 
     // increment coupon usage ONLY when payment succeeds
-    if (updated.couponId) {
+    if (order.couponId) {
       await tx.coupon.update({
-        where: { id: updated.couponId },
+        where: { id: order.couponId },
         data: { usedCount: { increment: 1 } },
       });
     }
 
-    return updated;
-  });
+    if (opts?.paymentId) {
+      await tx.payment.update({
+        where: { id: opts.paymentId },
+        data: { status: "SUCCEEDED" },
+      });
+    }
 
-  return apiResponse("Order marked as paid", updatedOrder);
+    return { order: updated, alreadyPaid: false };
+  });
 };
 
-export const getOrdersService = async (data: ListOrderInput) => {
+export const getOrdersService = async (
+  data: ListOrderInput,
+  // Vendor management: a vendor's Orders tab only shows orders containing
+  // at least one of their own products — never another vendor's or the
+  // storewide order list an admin gets.
+  vendorId?: string,
+) => {
   const { page, limit, q, status, sort } = data;
 
   const where: Prisma.OrderWhereInput = {
@@ -386,6 +408,14 @@ export const getOrdersService = async (data: ListOrderInput) => {
               },
             },
           ],
+        }
+      : {}),
+
+    ...(vendorId
+      ? {
+          items: {
+            some: { variant: { product: { vendorId } } },
+          },
         }
       : {}),
   };
@@ -435,6 +465,17 @@ export const getOrdersService = async (data: ListOrderInput) => {
     },
   });
 };
+/**
+ * Read-only lookup by payment reference — no side effects. This used to
+ * also be the thing that marked an order PAID, unconditionally, the moment
+ * this route was hit — with no check that a payment had actually
+ * succeeded. That's now confirmPaymentByReferenceService in
+ * payments.service.ts (it verifies with Stripe/Paystack before calling
+ * markOrderPaidService above), which is what the
+ * /api/orders/reference/[ref] route actually calls. This plain read is
+ * kept for anything that just needs to display order-by-reference without
+ * triggering a confirmation attempt.
+ */
 export const getOrderByReferenceService = async (reference: string) => {
   const payment = await prisma.payment.findUnique({
     where: { reference },
@@ -458,49 +499,6 @@ export const getOrderByReferenceService = async (reference: string) => {
 
   if (!payment || !payment.order) {
     throw new ApiError("Order not found", StatusCodes.NOT_FOUND);
-  }
-
-  if (payment.order.status === "PENDING") {
-    await prisma.$transaction([
-      prisma.order.update({
-        where: { id: payment.order.id },
-        data: { status: "PAID" }
-      }),
-      prisma.payment.update({
-        where: { id: payment.id },
-        data: { status: "SUCCEEDED" }
-      })
-    ]);
-
-    payment.order.status = "PAID";
-
-    try {
-      let email = payment.user?.email;
-      if (!email && payment.metadata) {
-        const meta = typeof payment.metadata === 'string' ? JSON.parse(payment.metadata) : payment.metadata;
-        email = (meta as { email?: string }).email;
-      }
-
-      if (email) {
-        await sendPurchaseEmail(email, {
-          subtotal: payment.order.subtotal.toString(),
-          discountTotal: Number(payment.order.discountTotal),
-          total: payment.order.total.toString(),
-          items: payment.order.items.map((item) => ({
-            qty: item.qty,
-            lineTotal: item.lineTotal.toString(),
-            variant: {
-              name: item.variant.name,
-              product: {
-                name: item.variant.product.name,
-              },
-            },
-          })),
-        });
-      }
-    } catch (err) {
-      console.error("Could not send purchase email:", err);
-    }
   }
 
   return apiResponse("Order fetched successfully", payment.order);

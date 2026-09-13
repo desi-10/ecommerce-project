@@ -15,9 +15,9 @@ import type {
 
 export const productsKeys = {
   all: ["products"] as const,
-  list: (params?: { 
-    page?: number; 
-    limit?: number; 
+  list: (params?: {
+    page?: number;
+    limit?: number;
     category?: string;
     categories?: string[];
     minPrice?: number;
@@ -27,6 +27,7 @@ export const productsKeys = {
     status?: string;
     sort?: string;
     rating?: number;
+    mine?: boolean;
   }) =>
     ["products", "list", params ?? {}] as const,
   detail: (id: string) => ["products", "detail", id] as const,
@@ -44,6 +45,7 @@ export function useGetProducts(params?: {
   status?: string;
   sort?: string;
   rating?: number;
+  mine?: boolean;
 }) {
   return useQuery<GetProductsResponse>({
     queryKey: productsKeys.list(params),
@@ -51,10 +53,10 @@ export function useGetProducts(params?: {
   });
 }
 
-export function useGetProduct(id: string) {
+export function useGetProduct(id: string, opts?: { mine?: boolean }) {
   return useQuery({
-    queryKey: productsKeys.detail(id),
-    queryFn: () => getProductById(id),
+    queryKey: opts?.mine ? [...productsKeys.detail(id), "mine"] : productsKeys.detail(id),
+    queryFn: () => getProductById(id, opts),
     enabled: !!id,
   });
 }

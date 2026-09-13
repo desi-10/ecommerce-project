@@ -1,15 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Mail, Lock, AlertCircle, Loader2 } from "lucide-react";
 
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import Wrapper from "@/components/wrapper";
+import AuthShell from "@/components/auth/auth-shell";
+import { IconField, PasswordField } from "@/components/auth/form-field";
 import { signIn } from "@/lib/auth-client";
 
 const signInSchema = z.object({
@@ -21,7 +21,6 @@ const signInSchema = z.object({
 type SignInValues = z.infer<typeof signInSchema>;
 
 export default function SignInSection() {
-  const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
 
   const {
@@ -43,6 +42,7 @@ export default function SignInSection() {
     const result = await signIn.email({
       email: data.email,
       password: data.password,
+      rememberMe: data.remember,
       callbackURL: "/",
     });
 
@@ -50,80 +50,83 @@ export default function SignInSection() {
       setServerError(result.error?.message || "Unable to sign in");
       return;
     }
-
   };
 
   return (
-    <section className="bg-white border-b">
-      <Wrapper>
-        <div className="py-8 md:py-12">
-          <div className="mx-auto max-w-md border border-neutral-200 bg-white p-6 md:p-8">
-            <p className="text-xs font-semibold text-blue-600">Account</p>
-            <h1 className="mt-2 text-2xl font-bold">Sign in</h1>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Welcome back. Enter your details to continue.
-            </p>
-
-            {serverError ? (
-              <div className="mt-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-                {serverError}
-              </div>
-            ) : null}
-
-            <form className="mt-6 space-y-4" onSubmit={handleSubmit(onSubmit)}>
-              <div className="space-y-1">
-                <Input
-                  className="rounded-sm"
-                  placeholder="Email address"
-                  type="email"
-                  {...register("email")}
-                />
-                {errors.email ? (
-                  <p className="text-xs text-red-600">{errors.email.message}</p>
-                ) : null}
-              </div>
-
-              <div className="space-y-1">
-                <Input
-                  className="rounded-sm"
-                  placeholder="Password"
-                  type="password"
-                  {...register("password")}
-                />
-                {errors.password ? (
-                  <p className="text-xs text-red-600">
-                    {errors.password.message}
-                  </p>
-                ) : null}
-              </div>
-
-              <div className="flex items-center justify-between text-sm">
-                <label className="flex items-center gap-2 text-muted-foreground">
-                  <input type="checkbox" {...register("remember")} />
-                  Remember me
-                </label>
-                <Link
-                  href="/auth/forgot-password"
-                  className="text-blue-600 hover:underline"
-                >
-                  Forgot password?
-                </Link>
-              </div>
-
-              <Button className="w-full rounded-sm" type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Signing in..." : "Sign in"}
-              </Button>
-
-              <div className="text-center text-sm text-muted-foreground">
-                Don&apos;t have an account?{" "}
-                <Link href="/auth/sign-up" className="text-blue-600 hover:underline">
-                  Sign up
-                </Link>
-              </div>
-            </form>
-          </div>
+    <AuthShell
+      eyebrow="Welcome back"
+      title="Sign in to your account"
+      subtitle="Enter your details below to continue shopping."
+    >
+      {serverError ? (
+        <div className="mb-4 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+          <span>{serverError}</span>
         </div>
-      </Wrapper>
-    </section>
+      ) : null}
+
+      <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
+        <IconField
+          icon={Mail}
+          label="Email address"
+          type="email"
+          placeholder="you@example.com"
+          error={errors.email?.message}
+          {...register("email")}
+        />
+
+        <PasswordField
+          icon={Lock}
+          label="Password"
+          placeholder="Enter your password"
+          error={errors.password?.message}
+          {...register("password")}
+        />
+
+        <div className="flex items-center justify-between text-sm">
+          <label className="flex items-center gap-2 text-muted-foreground">
+            <input
+              type="checkbox"
+              className="h-4 w-4 rounded border-neutral-300 accent-blue-600"
+              {...register("remember")}
+            />
+            Remember me
+          </label>
+          <Link
+            href="/auth/forgot-password"
+            className="font-medium hover:underline"
+            style={{ color: "var(--primary-600)" }}
+          >
+            Forgot password?
+          </Link>
+        </div>
+
+        <Button
+          className="h-11 w-full rounded-lg text-white"
+          style={{ backgroundColor: "var(--primary-600)" }}
+          type="submit"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Signing in...
+            </>
+          ) : (
+            "Sign in"
+          )}
+        </Button>
+
+        <div className="text-center text-sm text-muted-foreground">
+          Don&apos;t have an account?{" "}
+          <Link
+            href="/auth/sign-up"
+            className="font-medium hover:underline"
+            style={{ color: "var(--primary-600)" }}
+          >
+            Create one
+          </Link>
+        </div>
+      </form>
+    </AuthShell>
   );
 }

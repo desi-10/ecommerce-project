@@ -14,6 +14,7 @@ import { useValidateCoupon } from "@/hooks/use-coupon";
 import { toast } from "sonner";
 import { useSession } from "@/lib/auth-client";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useLanguage } from "@/context/language-context";
 
 const checkoutSchema = z.object({
   email: z.string().email("Enter a valid email"),
@@ -32,6 +33,7 @@ const checkoutSchema = z.object({
 type CheckoutType = z.infer<typeof checkoutSchema>;
 
 export default function CheckoutPage() {
+  const { t } = useLanguage();
   const cartItems = useCartStore((state) => state.items);
   const cartSubtotal = useCartStore((state) => state.getTotal());
   const [gateway, setGateway] = useState<"stripe" | "paystack" | "crypto">("stripe");
@@ -45,7 +47,7 @@ export default function CheckoutPage() {
 
   // Demo shipping/tax
   const shipping = 0;
-  const shippingText = shipping === 0 ? "Free" : `$${shipping}`;
+  const shippingText = shipping === 0 ? t("checkout.free", "Free") : `$${shipping}`;
   const tax = 0;
 
   const discountAmount = useMemo(() => {
@@ -138,7 +140,7 @@ export default function CheckoutPage() {
           </h1>
           <div className="flex items-center space-x-3">
             <ShoppingBag />
-            <p>Checkout</p>
+            <p>{t("cart.checkout", "Checkout")}</p>
           </div>
         </div>
 
@@ -146,37 +148,37 @@ export default function CheckoutPage() {
           {/* LEFT */}
           <section className="min-w-0">
             {isProcessing && (
-              <div className="mb-6 p-4 rounded-md border border-blue-200 bg-blue-50/70 shadow-sm space-y-3">
+              <div className="mb-6 p-4 rounded-lg border border-blue-200 bg-blue-50/70 shadow-sm space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="h-2.5 w-2.5 rounded-full bg-blue-600 animate-pulse" />
                     <span className="text-sm font-semibold text-blue-900">
-                      Processing payment with {gateway === "stripe" ? "Stripe" : gateway === "paystack" ? "Paystack" : "Crypto"}...
+                      {t("checkout.processing_with", "Processing payment with")} {gateway === "stripe" ? "Stripe" : gateway === "paystack" ? "Paystack" : "Crypto"}...
                     </span>
                   </div>
-                  <span className="text-xs text-blue-600 font-medium">Please wait</span>
+                  <span className="text-xs text-blue-600 font-medium">{t("checkout.please_wait", "Please wait")}</span>
                 </div>
                 <div className="space-y-1.5">
-                  <p className="text-xs text-blue-700">Connecting securely to payment provider. Do not close or refresh this page.</p>
-                  <Skeleton className="h-2 w-full rounded-md bg-blue-200" />
+                  <p className="text-xs text-blue-700">{t("checkout.connecting_securely", "Connecting securely to payment provider. Do not close or refresh this page.")}</p>
+                  <Skeleton className="h-2 w-full rounded-lg bg-blue-200" />
                 </div>
               </div>
             )}
 
-            <fieldset disabled={isProcessing} className="rounded-md border border-neutral-200 py-6 px-4 shadow-sm space-y-0 disabled:opacity-60 transition-opacity">
+            <fieldset disabled={isProcessing} className="rounded-lg border border-neutral-200 py-6 px-4 shadow-sm space-y-0 disabled:opacity-60 transition-opacity">
               {/* Contact info */}
               <div className="flex items-center justify-between gap-4 mb-2">
                 <h2 className="text-lg font-semibold text-neutral-900">
-                  Contact information
+                  {t("checkout.contact_information", "Contact information")}
                 </h2>
                 {!user && (
                   <p className="text-sm text-neutral-600">
-                    Already have an account?{" "}
+                    {t("checkout.already_have_account", "Already have an account?")}{" "}
                     <Link
                       href="/auth/sign-in"
                       className="text-blue-600 hover:underline"
                     >
-                      Log in
+                      {t("checkout.log_in", "Log in")}
                     </Link>
                   </p>
                 )}
@@ -184,11 +186,11 @@ export default function CheckoutPage() {
 
               <div className="space-y-2">
                 <div>
-                  <label className="sr-only">Email</label>
+                  <label className="sr-only">{t("checkout.email_placeholder", "Email")}</label>
                   <input
                     {...register("email")}
-                    placeholder="Email"
-                    className="h-11 w-full rounded-md border border-neutral-200 px-3 text-sm outline-none focus:border-neutral-400"
+                    placeholder={t("checkout.email_placeholder", "Email")}
+                    className="h-11 w-full rounded-lg border border-neutral-200 px-3 text-sm outline-none focus:border-neutral-400"
                   />
                   {errors.email && (
                     <p className="mt-1 text-[11px] text-red-600">
@@ -199,21 +201,21 @@ export default function CheckoutPage() {
 
                 <label className="flex items-center gap-2 text-sm text-neutral-700">
                   <Checkbox />
-                  Email me with news and offers
+                  {t("checkout.email_offers", "Email me with news and offers")}
                 </label>
               </div>
 
               {/* Shipping address */}
               <h2 className="text-lg font-semibold text-neutral-900 mt-8 mb-3">
-                Shipping address
+                {t("checkout.shipping_address", "Shipping address")}
               </h2>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <input
                     {...register("firstName")}
-                    placeholder="First name"
-                    className="h-11 w-full rounded-md border border-neutral-200 px-3 text-sm outline-none focus:border-neutral-400"
+                    placeholder={t("checkout.first_name", "First name")}
+                    className="h-11 w-full rounded-lg border border-neutral-200 px-3 text-sm outline-none focus:border-neutral-400"
                   />
                   {errors.firstName && (
                     <p className="mt-1 text-[11px] text-red-600">
@@ -225,8 +227,8 @@ export default function CheckoutPage() {
                 <div>
                   <input
                     {...register("lastName")}
-                    placeholder="Last name"
-                    className="h-11 w-full rounded-md border border-neutral-200 px-3 text-sm outline-none focus:border-neutral-400"
+                    placeholder={t("checkout.last_name", "Last name")}
+                    className="h-11 w-full rounded-lg border border-neutral-200 px-3 text-sm outline-none focus:border-neutral-400"
                   />
                   {errors.lastName && (
                     <p className="mt-1 text-[11px] text-red-600">
@@ -238,15 +240,15 @@ export default function CheckoutPage() {
 
               <input
                 {...register("company")}
-                placeholder="Company (optional)"
-                className="mt-3 h-11 w-full rounded-md border border-neutral-200 px-3 text-sm outline-none focus:border-neutral-400"
+                placeholder={t("checkout.company_optional", "Company (optional)")}
+                className="mt-3 h-11 w-full rounded-lg border border-neutral-200 px-3 text-sm outline-none focus:border-neutral-400"
               />
 
               <div className="mt-3">
                 <input
                   {...register("address")}
-                  placeholder="Address"
-                  className="h-11 w-full rounded-md border border-neutral-200 px-3 text-sm outline-none focus:border-neutral-400"
+                  placeholder={t("checkout.address_placeholder", "Address")}
+                  className="h-11 w-full rounded-lg border border-neutral-200 px-3 text-sm outline-none focus:border-neutral-400"
                 />
                 {errors.address && (
                   <p className="mt-1 text-[11px] text-red-600">
@@ -257,8 +259,8 @@ export default function CheckoutPage() {
 
               <input
                 {...register("suburb")}
-                placeholder="Suburb"
-                className="mt-3 h-11 w-full rounded-md border border-neutral-200 px-3 text-sm outline-none focus:border-neutral-400"
+                placeholder={t("checkout.suburb_placeholder", "Suburb")}
+                className="mt-3 h-11 w-full rounded-lg border border-neutral-200 px-3 text-sm outline-none focus:border-neutral-400"
               />
 
               <div className="mt-3 grid grid-cols-1 sm:grid-cols-[1.2fr_1fr_0.9fr] gap-3">
@@ -266,7 +268,7 @@ export default function CheckoutPage() {
                   <div className="relative">
                     <select
                       {...register("country")}
-                      className="h-11 w-full appearance-none rounded-md border border-neutral-200 bg-white px-3 pr-9 text-sm outline-none focus:border-neutral-400"
+                      className="h-11 w-full appearance-none rounded-lg border border-neutral-200 bg-white px-3 pr-9 text-sm outline-none focus:border-neutral-400"
                     >
                       <option value="Ghana">Ghana</option>
                       <option value="Australia">Australia</option>
@@ -279,7 +281,7 @@ export default function CheckoutPage() {
                     </span>
                   </div>
                   <p className="mt-1 text-[11px] text-neutral-500">
-                    Country/region
+                    {t("checkout.country_region", "Country/region")}
                   </p>
                   {errors.country && (
                     <p className="mt-1 text-[11px] text-red-600">
@@ -292,9 +294,9 @@ export default function CheckoutPage() {
                   <div className="relative">
                     <select
                       {...register("state")}
-                      className="h-11 w-full appearance-none rounded-md border border-neutral-200 bg-white px-3 pr-9 text-sm outline-none focus:border-neutral-400"
+                      className="h-11 w-full appearance-none rounded-lg border border-neutral-200 bg-white px-3 pr-9 text-sm outline-none focus:border-neutral-400"
                     >
-                      <option value="">State/territory</option>
+                      <option value="">{t("checkout.state_territory", "State/territory")}</option>
                       <option value="Greater Accra">Greater Accra</option>
                       <option value="Ashanti">Ashanti</option>
                       <option value="Eastern">Eastern</option>
@@ -306,7 +308,7 @@ export default function CheckoutPage() {
                     </span>
                   </div>
                   <p className="mt-1 text-[11px] text-neutral-500">
-                    State/territory
+                    {t("checkout.state_territory", "State/territory")}
                   </p>
                   {errors.state && (
                     <p className="mt-1 text-[11px] text-red-600">
@@ -318,18 +320,18 @@ export default function CheckoutPage() {
                 <div>
                   <input
                     {...register("postcode")}
-                    placeholder="Postcode"
-                    className="h-11 w-full rounded-md border border-neutral-200 px-3 text-sm outline-none focus:border-neutral-400"
+                    placeholder={t("checkout.postcode_placeholder", "Postcode")}
+                    className="h-11 w-full rounded-lg border border-neutral-200 px-3 text-sm outline-none focus:border-neutral-400"
                   />
-                  <p className="mt-1 text-[11px] text-neutral-500">Postcode</p>
+                  <p className="mt-1 text-[11px] text-neutral-500">{t("checkout.postcode_placeholder", "Postcode")}</p>
                 </div>
               </div>
 
               <div className="mt-3">
                 <input
                   {...register("phone")}
-                  placeholder="Phone"
-                  className="h-11 w-full rounded-md border border-neutral-200 px-3 text-sm outline-none focus:border-neutral-400"
+                  placeholder={t("checkout.phone_placeholder", "Phone")}
+                  className="h-11 w-full rounded-lg border border-neutral-200 px-3 text-sm outline-none focus:border-neutral-400"
                 />
                 {errors.phone && (
                   <p className="mt-1 text-[11px] text-red-600">
@@ -344,7 +346,7 @@ export default function CheckoutPage() {
                   href="/shop"
                   className={`text-sm text-blue-600 hover:underline ${isProcessing ? "pointer-events-none opacity-50" : ""}`}
                 >
-                  ‹ Return to shop
+                  {t("checkout.return_to_shop", "‹ Return to shop")}
                 </Link>
               </div>
             </fieldset>
@@ -352,24 +354,24 @@ export default function CheckoutPage() {
             {/* Footer links */}
             <div className="mt-10 border-t border-neutral-200 pt-4 text-xs text-neutral-500 flex flex-wrap gap-x-4 gap-y-2">
               <Link className="hover:underline" href="/refund-policy">
-                Refund policy
+                {t("checkout.refund_policy", "Refund policy")}
               </Link>
               <Link className="hover:underline" href="/privacy-policy">
-                Privacy policy
+                {t("checkout.privacy_policy", "Privacy policy")}
               </Link>
               <Link className="hover:underline" href="/terms">
-                Terms of service
+                {t("footer.terms", "Terms of service")}
               </Link>
             </div>
           </section>
 
           {/* RIGHT (Order Summary) */}
           <aside className="lg:sticky lg:top-6 h-fit bg-white">
-            <div className="p-5 rounded-md border border-neutral-200">
+            <div className="p-5 rounded-lg border border-neutral-200">
               <div className="space-y-4">
                 {cartItems.map((item) => (
                   <div key={item.id} className="flex items-start gap-3">
-                    <div className="relative h-14 w-14 shrink-0 rounded-md border border-neutral-200 bg-neutral-50 overflow-hidden">
+                    <div className="relative h-14 w-14 shrink-0 rounded-lg border border-neutral-200 bg-neutral-50 overflow-hidden">
                       <Image
                         src={
                           item.image ||
@@ -407,8 +409,8 @@ export default function CheckoutPage() {
                   value={couponInput}
                   disabled={isProcessing}
                   onChange={(e) => setCouponInput(e.target.value)}
-                  placeholder="Gift card or discount code"
-                  className="h-11 flex-1 rounded-md border border-neutral-200 px-3 text-sm outline-none focus:border-neutral-400 font-mono disabled:opacity-50"
+                  placeholder={t("checkout.gift_card_placeholder", "Gift card or discount code")}
+                  className="h-11 flex-1 rounded-lg border border-neutral-200 px-3 text-sm outline-none focus:border-neutral-400 font-mono disabled:opacity-50"
                 />
                 <button
                   type="button"
@@ -434,9 +436,9 @@ export default function CheckoutPage() {
                       }
                     );
                   }}
-                  className="h-11 rounded-md bg-neutral-900 px-5 text-sm font-semibold text-white hover:brightness-110 disabled:opacity-50 transition-all"
+                  className="h-11 rounded-lg bg-neutral-900 px-5 text-sm font-semibold text-white hover:brightness-110 disabled:opacity-50 transition-all"
                 >
-                  {isValidating ? <Skeleton className="h-4 w-12 rounded-md" /> : "Apply"}
+                  {isValidating ? <Skeleton className="h-4 w-12 rounded-lg" /> : t("checkout.apply", "Apply")}
                 </button>
               </div>
 
@@ -444,7 +446,7 @@ export default function CheckoutPage() {
                 <div className="mt-2 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100 uppercase font-mono tracking-wider">{coupon.code}</span>
-                    <button onClick={() => { setCoupon(null); setCouponInput(""); }} className="text-xs text-neutral-400 hover:text-red-500 underline">Remove</button>
+                    <button onClick={() => { setCoupon(null); setCouponInput(""); }} className="text-xs text-neutral-400 hover:text-red-500 underline">{t("checkout.remove", "Remove")}</button>
                   </div>
                   <span className="text-sm font-medium text-emerald-600">-GH₵{discountAmount.toFixed(2)}</span>
                 </div>
@@ -455,19 +457,19 @@ export default function CheckoutPage() {
               {/* Totals */}
               <div className="space-y-2 text-sm">
                 <div className="flex items-center justify-between text-neutral-700 font-medium">
-                  <span>Subtotal</span>
+                  <span>{t("cart.subtotal", "Subtotal")}</span>
                   <span>GH₵{cartSubtotal.toFixed(2)}</span>
                 </div>
 
                 {coupon && (
                   <div className="flex items-center justify-between text-emerald-600">
-                    <span>Discount ({coupon.code})</span>
+                    <span>{t("checkout.discount", "Discount")} ({coupon.code})</span>
                     <span>-GH₵{discountAmount.toFixed(2)}</span>
                   </div>
                 )}
 
                 <div className="flex items-center justify-between text-neutral-700">
-                  <span>Shipping</span>
+                  <span>{t("checkout.shipping_label", "Shipping")}</span>
                   <span className="text-neutral-500 text-xs">
                     {shippingText}
                   </span>
@@ -478,10 +480,10 @@ export default function CheckoutPage() {
                 <div className="flex items-end justify-between">
                   <div>
                     <div className="text-base font-semibold text-neutral-900">
-                      Total
+                      {t("checkout.total_label", "Total")}
                     </div>
                     <div className="text-xs text-neutral-500">
-                      Including GH₵{tax.toFixed(2)} in taxes
+                      {t("checkout.including", "Including")} GH₵{tax.toFixed(2)} {t("checkout.in_taxes", "in taxes")}
                     </div>
                   </div>
 
@@ -503,7 +505,7 @@ export default function CheckoutPage() {
                   onClick={() => setGateway("stripe")}
                   disabled={isProcessing}
                   className={[
-                    "flex flex-1 sm:flex-initial flex-col items-center justify-center gap-2 rounded-md border px-4 py-3 text-sm cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed",
+                    "flex flex-1 sm:flex-initial flex-col items-center justify-center gap-2 rounded-lg border px-4 py-3 text-sm cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed",
                     gateway === "stripe"
                       ? "border-blue-600 bg-blue-50/20 ring-1 ring-blue-500"
                       : "border-neutral-200 hover:border-neutral-300",
@@ -518,12 +520,12 @@ export default function CheckoutPage() {
                   />
                   {isProcessing && gateway === "stripe" ? (
                     <div className="flex flex-col items-center gap-1">
-                      <span className="text-xs font-semibold text-blue-600">Connecting...</span>
-                      <Skeleton className="h-1.5 w-20 rounded-md bg-blue-200" />
+                      <span className="text-xs font-semibold text-blue-600">{t("checkout.connecting", "Connecting...")}</span>
+                      <Skeleton className="h-1.5 w-20 rounded-lg bg-blue-200" />
                     </div>
                   ) : (
                     <span className="text-neutral-700 font-medium text-xs">
-                      Checkout with Stripe
+                      {t("checkout.checkout_with", "Checkout with")} Stripe
                     </span>
                   )}
                 </button>
@@ -533,7 +535,7 @@ export default function CheckoutPage() {
                   onClick={() => setGateway("paystack")}
                   disabled={isProcessing}
                   className={[
-                    "flex flex-1 sm:flex-initial flex-col items-center justify-center gap-2 rounded-md border px-4 py-3 text-sm cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed",
+                    "flex flex-1 sm:flex-initial flex-col items-center justify-center gap-2 rounded-lg border px-4 py-3 text-sm cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed",
                     gateway === "paystack"
                       ? "border-emerald-600 bg-emerald-50/20 ring-1 ring-emerald-500"
                       : "border-neutral-200 hover:border-neutral-300",
@@ -548,12 +550,12 @@ export default function CheckoutPage() {
                   />
                   {isProcessing && gateway === "paystack" ? (
                     <div className="flex flex-col items-center gap-1">
-                      <span className="text-xs font-semibold text-emerald-600">Connecting...</span>
-                      <Skeleton className="h-1.5 w-20 rounded-md bg-emerald-200" />
+                      <span className="text-xs font-semibold text-emerald-600">{t("checkout.connecting", "Connecting...")}</span>
+                      <Skeleton className="h-1.5 w-20 rounded-lg bg-emerald-200" />
                     </div>
                   ) : (
                     <span className="text-neutral-700 font-medium text-xs">
-                      Checkout with Paystack
+                      {t("checkout.checkout_with", "Checkout with")} Paystack
                     </span>
                   )}
                 </button>
@@ -563,7 +565,7 @@ export default function CheckoutPage() {
                   onClick={() => setGateway("crypto")}
                   disabled={isProcessing}
                   className={[
-                    "flex flex-1 sm:flex-initial flex-col items-center justify-center gap-2 rounded-md border px-4 py-3 text-sm cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed",
+                    "flex flex-1 sm:flex-initial flex-col items-center justify-center gap-2 rounded-lg border px-4 py-3 text-sm cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed",
                     gateway === "crypto"
                       ? "border-orange-500 bg-orange-50/20 ring-1 ring-orange-500"
                       : "border-neutral-200 hover:border-neutral-300",
@@ -573,12 +575,12 @@ export default function CheckoutPage() {
                   <Bitcoin className="h-10 w-10 text-orange-500" />
                   {isProcessing && gateway === "crypto" ? (
                     <div className="flex flex-col items-center gap-1">
-                      <span className="text-xs font-semibold text-orange-600">Connecting...</span>
-                      <Skeleton className="h-1.5 w-20 rounded-md bg-orange-200" />
+                      <span className="text-xs font-semibold text-orange-600">{t("checkout.connecting", "Connecting...")}</span>
+                      <Skeleton className="h-1.5 w-20 rounded-lg bg-orange-200" />
                     </div>
                   ) : (
                     <span className="text-neutral-700 font-medium text-xs">
-                      Checkout with Crypto
+                      {t("checkout.checkout_with", "Checkout with")} Crypto
                     </span>
                   )}
                 </button>

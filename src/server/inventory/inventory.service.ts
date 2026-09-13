@@ -94,6 +94,9 @@ export const listInventoriesService = async (params?: {
   q?: string; // search on product name or variant name
   page?: number;
   limit?: number;
+  // Vendor management: a vendor's inventory page only shows stock for
+  // their own products.
+  vendorId?: string;
 }) => {
   const page = Math.max(1, params?.page ?? 1);
   const limit = Math.min(50, Math.max(1, params?.limit ?? 20));
@@ -107,9 +110,10 @@ export const listInventoriesService = async (params?: {
   if (params?.inStock === false) where.stock = { lte: 0 };
 
   // Filters using relations
-  if (params?.productId || params?.q) {
+  if (params?.productId || params?.q || params?.vendorId) {
     where.variant = {};
     if (params.productId) where.variant.productId = params.productId;
+    if (params.vendorId) where.variant.product = { vendorId: params.vendorId };
     if (params.q) {
       const q = params.q.trim();
       where.variant.OR = [
