@@ -20,8 +20,9 @@ export const POST = async (
     const { id } = await params;
     const body = await req.json().catch(() => ({}));
     const gateway = body?.gateway || "paystack";
+    const mobileRedirectBase = typeof body?.mobileRedirectBase === "string" ? body.mobileRedirectBase : undefined;
 
-    const result = await payExistingOrderService(id, session.user.id, gateway);
+    const result = await payExistingOrderService(id, session.user.id, gateway, mobileRedirectBase);
     return NextResponse.json(result);
   } catch (error) {
     return handleApiError(error);

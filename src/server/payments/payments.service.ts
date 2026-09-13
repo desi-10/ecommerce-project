@@ -31,6 +31,55 @@ import { randomUUID } from "crypto";
 // bug) charged a GH₵500 cart as $500.00, ~13-15x the real price.
 const STRIPE_CURRENCY = "usd";
 
+const SAFE_MOBILE_SCHEMES = ["martfury://", "exp://", "exps://"];
+
+/**
+ * Where the gateway sends the shopper back to once they're done.
+ *
+ * On web this is always the site's own /checkout pages. On mobile, opening
+ * a payment page in a generic in-app browser (expo-web-browser) means the
+ * app only ever learns "the browser closed" — not *why*, or which of
+ * success_url/cancel_url (if either) the gateway actually redirected to
+ * first. Passing an app-scheme deep link here lets the OS hand control
+ * back to the app at the exact right moment instead, so a real cancel from
+ * inside Stripe/Paystack navigates the app straight back to checkout
+ * rather than always landing on the "confirm payment" screen and polling
+ * an order that was never going to resolve (this was reported as: cancel
+ * a payment on mobile, land on "Confirming Your Payment", it never
+ * changes).
+ */
+function resolveRedirectUrls(
+  mobileRedirectBase?: string,
+  // Paying for an already-created order (payExistingOrderService) cancels
+  // back to that order's own detail view instead of the fresh-checkout
+  // page — web: /account/orders/{id}, mobile: orders/{id}.
+  cancelOrderId?: string,
+) {
+  const base =
+    mobileRedirectBase && SAFE_MOBILE_SCHEMES.some((scheme) => mobileRedirectBase.startsWith(scheme))
+      ? mobileRedirectBase
+      : null;
+
+  if (base) {
+    // Mobile always cancels back to the same deep-link base regardless of
+    // flow (fresh checkout or paying an existing order) — the order-detail
+    // cancel target below is a web-only nicety, not worth the fragility of
+    // guessing at an app deep-link's path shape from a generic string.
+    return {
+      successBase: `${base}/success`,
+      cancelUrl: base,
+    };
+  }
+
+  const webBase = `${process.env.BETTER_AUTH_BASE_URL}/checkout`;
+  return {
+    successBase: `${webBase}/success`,
+    cancelUrl: cancelOrderId
+      ? `${process.env.BETTER_AUTH_BASE_URL}/account/orders/${cancelOrderId}`
+      : webBase,
+  };
+}
+
 export const initiateOrderService = async (
   data: createOrderPaymentInput,
   userId: string,
@@ -50,6 +99,7 @@ export const initiateOrderService = async (
   });
 
   const amountToCharge = Number(order.data.total);
+  const { successBase, cancelUrl } = resolveRedirectUrls(data.mobileRedirectBase);
 
   let authorizationUrl: string;
   let reference: string;
@@ -78,8 +128,8 @@ export const initiateOrderService = async (
           },
         ],
         mode: "payment",
-        success_url: `${process.env.BETTER_AUTH_BASE_URL}/checkout/success?reference={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${process.env.BETTER_AUTH_BASE_URL}/checkout`,
+        success_url: `${successBase}?reference={CHECKOUT_SESSION_ID}`,
+        cancel_url: cancelUrl,
         customer_email: data.email,
       });
 
@@ -95,7 +145,7 @@ export const initiateOrderService = async (
         amount: Math.round(amountToCharge * 100),
         email: data.email,
         currency: Currency.GHS,
-        callbackUrl: `${process.env.BETTER_AUTH_BASE_URL}/checkout/success`,
+        callbackUrl: successBase,
       });
 
       if (!payment.authorizationUrl || !payment.reference) {
@@ -127,8 +177,8 @@ export const initiateOrderService = async (
       const invoice = await createNowPaymentsInvoice({
         amount: convertGhsToUsd(amountToCharge),
         orderId: reference,
-        successUrl: `${process.env.BETTER_AUTH_BASE_URL}/checkout/success?reference=${reference}`,
-        cancelUrl: `${process.env.BETTER_AUTH_BASE_URL}/checkout`,
+        successUrl: `${successBase}?reference=${reference}`,
+        cancelUrl,
         ipnCallbackUrl: `${process.env.BETTER_AUTH_BASE_URL}/api/webhooks/nowpayments`,
       });
 
@@ -347,6 +397,7 @@ export const payExistingOrderService = async (
   orderId: string,
   userId: string,
   gateway: string = "paystack",
+  mobileRedirectBase?: string,
 ) => {
   const order = await prisma.order.findFirst({
     where: { id: orderId, userId },
@@ -392,6 +443,7 @@ export const payExistingOrderService = async (
   }
 
   const amountNumber = Number(order.total);
+  const { successBase, cancelUrl } = resolveRedirectUrls(mobileRedirectBase, order.id);
 
   if (gateway === "stripe") {
     if (!process.env.STRIPE_SECRET_KEY) {
@@ -415,8 +467,8 @@ export const payExistingOrderService = async (
         },
       ],
       mode: "payment",
-      success_url: `${process.env.BETTER_AUTH_BASE_URL}/checkout/success?reference={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.BETTER_AUTH_BASE_URL}/account/orders/${order.id}`,
+      success_url: `${successBase}?reference={CHECKOUT_SESSION_ID}`,
+      cancel_url: cancelUrl,
       customer_email: email,
     });
 
@@ -432,7 +484,7 @@ export const payExistingOrderService = async (
       amount: Math.round(amountNumber * 100),
       email: email,
       currency: Currency.GHS,
-      callbackUrl: `${process.env.BETTER_AUTH_BASE_URL}/checkout/success`,
+      callbackUrl: successBase,
     });
 
     if (!payment.authorizationUrl || !payment.reference) {
@@ -452,8 +504,8 @@ export const payExistingOrderService = async (
     const invoice = await createNowPaymentsInvoice({
       amount: convertGhsToUsd(amountNumber),
       orderId: reference,
-      successUrl: `${process.env.BETTER_AUTH_BASE_URL}/checkout/success?reference=${reference}`,
-      cancelUrl: `${process.env.BETTER_AUTH_BASE_URL}/account/orders/${order.id}`,
+      successUrl: `${successBase}?reference=${reference}`,
+      cancelUrl,
       ipnCallbackUrl: `${process.env.BETTER_AUTH_BASE_URL}/api/webhooks/nowpayments`,
     });
 

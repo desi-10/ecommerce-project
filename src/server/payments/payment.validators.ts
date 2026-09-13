@@ -8,6 +8,18 @@ export const createOrderPayment = z.object({
   orderId: z.string().optional(),
   metadata: z.string().optional(),
   userId: z.string().optional(),
+  // Mobile passes its own app-scheme deep link base here (from
+  // expo-linking's Linking.createURL('checkout')) instead of falling
+  // through to the web's /checkout/success page — that's what lets the
+  // gateway's own redirect, not just the in-app browser closing for any
+  // reason, drive what the app does next. Not restricted at the schema
+  // level — payments.service.ts only actually uses it when it matches a
+  // known-safe scheme (martfury:// or exp://, the Expo Go dev proxy),
+  // silently falling back to the web URL otherwise, so a malformed or
+  // spoofed value degrades gracefully instead of failing the whole
+  // request or becoming an open redirect to an arbitrary https URL
+  // mid-payment.
+  mobileRedirectBase: z.string().min(1).optional(),
   couponCode: z
     .string()
     .trim()
